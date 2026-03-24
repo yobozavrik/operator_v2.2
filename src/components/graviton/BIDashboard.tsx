@@ -468,7 +468,8 @@ export const BIDashboard = () => {
             .sort((a, b) => b.deficit - a.deficit);
     }, [deficitQueue]);
 
-    const isSpecificStore = selectedStore !== 'Усі' && selectedStore !== 'Персонал' && selectedStore !== 'Планування';
+    const isPersonnelMode = (selectedStore as string) === 'Персонал';
+    const isSpecificStore = selectedStore !== 'Усі' && !isPersonnelMode && selectedStore !== 'Планування';
     const storeSpecificQueue = useMemo(() => {
         if (!isSpecificStore) return [];
         return deficitQueue
@@ -552,7 +553,7 @@ export const BIDashboard = () => {
                                     onClick={() => setSelectedStore('Персонал')}
                                     className={cn(
                                         'w-full rounded-xl border px-4 py-3 text-left text-sm font-medium transition-colors',
-                                        selectedStore === 'Персонал'
+                                        isPersonnelMode
                                             ? 'border-blue-200 bg-blue-50 text-slate-900'
                                             : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                                     )}
@@ -651,7 +652,7 @@ export const BIDashboard = () => {
                         <span className="font-semibold">Роль:</span> Операційний контур · <span className="font-semibold">Фокус:</span> {isSpecificStore ? `магазин ${selectedStore.replace('Магазин "', '').replace('"', '')} — категорії та товари` : 'побачити дефіцит, зрозуміти причину й перейти до дії по мережі.'}
                     </div>
 
-                    {!isSpecificStore && selectedStore !== 'Персонал' && (
+                    {!isSpecificStore && !isPersonnelMode && (
                     <div className="grid grid-cols-12 gap-6 shrink-0">
                         <div className="col-span-12 xl:col-span-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
                             <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
@@ -695,7 +696,7 @@ export const BIDashboard = () => {
                     </div>
                     )}
 
-                    {!isSpecificStore && selectedStore !== 'Персонал' && (
+                    {!isSpecificStore && !isPersonnelMode && (
                     <div className="grid grid-cols-12 gap-6 shrink-0">
                         <button
                             onClick={handleRefresh}
@@ -750,7 +751,7 @@ export const BIDashboard = () => {
                             onClick={() => setSelectedStore('Персонал')}
                             className={cn(
                                 'col-span-12 sm:col-span-6 lg:col-span-3 rounded-2xl border bg-white p-5 text-left shadow-sm transition hover:bg-slate-50',
-                                selectedStore === 'Персонал' ? 'border-blue-200' : 'border-slate-200'
+                                isPersonnelMode ? 'border-blue-200' : 'border-slate-200'
                             )}
                         >
                             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3 w-fit text-slate-700 mb-4">
@@ -763,7 +764,7 @@ export const BIDashboard = () => {
                     </div>
                     )}
 
-                    {displayCriticalSKU > 0 && !isSpecificStore && selectedStore !== 'Персонал' && (
+                    {displayCriticalSKU > 0 && !isSpecificStore && !isPersonnelMode && (
                         <div className="rounded-2xl border border-red-200 bg-red-50 p-5 shrink-0 shadow-sm">
                             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                                 <div>
@@ -788,7 +789,7 @@ export const BIDashboard = () => {
                         {/* Main Interaction Area */}
                         <div className="col-span-12 flex flex-col h-full min-h-[400px] bg-white shadow-sm border border-slate-200 rounded-2xl overflow-hidden">
                             <ErrorBoundary>
-                                {selectedStore === 'Персонал' ? (
+                                {isPersonnelMode ? (
                                     <PersonnelView />
                                 ) : isSpecificStore ? (
                                     <StoreSpecificView queue={storeSpecificQueue} storeName={selectedStore} />

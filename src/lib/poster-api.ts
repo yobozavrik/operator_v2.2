@@ -90,7 +90,7 @@ async function resolveIngredientIdsByCategoryKeywords(categoryKeywords: string[]
 
     const products = await getProducts();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const ingredientIds = products
+    const ingredientIds = (products as any[])
         .filter((p: any) => targetCategoryIds.has(p.menu_category_id))
         .map((p: any) => p.ingredient_id)
         .filter(Boolean)
@@ -111,7 +111,7 @@ async function resolveProductIdsByCategoryKeywords(categoryKeywords: string[]): 
 
     const products = await getProducts();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const productIds = products
+    const productIds = (products as any[])
         .filter((p: any) => targetCategoryIds.has(p.menu_category_id))
         .map((p: any) => p.product_id)
         .filter(Boolean)
@@ -154,7 +154,6 @@ export async function getAllLeftovers(
         });
 
         // 3. Optional product filtering by category scope
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const rawLeftovers = (data.response || []) as PosterLeftover[];
         const filteredLeftovers = ingredientFilter
             ? rawLeftovers.filter(item => ingredientFilter.has(String(item.ingredient_id)))
@@ -200,9 +199,7 @@ export async function getTodayManufactures(
 
     // Filter by storage (optional)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const scopedManufactures = storageId === null
-        ? manufactures
-        : manufactures.filter((m: any) => String(m.storage_id) === String(storageId));
+    const scopedManufactures = storageId === null ? manufactures : manufactures.filter((m: any) => String(m.storage_id) === String(storageId));
 
     // Extract produced items with optional product filtering
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

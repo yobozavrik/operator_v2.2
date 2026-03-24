@@ -38,6 +38,7 @@
   ],
   "exclude": [
     "node_modules",
+    "vendor",
     "operator_v2",
     "test_rpc.ts",
     "test_rpc.js",

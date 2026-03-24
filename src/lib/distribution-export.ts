@@ -1,15 +1,5 @@
 import ExcelJS from 'exceljs';
 
-interface GravitonResult {
-    "Название продукта": string;
-    "Магазин": string;
-    "Количество": number;
-    "Факт. залишок"?: number | null;
-    "Мін. залишок"?: number | null;
-    "Сер. продажі"?: number | null;
-    "Время расчета"?: string;
-}
-
 export const generateDistributionExcel = async (data: any[], unitName: string = 'Гравітон') => {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Розподіл');

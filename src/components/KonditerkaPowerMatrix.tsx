@@ -1,22 +1,14 @@
 'use client';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import React, { useState, useMemo, useRef, useEffect } from 'react';
-import useSWR from 'swr';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { ChefHat, AlertTriangle, RefreshCw, RotateCcw, ChevronDown, ChevronRight, Activity, Percent, CheckCircle, Calculator, Truck, TrendingUp, Package, Store } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { TrendingUp } from 'lucide-react';
 import { ProductionTask } from '@/types/bi';
 import { cn } from '@/lib/utils';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { BackToHome } from '@/components/BackToHome';
 import { KonditerkaDistributionModal } from './KonditerkaDistributionModal';
 import { KonditerkaProductionDetailModal } from './KonditerkaProductionDetailModal';
 import { ProductDetailDrawer } from './production/ProductDetailDrawer';
 import { StoreDetailDrawer } from './production/StoreDetailDrawer';
 
-// 🟢 konditerka LOGIC CONSTANTS
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const SAFETY_BUFFER = 2; // Days
 
 interface Props {
     data: ProductionTask[];
@@ -24,258 +16,18 @@ interface Props {
     initialViewMode?: 'products' | 'stores';
 }
 
-// Internal Component for Distribution Logic per Accordion Item
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const ProductAccordionItem = ({
-    product,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    planningDays,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    isExpanded,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    onToggle
-}: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    product: any,
-    planningDays: number,
-    isExpanded: boolean,
-    onToggle: () => void
-}) => {
-    const [totalBaked, setTotalBaked] = useState<number>(0);
-    const [distributionPlan, setDistributionPlan] = useState<Record<number, number>>({});
-    const [isDistributing, setIsDistributing] = useState(false);
-
-    // Distribution Algorithm
-    const handleDistribute = (e: React.MouseEvent) => {
-        e.stopPropagation(); // Prevent accordion toggle
-        setIsDistributing(true);
-
-        setTimeout(() => { // Small fake delay for UX
-            let remaining = totalBaked;
-            const newPlan: Record<number, number> = {};
-
-            const add = (storeId: number, amount: number) => {
-                newPlan[storeId] = (newPlan[storeId] || 0) + amount;
-                remaining -= amount;
-            };
-
-            const stores = product.stores;
-
-            // STEP 1: CRITICAL (Stock < Min Stock)
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const totalCriticalNeed = stores.reduce((sum: number, s: any) => sum + s.computed.urgentDeficit, 0);
-
-            if (totalCriticalNeed > 0) {
-                if (remaining >= totalCriticalNeed) {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    stores.forEach((s: any) => { if (s.computed.urgentDeficit > 0) add(s.storeId, s.computed.urgentDeficit); });
-                } else {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    stores.forEach((s: any) => {
-                        if (s.computed.urgentDeficit > 0) {
-                            const share = Math.floor((s.computed.urgentDeficit / totalCriticalNeed) * remaining);
-                            if (share > 0) add(s.storeId, share);
-                        }
-                    });
-                }
-            }
-
-            // STEP 2: REMAINING (Proportional to Avg Sales)
-            if (remaining > 0) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const totalAvg = stores.reduce((sum: number, s: any) => sum + s.computed.avg, 0);
-                if (totalAvg > 0) {
-                    const step2Pool = remaining;
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    stores.forEach((s: any) => {
-                        const rawShare = (s.computed.avg / totalAvg) * step2Pool;
-                        add(s.storeId, Math.floor(rawShare));
-                    });
-                }
-            }
-
-            // STEP 3: ROUNDING
-            while (remaining > 0) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const sorted = [...stores].sort((a: any, b: any) => a.computed.stock - b.computed.stock);
-                for (const s of sorted) {
-                    if (remaining <= 0) break;
-                    add(s.storeId, 1);
-                }
-                if (remaining > 0) break;
-            }
-
-            setDistributionPlan(newPlan);
-            setIsDistributing(false);
-        }, 100);
-    };
-
-    const totalDistributed = Object.values(distributionPlan).reduce((a, b) => a + b, 0);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
-    const criticalStoresCount = product.stores.filter((s: any) => s.computed.isUrgent).length;
-
-    return (
-        <div className="border-t border-slate-100 p-2">
-            {/* STORES GRID */}
-            <div className="grid grid-cols-3 md:grid-cols-4 xl:grid-cols-6 gap-2 mb-3">
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                {[...product.stores].sort((a: any, b: any) => b.computed.avg - a.computed.avg).map((store: any) => {
-
-                    const isLowStock = store.computed.stock < store.computed.minStock;
-                    const planVal = distributionPlan[store.storeId] || 0;
-
-                    // SOFT COLORS
-                    const cardBg = isLowStock
-                        ? "bg-red-50/50 border-red-100"
-                        : "bg-emerald-50/50 border-emerald-100";
-
-                    return (
-                        <div
-                            key={`${product.productCode}-${store.storeName}`}
-                            className={cn(
-                                "rounded-lg p-2 border flex flex-col gap-1 transition-colors",
-                                cardBg
-                            )}
-                        >
-                            {/* Store Name - Compact */}
-                            <div className="text-xs font-bold uppercase tracking-wide truncate saas-text-primary text-center" title={store.storeName}>
-                                {store.storeName.replace('Магазин ', '').replace('"', '').replace('"', '')}
-                            </div>
-
-                            {/* Metrics Row - Compact */}
-                            <div className="grid grid-cols-3 gap-1 text-[10px] font-mono leading-none mt-0.5">
-                                <div className="flex flex-col gap-0.5">
-                                    <span className="text-[9px] saas-text-secondary uppercase font-bold">Факт</span>
-                                    <span className={cn("font-bold text-lg", isLowStock ? "text-[#E74856]" : "text-emerald-500")}>
-                                        {store.computed.stock.toFixed(0)}
-                                    </span>
-                                </div>
-                                <div className="flex flex-col gap-0.5 text-center">
-                                    <span className="text-[9px] saas-text-secondary uppercase font-bold">Мін</span>
-                                    <span className="font-bold text-lg text-[#2b80ff]">{store.computed.minStock.toFixed(0)}</span>
-                                </div>
-                                <div className="flex flex-col gap-0.5 text-right">
-                                    <span className="text-[9px] saas-text-secondary uppercase font-bold">Сер</span>
-                                    <span className="font-bold text-lg text-amber-500">{store.computed.avg.toFixed(1)}</span>
-                                </div>
-                            </div>
-
-                            {/* Input Field - Reduced */}
-                            <div className="pt-1.5 border-t border-slate-100 mt-0.5 flex items-center justify-between">
-                                <span className="text-[9px] text-amber-500 font-bold uppercase">План</span>
-                                <input
-                                    type="number"
-                                    value={planVal || ''}
-                                    onChange={(e) => {
-                                        const val = Number(e.target.value);
-                                        setDistributionPlan(prev => ({ ...prev, [store.storeId]: val }));
-                                    }}
-                                    onClick={(e) => e.stopPropagation()}
-                                    className={cn(
-                                        "w-14 bg-white border border-slate-200 rounded h-6 text-center font-mono font-bold text-base focus:outline-none focus:border-amber-400",
-                                        planVal > 0 ? "text-amber-500 shadow-sm" : "saas-text-secondary"
-                                    )}
-                                    placeholder="-"
-                                />
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
-
-            {/* CONTROLS */}
-            <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 flex items-center gap-4">
-                <div className="flex-1 max-w-xs">
-                    <label className="text-[10px] saas-text-secondary uppercase font-bold tracking-widest block mb-1">
-                        Скільки випечено (од.)
-                    </label>
-                    <input
-                        type="number"
-                        value={totalBaked || ''}
-                        onChange={(e) => setTotalBaked(Number(e.target.value))}
-                        onClick={(e) => e.stopPropagation()}
-                        className="w-full bg-white border border-slate-200 rounded-lg h-10 px-3 font-mono saas-text-primary text-xl font-bold focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 shadow-sm"
-                        placeholder="0"
-                    />
-                </div>
-
-                <button
-                    onClick={handleDistribute}
-                    disabled={!totalBaked || isDistributing}
-                    className="h-10 px-6 bg-amber-400 hover:bg-amber-500 text-white shadow font-bold uppercase text-xs tracking-wider rounded-lg transition-all disabled:opacity-50 mt-4 flex items-center gap-2"
-                >
-                    <RotateCcw size={16} className={isDistributing ? "animate-spin" : ""} />
-                    Розподілити
-                </button>
-
-                <div className="ml-auto mt-4 text-right">
-                    <div className="text-[10px] saas-text-secondary uppercase tracking-widest font-bold">Нерозподілено</div>
-                    <div className={cn("font-mono font-bold text-xl", (totalBaked - totalDistributed) < 0 ? "text-red-500" : "saas-text-primary")}>
-                        {(totalBaked - totalDistributed).toFixed(0)}
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-};
-
-export const KonditerkaPowerMatrix = ({ data, onRefresh, initialViewMode = 'products' }: Props) => {
+export const KonditerkaPowerMatrix = ({ data, initialViewMode = 'products' }: Props) => {
     // STATE
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [planningDays, setPlanningDays] = useState<number>(3);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [isRefreshing, setIsRefreshing] = useState(false);
+    const planningDays = 3;
     const [viewMode, setViewMode] = useState<'products' | 'stores'>(initialViewMode);
     const [selectedDrawerProductCode, setSelectedDrawerProductCode] = useState<number | null>(null);
     const [selectedDrawerStoreId, setSelectedDrawerStoreId] = useState<number | null>(null);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [isUpdatingStock, setIsUpdatingStock] = useState(false);
 
     const [showDistModal, setShowDistModal] = useState(false);
     const [showProductionModal, setShowProductionModal] = useState(false);
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const handleRefresh = async () => {
-        setIsRefreshing(true);
-        await onRefresh();
-        setTimeout(() => setIsRefreshing(false), 500);
-    };
-
-    // 🏭 PRODUCTION SUMMARY
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { data: productionSummary } = useSWR('/api/konditerka/summary', (url) => fetch(url, { credentials: 'include' }).then(r => r.json()), { refreshInterval: 30000 });
-
-    // 🔥 WEBHOOK: Update stock from n8n
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const handleUpdateStock = async () => {
-        setIsUpdatingStock(true);
-        try {
-            const response = await fetch('/api/konditerka/update-stock', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'update_stock', timestamp: new Date().toISOString() })
-            });
-
-            if (response.ok) {
-                // Refresh data after stock update
-                await onRefresh();
-            } else {
-                console.error('Stock update failed:', response.status);
-            }
-        } catch (error) {
-            console.error('Stock update error:', error);
-        } finally {
-            setIsUpdatingStock(false);
-        }
-    };
-
 
     const handleCardClick = (code: number) => {
-        setSelectedDrawerProductCode(code);
-    };
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const expandOne = (code: number) => {
         setSelectedDrawerProductCode(code);
     };
 

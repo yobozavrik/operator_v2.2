@@ -186,7 +186,7 @@ export async function POST(request: Request) {
 
         // 5.8. Fetch manufactures for today (Europe/Kyiv timezone)
         const dateStr = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Kyiv' }).format(new Date());
-        let manufactures: any[] = [];
+        const manufactures: any[] = [];
         let manufactures_warning = false;
         let rawManufactures: any[] = [];
         let catalog_sync = { inserted: 0, renamed: 0, reactivated: 0, skipped_without_id: 0 };
@@ -196,7 +196,7 @@ export async function POST(request: Request) {
             product_name_normalized: string;
             is_active: boolean;
         }> = [];
-        let production_summary = {
+        const production_summary = {
             total_kg: 0,
             storage_id: 2,
             items_count: 0
