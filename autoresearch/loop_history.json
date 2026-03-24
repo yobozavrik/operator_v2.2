@@ -1,0 +1,2129 @@
+[
+  {
+    "experiment": 0,
+    "wape": 0.336,
+    "wape_by_dow": {
+      "Mon": 0.3521,
+      "Tue": 0.3377,
+      "Wed": 0.301,
+      "Thu": 0.2633,
+      "Fri": 0.351,
+      "Sat": 0.46,
+      "Sun": 0.3296
+    },
+    "top_features": {
+      "store_sku_dow_avg": 1251,
+      "trend_7d": 980,
+      "store_lag1d": 905,
+      "temp_avg": 902,
+      "store_sku_dow_std": 881
+    },
+    "bottom_features": {
+      "ma3_2d": 453,
+      "lag2w": 413,
+      "lag_14d_2d": 363,
+      "is_holiday": 287,
+      "lag_2d": 160
+    },
+    "kept": true,
+    "change_summary": "baseline",
+    "hypothesis": "",
+    "timestamp": "2026-03-21T21:16:03.925725"
+  },
+  {
+    "experiment": 1,
+    "wape": 0.3368,
+    "wape_by_dow": {
+      "Mon": 0.3506,
+      "Tue": 0.3478,
+      "Wed": 0.2988,
+      "Thu": 0.262,
+      "Fri": 0.3517,
+      "Sat": 0.4601,
+      "Sun": 0.3284
+    },
+    "top_features": {
+      "store_sku_dow_avg": 1124,
+      "temp_change": 866,
+      "store_lag1d": 758,
+      "temp_avg": 742,
+      "trend_7d": 732
+    },
+    "bottom_features": {
+      "lag_14d_2d": 276,
+      "ma3_2d": 274,
+      "lag2w": 265,
+      "supply_2d_lag1w": 229,
+      "is_weekend": 119
+    },
+    "kept": false,
+    "hypothesis": "Remove lag_14d_2d and ma3_2d which were in the bottom tier, and test increasing min_child_samples to 25 to reduce noise on small store/SKU combinations.",
+    "change_summary": "+\"lag_14d_2d\", \"ma3_2d\", \"lag_2d_norm\", | +\"store_id\", \"sku_ | -\"lag_2d\", \"lag_14d_2d\", \"m",
+    "timestamp": "2026-03-21T21:17:47.817515",
+    "agent_code": null
+  },
+  {
+    "experiment": 2,
+    "wape": 0.3359,
+    "wape_by_dow": {
+      "Mon": 0.3507,
+      "Tue": 0.3391,
+      "Wed": 0.2981,
+      "Thu": 0.264,
+      "Fri": 0.3475,
+      "Sat": 0.4616,
+      "Sun": 0.3336
+    },
+    "top_features": {
+      "store_sku_dow_avg": 1156,
+      "temp_avg": 878,
+      "trend_7d": 876,
+      "temp_change": 867,
+      "store_lag1d": 791
+    },
+    "bottom_features": {
+      "oos_rate_4w": 525,
+      "relative_demand_zscore": 500,
+      "store_total_lag1w": 491,
+      "lag2w": 444,
+      "sku_id": 394
+    },
+    "kept": true,
+    "hypothesis": "Add store_dow_std or store_dow_avg features to help the model better distinguish between high-volatility days like Saturday and stable weekdays.",
+    "change_summary": "+\"sku_store_share\" | +# NEXT_HYPOTHESIS: Add store_dow_std o | -df[\"consumption_momentum\"]",
+    "timestamp": "2026-03-21T21:18:15.422600",
+    "agent_code": "\"\"\"\nStable train.py for demand_d0_d1 target.\nFocus: Pruning low-importance lag features (lag_2d, lag_14d_2d, ma3_2d) and increasing min_child_samples to 25 to reduce noise on small store/SKU combinations.\n\"\"\"\n\nimport pandas as pd\n\nFEATURES = [\n    # IDs / calendar\n    \"store_id\", \"sku_id\", \"day\",\n    # 1D Consumption lags\n    \"lag1w\", \"lag2w\", \"trend_7d\",\n    # OOS / Recent trend\n    \"oos_rate_4w\", \"demand_recent_bias\", \"relative_demand_zscore\",\n    # Store / supply context\n    \"store_lag1d\", \"supply_2d_lag1w\", \"store_sku_dow_avg\", \"store_sku_dow_std\", \n    \"global_sku_dow_avg_2d\", \"store_total_lag1w\", \"store_growth_ratio\",\n    # Weather\n    \"temp_avg\", \"temp_change\", \"precip\",\n    # Derived\n    \"sku_store_share\"\n]\n\nPARAMS = {\n    \"n_estimators\": 1000,\n    \"learning_rate\": 0.02,\n    \"num_leaves\": 48,\n    \"max_depth\": 8,\n    \"min_child_samples\": 25,\n    \"colsample_bytree\": 0.8,\n    \"subsample\": 0.8,\n    \"reg_alpha\": 0.1,\n    \"reg_lambda\": 0.1,\n}\n\n\ndef extra_features(df: pd.DataFrame) -> pd.DataFrame:\n    # Historical averages based on the 2D target lag (D0+D1)\n    # lag_2d is available in the base dataframe\n    group_store_sku = df.groupby([\"store_id\", \"sku_id\", \"dow\"])[\"lag_2d\"]\n    df[\"store_sku_dow_avg\"] = group_store_sku.transform(\"mean\")\n    df[\"store_sku_dow_std\"] = group_store_sku.transform(\"std\").fillna(0)\n\n    # Global profile for the SKU across all stores\n    df[\"global_sku_dow_avg_2d\"] = df.groupby([\"sku_id\", \"dow\"])[\"lag_2d\"].transform(\"mean\")\n\n    # Bias of last week vs the historical mean\n    df[\"demand_recent_bias\"] = df[\"lag_2d\"] - df[\"store_sku_dow_avg\"]\n    \n    # Normalized bias\n    df[\"relative_demand_zscore\"] = (df[\"demand_recent_bias\"]) / (df[\"store_sku_dow_std\"] + 1.0)\n\n    # Store-level total volume same day last week\n    df[\"store_total_lag1w\"] = df.groupby([\"store_id\", \"month\", \"day\"])[\"lag1w\"].transform(\"sum\")\n    \n    # Store-level growth ratio: comparing total store volume this week vs two weeks ago\n    store_total_lag2w = df.groupby([\"store_id\", \"month\", \"day\"])[\"lag2w\"].transform(\"sum\")\n    df[\"store_growth_ratio\"] = df[\"store_total_lag1w\"] / (store_total_lag2w + 1.0)\n\n    # SKU importance within its specific store context\n    df[\"sku_store_share\"] = df[\"store_sku_dow_avg\"] / (df[\"store_total_lag1w\"] + 1.0)\n\n    return df\n\n\n# NEXT_HYPOTHESIS: Add store_dow_std or store_dow_avg features to help the model better distinguish between high-volatility days like Saturday and stable weekdays."
+  },
+  {
+    "experiment": 3,
+    "wape": 0.3431,
+    "wape_by_dow": {
+      "Mon": 0.3474,
+      "Tue": 0.346,
+      "Wed": 0.3048,
+      "Thu": 0.2653,
+      "Fri": 0.3655,
+      "Sat": 0.468,
+      "Sun": 0.3557
+    },
+    "top_features": {
+      "store_sku_dow_avg": 1067,
+      "trend_7d": 686,
+      "store_growth_ratio": 571,
+      "temp_change": 559,
+      "store_lag1d": 553
+    },
+    "bottom_features": {
+      "global_sku_dow_avg_2d": 357,
+      "store_total_lag1w": 355,
+      "day": 354,
+      "sku_id": 269,
+      "is_weekend": 60
+    },
+    "kept": false,
+    "hypothesis": "Remove low-importance sku_id and relative_demand_zscore if they remain in the bottom tier, and test adding month or week_of_year for broader seasonality.",
+    "change_summary": "+\"store_id\", \"sku_id\", \"dow\", \"day\", \"is_weekend\", | +# NEXT | -# NEXT_HYPOTHESIS: Add sto",
+    "timestamp": "2026-03-21T21:18:37.793650",
+    "agent_code": null
+  },
+  {
+    "experiment": 4,
+    "wape": 0.3415,
+    "wape_by_dow": {
+      "Mon": 0.3469,
+      "Tue": 0.3435,
+      "Wed": 0.3033,
+      "Thu": 0.2658,
+      "Fri": 0.36,
+      "Sat": 0.4629,
+      "Sun": 0.3579
+    },
+    "top_features": {
+      "store_sku_dow_avg": 1022,
+      "trend_7d": 633,
+      "temp_avg": 594,
+      "temp_change": 539,
+      "sku_store_share": 536
+    },
+    "bottom_features": {
+      "relative_demand_zscore": 365,
+      "oos_rate_4w": 342,
+      "day": 340,
+      "store_total_lag1w": 323,
+      "lag2w": 272
+    },
+    "kept": false,
+    "hypothesis": "Saturday WAPE remains the highest (0.476); adding 'is_weekend' or 'is_payday' may capture systematic shifts in shopping behavior better than 'dow' alone.",
+    "change_summary": "+\"store_id\", \"dow\", \"day\", | +# NEXT_HYPOTHESIS: Saturday WA | -# NEXT_HYPOTHESIS: Add sto",
+    "timestamp": "2026-03-21T21:19:11.217572",
+    "agent_code": null
+  },
+  {
+    "experiment": 5,
+    "wape": 0.3423,
+    "wape_by_dow": {
+      "Mon": 0.3469,
+      "Tue": 0.3407,
+      "Wed": 0.3039,
+      "Thu": 0.2665,
+      "Fri": 0.358,
+      "Sat": 0.4711,
+      "Sun": 0.3612
+    },
+    "top_features": {
+      "store_sku_dow_avg": 1158,
+      "trend_7d": 854,
+      "store_lag1d": 755,
+      "store_growth_ratio": 700,
+      "sku_store_share": 694
+    },
+    "bottom_features": {
+      "global_sku_dow_avg_2d": 445,
+      "day": 441,
+      "oos_rate_4w": 425,
+      "lag2w": 389,
+      "sku_id": 370
+    },
+    "kept": false,
+    "hypothesis": "Adding 'dow' as a categorical feature to complement 'store_sku_dow_avg' while pruning low-importance 'relative_demand_zscore' and 'store_total_lag1w' to reduce noise.",
+    "change_summary": "+\"store_id\", \"sku_id\", \"day\", \"dow\", | +\"oos_rate_4w\", \"dema | -# Normalized bias",
+    "timestamp": "2026-03-21T21:19:50.620564",
+    "agent_code": null
+  },
+  {
+    "experiment": 6,
+    "wape": 0.3384,
+    "wape_by_dow": {
+      "Mon": 0.3515,
+      "Tue": 0.344,
+      "Wed": 0.2992,
+      "Thu": 0.2613,
+      "Fri": 0.3561,
+      "Sat": 0.4629,
+      "Sun": 0.3398
+    },
+    "top_features": {
+      "store_sku_dow_avg": 1071,
+      "temp_change": 840,
+      "trend_7d": 766,
+      "temp_avg": 721,
+      "store_lag1d": 711
+    },
+    "bottom_features": {
+      "relative_demand_zscore": 459,
+      "oos_rate_4w": 440,
+      "store_total_lag1w": 421,
+      "lag2w": 358,
+      "is_weekend": 146
+    },
+    "kept": false,
+    "hypothesis": "If Saturday WAPE remains high, try a parameter-only change to simplify the model (num_leaves=32, min_child_samples=45) to reduce noise fitting on weekend spikes.",
+    "change_summary": "+Focus: Pruning high-cardinality and low-importance features | -# NEXT_HYPOTHESIS: Add sto",
+    "timestamp": "2026-03-21T21:20:48.748912",
+    "agent_code": null
+  },
+  {
+    "experiment": 7,
+    "wape": 0.3453,
+    "wape_by_dow": {
+      "Mon": 0.3507,
+      "Tue": 0.3473,
+      "Wed": 0.3069,
+      "Thu": 0.2712,
+      "Fri": 0.3622,
+      "Sat": 0.4663,
+      "Sun": 0.3622
+    },
+    "top_features": {
+      "store_sku_dow_avg": 1295,
+      "trend_7d": 793,
+      "demand_recent_bias": 735,
+      "temp_avg": 734,
+      "store_growth_ratio": 727
+    },
+    "bottom_features": {
+      "global_sku_dow_avg_2d": 581,
+      "dow": 538,
+      "oos_rate_4w": 521,
+      "day": 476,
+      "is_weekend": 89
+    },
+    "kept": false,
+    "hypothesis": "Pruning low-importance features (sku_id, lag2w) and adding explicit day indicators (dow, is_weekend) to help the model better capture Saturday spikes.",
+    "change_summary": "+Focus: Pruning low-importance features (sku_id, lag2w, rela | -\"oos_rate_4w\", \"demand_rec",
+    "timestamp": "2026-03-21T21:21:16.686323",
+    "agent_code": null
+  },
+  {
+    "experiment": 8,
+    "wape": 0.3459,
+    "wape_by_dow": {
+      "Mon": 0.3491,
+      "Tue": 0.346,
+      "Wed": 0.3097,
+      "Thu": 0.2709,
+      "Fri": 0.3662,
+      "Sat": 0.4676,
+      "Sun": 0.3626
+    },
+    "top_features": {
+      "store_sku_dow_avg": 959,
+      "trend_7d": 568,
+      "lag1w": 483,
+      "temp_avg": 472,
+      "store_id": 469
+    },
+    "bottom_features": {
+      "global_sku_dow_avg_2d": 341,
+      "store_sku_dow_std": 330,
+      "oos_rate_4w": 303,
+      "day": 289,
+      "is_weekend": 46
+    },
+    "kept": false,
+    "hypothesis": "Pruning noisy high-cardinality sku_id and bottom-tier features while simplifying the model parameters (num_leaves, min_child_samples) to better generalize on high-variance Saturdays.",
+    "change_summary": "+and simplifying model parameters (num_leaves=32, min_child_ | -\"oos_rate_4w\", \"demand_rec",
+    "timestamp": "2026-03-21T21:21:50.081030",
+    "agent_code": null
+  },
+  {
+    "experiment": 9,
+    "wape": 0.3442,
+    "wape_by_dow": {
+      "Mon": 0.3486,
+      "Tue": 0.3451,
+      "Wed": 0.3053,
+      "Thu": 0.2691,
+      "Fri": 0.3625,
+      "Sat": 0.4688,
+      "Sun": 0.3606
+    },
+    "top_features": {
+      "store_sku_dow_avg": 1093,
+      "trend_7d": 689,
+      "store_lag1d": 597,
+      "temp_avg": 581,
+      "temp_change": 575
+    },
+    "bottom_features": {
+      "supply_2d_lag1w": 466,
+      "oos_rate_4w": 415,
+      "day": 362,
+      "store_total_lag1w": 347,
+      "lag2w": 272
+    },
+    "kept": false,
+    "hypothesis": "Remove relative_demand_zscore and lag2w if they remain bottom-tier, and decrease num_leaves to 32 to improve generalization on weekend spikes.",
+    "change_summary": "+# NEXT_HYPOTHESIS: Remove relative_demand_zscore and lag2w  | -# NEXT_HYPOTHESIS: Add sto",
+    "timestamp": "2026-03-21T21:22:10.401039",
+    "agent_code": null
+  },
+  {
+    "experiment": 10,
+    "wape": 0.3453,
+    "wape_by_dow": {
+      "Mon": 0.3489,
+      "Tue": 0.3425,
+      "Wed": 0.3088,
+      "Thu": 0.272,
+      "Fri": 0.3654,
+      "Sat": 0.4698,
+      "Sun": 0.3604
+    },
+    "top_features": {
+      "store_sku_dow_avg": 978,
+      "trend_7d": 563,
+      "temp_avg": 520,
+      "dow": 513,
+      "store_lag1d": 500
+    },
+    "bottom_features": {
+      "precip": 390,
+      "global_sku_dow_avg_2d": 385,
+      "store_sku_dow_std": 376,
+      "day": 325,
+      "oos_rate_4w": 324
+    },
+    "kept": false,
+    "hypothesis": "Add 'is_weekend' and 'is_payday' to explicitly capture periodic demand shifts that store_sku_dow_avg might smooth out too much.",
+    "change_summary": "+\"num_leaves\": 32, | +\"oos_rate_4w\", \"demand_recent_bias\", | -df[\"relative_demand_zscore",
+    "timestamp": "2026-03-21T21:22:33.657092",
+    "agent_code": null
+  },
+  {
+    "experiment": 11,
+    "wape": 0.3443,
+    "wape_by_dow": {
+      "Mon": 0.3515,
+      "Tue": 0.3442,
+      "Wed": 0.3076,
+      "Thu": 0.2664,
+      "Fri": 0.3659,
+      "Sat": 0.4664,
+      "Sun": 0.3588
+    },
+    "top_features": {
+      "store_sku_dow_avg": 920,
+      "trend_7d": 521,
+      "temp_avg": 464,
+      "lag1w": 451,
+      "demand_recent_bias": 432
+    },
+    "bottom_features": {
+      "store_sku_dow_std": 332,
+      "day": 285,
+      "oos_rate_4w": 271,
+      "store_total_lag1w": 256,
+      "is_weekend": 39
+    },
+    "kept": false,
+    "hypothesis": "Pruning noisy high-cardinality features and adding explicit weekend indicators to address the 0.476 WAPE on Saturdays.",
+    "change_summary": "+Simplified model parameters (num_leaves=32, min_child_sampl | -# Normalized bias",
+    "timestamp": "2026-03-21T21:23:05.272132",
+    "agent_code": null
+  },
+  {
+    "experiment": 12,
+    "wape": 0.3449,
+    "wape_by_dow": {
+      "Mon": 0.3493,
+      "Tue": 0.3457,
+      "Wed": 0.3069,
+      "Thu": 0.2677,
+      "Fri": 0.3658,
+      "Sat": 0.4706,
+      "Sun": 0.36
+    },
+    "top_features": {
+      "store_sku_dow_avg": 1013,
+      "dow": 555,
+      "trend_7d": 516,
+      "store_id": 515,
+      "temp_avg": 509
+    },
+    "bottom_features": {
+      "temp_change": 359,
+      "store_sku_dow_std": 340,
+      "global_sku_dow_avg_2d": 340,
+      "day": 275,
+      "is_weekend": 33
+    },
+    "kept": false,
+    "hypothesis": "Add 'is_payday' and 'is_holiday' to further capture calendar-specific demand spikes that may affect Saturday variance.",
+    "change_summary": "+\"max_depth\": 7, | +\"num_leaves\": 32, | -# NEXT_HYPOTHESIS: Add sto",
+    "timestamp": "2026-03-21T21:24:06.490321",
+    "agent_code": null
+  },
+  {
+    "experiment": 13,
+    "wape": 0.3472,
+    "wape_by_dow": {
+      "Mon": 0.352,
+      "Tue": 0.3481,
+      "Wed": 0.3106,
+      "Thu": 0.2715,
+      "Fri": 0.3752,
+      "Sat": 0.4702,
+      "Sun": 0.3516
+    },
+    "top_features": {
+      "store_sku_dow_avg": 856,
+      "trend_7d": 453,
+      "lag1w": 367,
+      "temp_avg": 366,
+      "dow": 356
+    },
+    "bottom_features": {
+      "demand_recent_bias": 242,
+      "store_lag1d": 222,
+      "global_sku_dow_avg_2d": 219,
+      "store_sku_dow_std": 189,
+      "day": 174
+    },
+    "kept": false,
+    "hypothesis": "If WAPE remains high on Saturdays, try increasing the weight of weekend samples (DOW 5 and 6) in the training objective or adding an explicit 'is_weekend' flag to the FEATURES list.",
+    "change_summary": "+\"num_leaves\": 32, | +# Store-level total volume same day la | -df[\"relative_demand_zscore",
+    "timestamp": "2026-03-21T21:24:40.395450",
+    "agent_code": null
+  },
+  {
+    "experiment": 14,
+    "wape": 0.3445,
+    "wape_by_dow": {
+      "Mon": 0.3492,
+      "Tue": 0.3437,
+      "Wed": 0.3003,
+      "Thu": 0.2694,
+      "Fri": 0.364,
+      "Sat": 0.4732,
+      "Sun": 0.3648
+    },
+    "top_features": {
+      "store_sku_dow_avg": 1025,
+      "trend_7d": 608,
+      "temp_avg": 574,
+      "store_id": 563,
+      "sku_store_share": 547
+    },
+    "bottom_features": {
+      "lag1w": 476,
+      "global_sku_dow_avg_2d": 422,
+      "precip": 420,
+      "store_sku_dow_std": 412,
+      "day": 333
+    },
+    "kept": false,
+    "hypothesis": "If Saturday WAPE remains high, try adding an explicit 'is_saturday' flag or increasing the training sample weight for weekend records.",
+    "change_summary": "+Focus: Overcoming stagnation by pruning bottom-tier feature | -df[\"relative_demand_zscore",
+    "timestamp": "2026-03-21T21:25:02.869008",
+    "agent_code": null
+  },
+  {
+    "experiment": 15,
+    "wape": 0.3444,
+    "wape_by_dow": {
+      "Mon": 0.3509,
+      "Tue": 0.3436,
+      "Wed": 0.3042,
+      "Thu": 0.2684,
+      "Fri": 0.3634,
+      "Sat": 0.4655,
+      "Sun": 0.3671
+    },
+    "top_features": {
+      "store_sku_dow_avg": 1037,
+      "trend_7d": 630,
+      "store_id": 528,
+      "temp_avg": 512,
+      "demand_recent_bias": 501
+    },
+    "bottom_features": {
+      "global_sku_dow_avg_2d": 435,
+      "store_sku_dow_std": 387,
+      "oos_rate_4w": 367,
+      "day": 346,
+      "is_weekend": 46
+    },
+    "kept": false,
+    "hypothesis": "If Saturday WAPE remains high, try increasing the sample weight for weekend records or adding an explicit 'is_payday' indicator to capture monthly demand spikes.",
+    "change_summary": "+\"num_leaves\": 32, | +\"oos_rate_4w\", \"demand_recent_bias\", | -\"oos_rate_4w\", \"demand_rec",
+    "timestamp": "2026-03-21T21:25:31.087037",
+    "agent_code": null
+  },
+  {
+    "experiment": 16,
+    "wape": 0.3446,
+    "wape_by_dow": {
+      "Mon": 0.3523,
+      "Tue": 0.3447,
+      "Wed": 0.3058,
+      "Thu": 0.2664,
+      "Fri": 0.3669,
+      "Sat": 0.4673,
+      "Sun": 0.3596
+    },
+    "top_features": {
+      "store_sku_dow_avg": 940,
+      "trend_7d": 583,
+      "temp_avg": 493,
+      "sku_store_share": 487,
+      "store_id": 469
+    },
+    "bottom_features": {
+      "precip": 395,
+      "global_sku_dow_avg_2d": 381,
+      "store_total_lag1w": 289,
+      "day": 287,
+      "is_payday": 21
+    },
+    "kept": false,
+    "hypothesis": "If Saturday WAPE remains high, try adding a binary 'is_saturday' flag or increasing the sample weight for weekend records to help the model focus on high-variance days.",
+    "change_summary": "+\"num_leaves\": 32, | +# NEXT_HYPOTHESIS: If Saturday WAPE re | -df[\"relative_demand_zscore",
+    "timestamp": "2026-03-21T21:26:13.549153",
+    "agent_code": null
+  },
+  {
+    "experiment": 17,
+    "wape": 0.3461,
+    "wape_by_dow": {
+      "Mon": 0.3547,
+      "Tue": 0.3482,
+      "Wed": 0.3079,
+      "Thu": 0.2675,
+      "Fri": 0.3625,
+      "Sat": 0.4709,
+      "Sun": 0.3615
+    },
+    "top_features": {
+      "store_sku_dow_avg": 1050,
+      "trend_7d": 676,
+      "demand_recent_bias": 625,
+      "store_growth_ratio": 579,
+      "store_lag1d": 570
+    },
+    "bottom_features": {
+      "precip": 491,
+      "store_sku_dow_std": 460,
+      "global_sku_dow_avg_2d": 456,
+      "day": 385,
+      "is_weekend": 62
+    },
+    "kept": false,
+    "hypothesis": "If Saturday WAPE remains high, try adding 'is_payday' or 'is_holiday' to FEATURES to capture monthly demand spikes that dow_avg might smooth out.",
+    "change_summary": "+Focus: Overcoming stagnation by pruning low-importance high | -# Global profile for the S",
+    "timestamp": "2026-03-21T21:26:36.545908",
+    "agent_code": null
+  },
+  {
+    "experiment": 18,
+    "wape": null,
+    "kept": false,
+    "hypothesis": "If Saturday WAPE stays high, try increasing sample_weight for Saturdays (dow=5) or adding is_payday to capture monthly spending cycles.",
+    "change_summary": "SYNTAX ERROR: +store_total_lag2w = df.groupby([\"store_id\", \"month\", \"day\"] | -df[\"relative_demand_zscore",
+    "timestamp": "2026-03-21T21:27:21.381262"
+  },
+  {
+    "experiment": 19,
+    "wape": 0.3453,
+    "wape_by_dow": {
+      "Mon": 0.3545,
+      "Tue": 0.3432,
+      "Wed": 0.3035,
+      "Thu": 0.268,
+      "Fri": 0.3641,
+      "Sat": 0.4691,
+      "Sun": 0.3674
+    },
+    "top_features": {
+      "store_sku_dow_avg": 1366,
+      "trend_7d": 940,
+      "demand_recent_bias": 862,
+      "store_id": 729,
+      "store_lag1d": 728
+    },
+    "bottom_features": {
+      "precip": 622,
+      "global_sku_dow_avg_2d": 597,
+      "store_sku_dow_std": 584,
+      "day": 456,
+      "is_weekend": 69
+    },
+    "kept": false,
+    "hypothesis": "Add is_payday and is_holiday to FEATURES to better capture mid-month demand spikes that may contribute to high Saturday variance.",
+    "change_summary": "+\"num_leaves\": 32, | +# 1D Consumption / Recent trend | -df[\"relative_demand_zscore",
+    "timestamp": "2026-03-21T21:27:45.785492",
+    "agent_code": null
+  },
+  {
+    "experiment": 20,
+    "wape": 0.3425,
+    "wape_by_dow": {
+      "Mon": 0.3504,
+      "Tue": 0.3399,
+      "Wed": 0.3036,
+      "Thu": 0.2692,
+      "Fri": 0.3558,
+      "Sat": 0.4672,
+      "Sun": 0.3626
+    },
+    "top_features": {
+      "store_sku_dow_avg": 1163,
+      "trend_7d": 928,
+      "sku_store_share": 774,
+      "demand_recent_bias": 710,
+      "store_growth_ratio": 699
+    },
+    "bottom_features": {
+      "precip": 489,
+      "day": 383,
+      "is_holiday": 288,
+      "is_weekend": 59,
+      "is_payday": 21
+    },
+    "kept": false,
+    "hypothesis": "If WAPE remains high, try increasing min_child_samples to 40 or using a smaller learning_rate to prevent overfitting to noisy OOS-affected rows.",
+    "change_summary": "+# NEXT_HYPOTHESIS: If WAPE remains high, try increasing min | -\"oos_rate_4w\", \"demand_rec",
+    "timestamp": "2026-03-21T21:28:15.080598",
+    "agent_code": null
+  },
+  {
+    "experiment": 21,
+    "wape": 0.3458,
+    "wape_by_dow": {
+      "Mon": 0.3482,
+      "Tue": 0.3463,
+      "Wed": 0.3086,
+      "Thu": 0.2733,
+      "Fri": 0.3698,
+      "Sat": 0.4697,
+      "Sun": 0.353
+    },
+    "top_features": {
+      "store_sku_dow_avg": 1075,
+      "trend_7d": 617,
+      "temp_change": 558,
+      "temp_avg": 551,
+      "dow": 534
+    },
+    "bottom_features": {
+      "precip": 430,
+      "supply_2d_lag1w": 427,
+      "global_sku_dow_avg_2d": 427,
+      "oos_rate_4w": 371,
+      "day": 330
+    },
+    "kept": false,
+    "hypothesis": "If Saturday WAPE remains high, try adding 'is_payday' or 'is_holiday' to FEATURES to capture monthly demand spikes that dow_avg might smooth out.",
+    "change_summary": "+# NEXT_HYPOTHESIS: If Saturday WAPE remains high, try addin | -df[\"relative_demand_zscore",
+    "timestamp": "2026-03-21T21:28:50.022065",
+    "agent_code": null
+  },
+  {
+    "experiment": 1,
+    "wape": 0.3419,
+    "wape_by_dow": {
+      "Mon": 0.3442,
+      "Tue": 0.3335,
+      "Wed": 0.2864,
+      "Thu": 0.2699,
+      "Fri": 0.3644,
+      "Sat": 0.4908,
+      "Sun": 0.3618
+    },
+    "top_features": {
+      "trend_7d": 978,
+      "temp_avg": 657,
+      "temp_change": 628,
+      "precip": 605,
+      "store_id": 601
+    },
+    "bottom_features": {
+      "dow_trend_ratio": 244,
+      "sku_store_share": 207,
+      "lag_14d_2d": 166,
+      "store_sku_dow_ma3": 121,
+      "is_saturday": 56
+    },
+    "kept": false,
+    "hypothesis": "If WAPE on Saturdays remains high, try adding 'is_payday' and 'is_holiday' back into FEATURES with a higher 'min_child_samples' to handle the variance.",
+    "change_summary": "+# Ratio of recent vs long-term DOW behavior to catch season | -\"store_lag1d\", \"supply_2d_",
+    "timestamp": "2026-03-22T14:54:38.915617",
+    "agent_code": null
+  },
+  {
+    "experiment": 2,
+    "wape": 0.3366,
+    "wape_by_dow": {
+      "Mon": 0.3523,
+      "Tue": 0.3322,
+      "Wed": 0.2766,
+      "Thu": 0.2656,
+      "Fri": 0.3519,
+      "Sat": 0.47,
+      "Sun": 0.3602
+    },
+    "top_features": {
+      "trend_7d": 1357,
+      "dow_oos_rate": 1061,
+      "store_id": 1024,
+      "store_lag1d": 773,
+      "store_sku_dow_std": 716
+    },
+    "bottom_features": {
+      "d1_zero_count_3w": 178,
+      "is_saturday": 151,
+      "oos_pattern_3w": 67,
+      "writeoff_d1_3w": 27,
+      "is_payday": 9
+    },
+    "kept": false,
+    "hypothesis": "If Saturday WAPE remains high, try adding a feature 'store_sku_saturday_share' to isolate SKU importance specifically on weekends.",
+    "change_summary": "+# New: Saturday flag to address high Saturday WAPE | +df[\"i | -Focus: Applying P0/P1 patc",
+    "timestamp": "2026-03-22T14:55:17.106319",
+    "agent_code": null
+  },
+  {
+    "experiment": 3,
+    "wape": 0.3403,
+    "wape_by_dow": {
+      "Mon": 0.3453,
+      "Tue": 0.3312,
+      "Wed": 0.2857,
+      "Thu": 0.2665,
+      "Fri": 0.3565,
+      "Sat": 0.4912,
+      "Sun": 0.3646
+    },
+    "top_features": {
+      "trend_7d": 1200,
+      "temp_avg": 828,
+      "store_id": 778,
+      "dow_oos_rate": 771,
+      "temp_change": 728
+    },
+    "bottom_features": {
+      "is_holiday": 233,
+      "d1_zero_count_3w": 177,
+      "oos_pattern_3w": 84,
+      "writeoff_d1_3w": 13,
+      "is_payday": 9
+    },
+    "kept": false,
+    "hypothesis": "Add is_month_end to FEATURES and increase min_child_samples to 35 to handle Saturday noise.",
+    "change_summary": "+\"sku_store_share\", \"sku_dow_growth_ratio\" | +Focus: Adding  | -# Bias of last week vs the",
+    "timestamp": "2026-03-22T14:55:55.995629",
+    "agent_code": null
+  },
+  {
+    "experiment": 4,
+    "wape": 0.3374,
+    "wape_by_dow": {
+      "Mon": 0.35,
+      "Tue": 0.3318,
+      "Wed": 0.2762,
+      "Thu": 0.2667,
+      "Fri": 0.3554,
+      "Sat": 0.4797,
+      "Sun": 0.357
+    },
+    "top_features": {
+      "trend_7d": 1047,
+      "store_id": 671,
+      "sku_id": 602,
+      "precip": 530,
+      "temp_change": 529
+    },
+    "bottom_features": {
+      "lag_14d_2d": 169,
+      "store_sku_dow_ma3": 149,
+      "d1_zero_count_3w": 91,
+      "oos_pattern_3w": 52,
+      "writeoff_d1_3w": 0
+    },
+    "kept": false,
+    "hypothesis": "If WAPE remains high on Saturdays, try adding 'is_payday' or 'is_month_end' to capture monthly budget cycles that might affect weekend bread purchasing.",
+    "change_summary": "+\"max_depth\": 7, | +df[\"store_sku_dow_ma3\"] = g_ss_dow.trans | -g = df.groupby([\"store_id\"",
+    "timestamp": "2026-03-22T14:56:16.834911",
+    "agent_code": null
+  },
+  {
+    "experiment": 5,
+    "wape": 0.3358,
+    "wape_by_dow": {
+      "Mon": 0.3466,
+      "Tue": 0.3328,
+      "Wed": 0.2758,
+      "Thu": 0.2636,
+      "Fri": 0.3541,
+      "Sat": 0.4779,
+      "Sun": 0.354
+    },
+    "top_features": {
+      "trend_7d": 1020,
+      "store_id": 708,
+      "sku_id": 599,
+      "precip": 533,
+      "temp_change": 531
+    },
+    "bottom_features": {
+      "sku_store_share": 188,
+      "lag_diff": 171,
+      "is_payday": 10,
+      "is_month_end": 6,
+      "writeoff_d1_3w": 0
+    },
+    "kept": true,
+    "hypothesis": "If Saturday WAPE remains high, try adding a feature 'payday_saturday' (is_payday * (dow==5)) to isolate the interaction.",
+    "change_summary": "+\"max_depth\": 7, | +\"num_leaves\": 32, | -\"lag_2d\", \"lag_14d_2d\", \"t",
+    "timestamp": "2026-03-22T14:56:41.822017",
+    "agent_code": "\"\"\"\nStable train.py for demand_d0_d1 target.\nFocus: Addressing Saturday variance and stagnation by adding calendar signals and simplifying parameters.\n\"\"\"\n\nimport pandas as pd\n\nFEATURES = [\n    # IDs / calendar\n    \"store_id\", \"sku_id\", \"day\", \"is_payday\", \"is_month_end\", \"is_weekend\",\n    # 2D Consumption lags matches target demand_d0_d1\n    \"lag_2d\", \"lag_14d_2d\", \"lag_diff\", \"trend_7d\",\n    # OOS / Recent trend / Overstock\n    \"oos_rate_4w\", \"dow_oos_rate\", \"writeoff_d1_3w\", \"demand_recent_bias\",\n    # Store / supply context\n    \"store_lag1d\", \"supply_2d_lag1w\", \"store_sku_dow_avg\", \"store_sku_dow_std\", \n    \"global_sku_dow_avg_2d\", \"store_total_lag1w\", \"store_growth_ratio\",\n    # Weather\n    \"temp_avg\", \"temp_change\", \"precip\",\n    # Derived\n    \"sku_store_share\"\n]\n\nPARAMS = {\n    \"n_estimators\": 1000,\n    \"learning_rate\": 0.02,\n    \"num_leaves\": 32,\n    \"max_depth\": 7,\n    \"min_child_samples\": 35,\n    \"colsample_bytree\": 0.8,\n    \"subsample\": 0.8,\n    \"reg_alpha\": 0.1,\n    \"reg_lambda\": 0.1,\n}\n\ndef extra_features(df: pd.DataFrame) -> pd.DataFrame:\n    df = df.sort_values(\"date\").copy()\n\n    # Historical averages: expanding window (anti-leak: only past information)\n    g = df.groupby([\"store_id\", \"sku_id\", \"dow\"])[\"lag_2d\"]\n    df[\"store_sku_dow_avg\"] = g.transform(\n        lambda x: x.shift(1).expanding(min_periods=1).mean()\n    ).fillna(0)\n    df[\"store_sku_dow_std\"] = g.transform(\n        lambda x: x.shift(1).expanding(min_periods=1).std()\n    ).fillna(0)\n    df[\"global_sku_dow_avg_2d\"] = (\n        df.groupby([\"sku_id\", \"dow\"])[\"lag_2d\"]\n        .transform(lambda x: x.shift(1).expanding(min_periods=1).mean())\n        .fillna(0)\n    )\n\n    # Weekly trend direction\n    df[\"lag_diff\"] = df[\"lag_2d\"] - df[\"lag_14d_2d\"]\n\n    # Bias of last week vs the historical mean\n    df[\"demand_recent_bias\"] = df[\"lag_2d\"] - df[\"store_sku_dow_avg\"]\n\n    # Store-level total volume (DOW-aligned, expanding) - using 2D lags\n    g_store = df.groupby([\"store_id\", \"dow\"])\n    df[\"store_total_lag1w\"] = g_store[\"lag_2d\"].transform(\n        lambda x: x.shift(1).expanding(min_periods=1).mean()\n    )\n    store_total_lag2w = g_store[\"lag_14d_2d\"].transform(\n        lambda x: x.shift(1).expanding(min_periods=1).mean()\n    )\n    df[\"store_growth_ratio\"] = df[\"store_total_lag1w\"] / (store_total_lag2w + 1.0)\n\n    # SKU importance within its specific store context\n    df[\"sku_store_share\"] = df[\"store_sku_dow_avg\"] / (df[\"store_total_lag1w\"] + 1.0)\n\n    return df\n\n# NEXT_HYPOTHESIS: If Saturday WAPE remains high, try adding a feature 'payday_saturday' (is_payday * (dow==5)) to isolate the interaction."
+  },
+  {
+    "experiment": 6,
+    "wape": null,
+    "kept": false,
+    "hypothesis": "If Saturday WAPE remains high, try adding a feature 'store_weekend_intensity' (ratio of Sat+Sun demand vs Mon-Fri) to capture store-specific weekend profiles.",
+    "change_summary": "SYNTAX ERROR: +- **ФІНАЛ: 993 шт** → файл `forecast_2026-03-23_adjusted.cs | -\"min_child_samples\": 35,",
+    "timestamp": "2026-03-22T14:57:01.053254"
+  },
+  {
+    "experiment": 7,
+    "wape": 0.3363,
+    "wape_by_dow": {
+      "Mon": 0.3462,
+      "Tue": 0.3343,
+      "Wed": 0.2781,
+      "Thu": 0.265,
+      "Fri": 0.3546,
+      "Sat": 0.4768,
+      "Sun": 0.3521
+    },
+    "top_features": {
+      "trend_7d": 1095,
+      "store_id": 754,
+      "sku_id": 691,
+      "precip": 594,
+      "temp_change": 567
+    },
+    "bottom_features": {
+      "global_sku_dow_avg_2d": 271,
+      "sku_store_share": 252,
+      "lag_diff": 184,
+      "lag_14d_2d": 176,
+      "payday_sat": 0
+    },
+    "kept": false,
+    "hypothesis": "If WAPE remains high, try adding 'store_weekend_intensity' (ratio of Sat+Sun demand vs Mon-Fri) to capture store-specific weekend profiles.",
+    "change_summary": "+\"oos_rate_4w\", \"dow_oos_rate\", \"demand_recent_bias\", | +# N | -Focus: Addressing Saturday",
+    "timestamp": "2026-03-22T14:57:28.685688",
+    "agent_code": null
+  },
+  {
+    "experiment": 8,
+    "wape": 0.3347,
+    "wape_by_dow": {
+      "Mon": 0.346,
+      "Tue": 0.3306,
+      "Wed": 0.2758,
+      "Thu": 0.2631,
+      "Fri": 0.355,
+      "Sat": 0.4726,
+      "Sun": 0.354
+    },
+    "top_features": {
+      "trend_7d": 1069,
+      "store_id": 831,
+      "sku_id": 704,
+      "temp_change": 625,
+      "precip": 623
+    },
+    "bottom_features": {
+      "lag_diff": 228,
+      "lag_14d_2d": 210,
+      "is_payday": 10,
+      "is_month_end": 9,
+      "payday_saturday": 0
+    },
+    "kept": true,
+    "hypothesis": "If Saturday WAPE remains high, try adding 'store_sku_saturday_share' to isolate SKU importance specifically on weekends.",
+    "change_summary": "+\"oos_rate_4w\", \"dow_oos_rate\", \"demand_recent_bias\", | +df[ | -Focus: Addressing Saturday",
+    "timestamp": "2026-03-22T14:57:57.769157",
+    "agent_code": "\"\"\"\nStable train.py for demand_d0_d1 target.\nFocus: Addressing Saturday variance by adding a specific payday-Saturday interaction feature and removing low-importance columns.\n\"\"\"\n\nimport pandas as pd\n\nFEATURES = [\n    # IDs / calendar\n    \"store_id\", \"sku_id\", \"day\", \"is_payday\", \"is_month_end\", \"is_weekend\",\n    \"payday_saturday\",\n    # 2D Consumption lags matches target demand_d0_d1\n    \"lag_2d\", \"lag_14d_2d\", \"lag_diff\", \"trend_7d\",\n    # OOS / Recent trend\n    \"oos_rate_4w\", \"dow_oos_rate\", \"demand_recent_bias\",\n    # Store / supply context\n    \"store_lag1d\", \"supply_2d_lag1w\", \"store_sku_dow_avg\", \"store_sku_dow_std\", \n    \"global_sku_dow_avg_2d\", \"store_total_lag1w\", \"store_growth_ratio\",\n    # Weather\n    \"temp_avg\", \"temp_change\", \"precip\",\n    # Derived\n    \"sku_store_share\"\n]\n\nPARAMS = {\n    \"n_estimators\": 1000,\n    \"learning_rate\": 0.02,\n    \"num_leaves\": 32,\n    \"max_depth\": 7,\n    \"min_child_samples\": 35,\n    \"colsample_bytree\": 0.8,\n    \"subsample\": 0.8,\n    \"reg_alpha\": 0.1,\n    \"reg_lambda\": 0.1,\n}\n\ndef extra_features(df: pd.DataFrame) -> pd.DataFrame:\n    df = df.sort_values(\"date\").copy()\n\n    # Interaction: Payday and Saturday often see unique purchasing spikes\n    df[\"payday_saturday\"] = ((df[\"is_payday\"] > 0) & (df[\"dow\"] == 5)).astype(int)\n\n    # Historical averages: expanding window (anti-leak: only past information)\n    g = df.groupby([\"store_id\", \"sku_id\", \"dow\"])[\"lag_2d\"]\n    df[\"store_sku_dow_avg\"] = g.transform(\n        lambda x: x.shift(1).expanding(min_periods=1).mean()\n    ).fillna(0)\n    df[\"store_sku_dow_std\"] = g.transform(\n        lambda x: x.shift(1).expanding(min_periods=1).std()\n    ).fillna(0)\n    df[\"global_sku_dow_avg_2d\"] = (\n        df.groupby([\"sku_id\", \"dow\"])[\"lag_2d\"]\n        .transform(lambda x: x.shift(1).expanding(min_periods=1).mean())\n        .fillna(0)\n    )\n\n    # Weekly trend direction\n    df[\"lag_diff\"] = df[\"lag_2d\"] - df[\"lag_14d_2d\"]\n\n    # Bias of last week vs the historical mean\n    df[\"demand_recent_bias\"] = df[\"lag_2d\"] - df[\"store_sku_dow_avg\"]\n\n    # Store-level total volume (DOW-aligned, expanding) - using 2D lags\n    g_store = df.groupby([\"store_id\", \"dow\"])\n    df[\"store_total_lag1w\"] = g_store[\"lag_2d\"].transform(\n        lambda x: x.shift(1).expanding(min_periods=1).mean()\n    )\n    store_total_lag2w = g_store[\"lag_14d_2d\"].transform(\n        lambda x: x.shift(1).expanding(min_periods=1).mean()\n    )\n    df[\"store_growth_ratio\"] = df[\"store_total_lag1w\"] / (store_total_lag2w + 1.0)\n\n    # SKU importance within its specific store context\n    df[\"sku_store_share\"] = df[\"store_sku_dow_avg\"] / (df[\"store_total_lag1w\"] + 1.0)\n\n    return df\n\n# NEXT_HYPOTHESIS: If Saturday WAPE remains high, try adding 'store_sku_saturday_share' to isolate SKU importance specifically on weekends."
+  },
+  {
+    "experiment": 9,
+    "wape": 0.3352,
+    "wape_by_dow": {
+      "Mon": 0.3495,
+      "Tue": 0.3293,
+      "Wed": 0.2772,
+      "Thu": 0.2601,
+      "Fri": 0.3547,
+      "Sat": 0.4785,
+      "Sun": 0.3519
+    },
+    "top_features": {
+      "trend_7d": 1125,
+      "store_id": 866,
+      "sku_id": 719,
+      "temp_change": 638,
+      "supply_2d_lag1w": 603
+    },
+    "bottom_features": {
+      "lag_2d": 336,
+      "is_weekend": 322,
+      "global_sku_dow_avg_2d": 265,
+      "store_growth_ratio": 257,
+      "sku_store_share": 236
+    },
+    "kept": false,
+    "hypothesis": "If WAPE remains high on Saturdays, try adding 'precip_weekend_interaction' to capture if bad weather affects weekend shopping differently than weekdays.",
+    "change_summary": "+Focus: Addressing Saturday variance by replacing low-import | -store_total_lag2w = g_stor",
+    "timestamp": "2026-03-22T14:58:36.564240",
+    "agent_code": null
+  },
+  {
+    "experiment": 10,
+    "wape": 0.3353,
+    "wape_by_dow": {
+      "Mon": 0.3465,
+      "Tue": 0.3284,
+      "Wed": 0.2814,
+      "Thu": 0.262,
+      "Fri": 0.3574,
+      "Sat": 0.4717,
+      "Sun": 0.3537
+    },
+    "top_features": {
+      "trend_7d": 1295,
+      "store_id": 1075,
+      "sku_id": 953,
+      "temp_change": 764,
+      "dow_oos_rate": 733
+    },
+    "bottom_features": {
+      "global_sku_dow_avg_2d": 423,
+      "sku_store_share": 340,
+      "is_weekend": 337,
+      "lag_diff": 307,
+      "lag_14d_2d": 301
+    },
+    "kept": false,
+    "hypothesis": "If Saturday WAPE remains high, try adding 'sku_dow_intensity' to isolate SKU-specific weekend importance ratios.",
+    "change_summary": "+store_total_lag2w = g_store_dow[\"lag_14d_2d\"].transform( |  | -df[\"payday_saturday\"] = ((",
+    "timestamp": "2026-03-22T14:59:12.111701",
+    "agent_code": null
+  },
+  {
+    "experiment": 11,
+    "wape": 0.3347,
+    "wape_by_dow": {
+      "Mon": 0.3504,
+      "Tue": 0.3266,
+      "Wed": 0.2764,
+      "Thu": 0.2641,
+      "Fri": 0.3524,
+      "Sat": 0.4707,
+      "Sun": 0.3556
+    },
+    "top_features": {
+      "store_id": 706,
+      "trend_14d": 694,
+      "sku_id": 606,
+      "temp_change": 570,
+      "trend_7d": 555
+    },
+    "bottom_features": {
+      "sku_store_share": 173,
+      "lag_diff": 161,
+      "lag_14d_2d": 152,
+      "is_payday": 6,
+      "is_month_end": 3
+    },
+    "kept": false,
+    "hypothesis": "If Saturday WAPE remains high, try adding 'precip_weekend_interaction' to capture how bad weather specifically affects weekend demand profiles differently than weekdays.",
+    "change_summary": "+Focus: Introducing a trend velocity feature (trend_ratio) t | -df[\"payday_saturday\"] = ((",
+    "timestamp": "2026-03-22T14:59:50.595198",
+    "agent_code": null
+  },
+  {
+    "experiment": 12,
+    "wape": 0.3356,
+    "wape_by_dow": {
+      "Mon": 0.3467,
+      "Tue": 0.3302,
+      "Wed": 0.2797,
+      "Thu": 0.2639,
+      "Fri": 0.3571,
+      "Sat": 0.4723,
+      "Sun": 0.3527
+    },
+    "top_features": {
+      "trend_7d": 1148,
+      "store_id": 865,
+      "sku_id": 774,
+      "temp_change": 700,
+      "supply_2d_lag1w": 597
+    },
+    "bottom_features": {
+      "is_weekend": 324,
+      "global_sku_dow_avg_2d": 297,
+      "sku_store_share": 283,
+      "lag_14d_2d": 225,
+      "lag_diff": 182
+    },
+    "kept": false,
+    "hypothesis": "If Saturday WAPE remains high, try adding 'precip_weekend_interaction' to capture if bad weather affects weekend shopping differently than weekdays.",
+    "change_summary": "+\"min_child_samples\": 40, | +# Historical averages by SKU/DO | -g = df.groupby([\"store_id\"",
+    "timestamp": "2026-03-22T15:00:24.233527",
+    "agent_code": null
+  },
+  {
+    "experiment": 13,
+    "wape": 0.3354,
+    "wape_by_dow": {
+      "Mon": 0.3503,
+      "Tue": 0.3347,
+      "Wed": 0.2735,
+      "Thu": 0.2645,
+      "Fri": 0.3515,
+      "Sat": 0.471,
+      "Sun": 0.3548
+    },
+    "top_features": {
+      "trend_7d": 1152,
+      "store_id": 949,
+      "sku_id": 836,
+      "supply_2d_lag1w": 646,
+      "temp_change": 639
+    },
+    "bottom_features": {
+      "global_sku_dow_avg_2d": 334,
+      "sku_store_share": 333,
+      "lag_diff": 240,
+      "is_saturday": 142,
+      "precip_weekend": 50
+    },
+    "kept": false,
+    "hypothesis": "If Saturday WAPE remains high, try adding 'precip_weekend_interaction' to capture how bad weather specifically affects weekend demand profiles differently than weekdays.",
+    "change_summary": "+# Bias of last week vs the historical mean for this SKU at  | -df[\"payday_saturday\"] = ((",
+    "timestamp": "2026-03-22T15:00:55.945559",
+    "agent_code": null
+  },
+  {
+    "experiment": 14,
+    "wape": 0.3349,
+    "wape_by_dow": {
+      "Mon": 0.3444,
+      "Tue": 0.3377,
+      "Wed": 0.2792,
+      "Thu": 0.2603,
+      "Fri": 0.3536,
+      "Sat": 0.4701,
+      "Sun": 0.3516
+    },
+    "top_features": {
+      "trend_7d": 1259,
+      "store_id": 973,
+      "sku_id": 819,
+      "temp_change": 727,
+      "store_lag1d": 688
+    },
+    "bottom_features": {
+      "lag_diff": 268,
+      "lag_14d_2d": 216,
+      "precip_weekend": 35,
+      "is_payday": 16,
+      "is_month_end": 4
+    },
+    "kept": false,
+    "hypothesis": "If Saturday WAPE remains high, try adding 'is_saturday' as a dedicated binary feature to allow for Saturday-specific leaf splits.",
+    "change_summary": "+# Helps the model understand if a SKU's weekend spike is gr | -df[\"payday_saturday\"] = ((",
+    "timestamp": "2026-03-22T15:01:25.569945",
+    "agent_code": null
+  },
+  {
+    "experiment": 15,
+    "wape": 0.3352,
+    "wape_by_dow": {
+      "Mon": 0.3485,
+      "Tue": 0.3348,
+      "Wed": 0.2767,
+      "Thu": 0.2589,
+      "Fri": 0.3547,
+      "Sat": 0.4732,
+      "Sun": 0.3541
+    },
+    "top_features": {
+      "trend_7d": 976,
+      "store_id": 827,
+      "temp_change": 662,
+      "sku_id": 650,
+      "store_lag1d": 582
+    },
+    "bottom_features": {
+      "oos_rate_4w": 338,
+      "store_sku_dow_avg": 329,
+      "is_weekend": 326,
+      "global_sku_dow_avg_2d": 284,
+      "sku_store_share": 237
+    },
+    "kept": false,
+    "hypothesis": "If Saturday WAPE remains high, try adding 'precip_weekend_interaction' to capture how bad weather specifically affects weekend demand profiles.",
+    "change_summary": "+# Using lag_14d_2d from base df for growth comparison | +df | -\"payday_saturday\",",
+    "timestamp": "2026-03-22T15:01:51.135964",
+    "agent_code": null
+  },
+  {
+    "experiment": 16,
+    "wape": 0.3367,
+    "wape_by_dow": {
+      "Mon": 0.3471,
+      "Tue": 0.3357,
+      "Wed": 0.2752,
+      "Thu": 0.2634,
+      "Fri": 0.3558,
+      "Sat": 0.4775,
+      "Sun": 0.3572
+    },
+    "top_features": {
+      "trend_7d": 971,
+      "store_id": 816,
+      "sku_id": 674,
+      "precip": 567,
+      "supply_2d_lag1w": 557
+    },
+    "bottom_features": {
+      "sku_store_share": 240,
+      "lag_diff": 166,
+      "lag_14d_2d": 147,
+      "is_saturday": 115,
+      "precip_weekend": 37
+    },
+    "kept": false,
+    "hypothesis": "If Saturday WAPE remains high, try adding 'store_weekend_intensity' (ratio of Sat+Sun demand vs Mon-Fri) to capture store-specific weekend profiles.",
+    "change_summary": "+# Weather interaction: Precipitation often discourages week | -df[\"payday_saturday\"] = ((",
+    "timestamp": "2026-03-22T15:02:13.069504",
+    "agent_code": null
+  },
+  {
+    "experiment": 17,
+    "wape": 0.3353,
+    "wape_by_dow": {
+      "Mon": 0.3434,
+      "Tue": 0.3341,
+      "Wed": 0.2758,
+      "Thu": 0.2606,
+      "Fri": 0.3562,
+      "Sat": 0.4783,
+      "Sun": 0.3546
+    },
+    "top_features": {
+      "trend_7d": 1080,
+      "store_id": 948,
+      "sku_id": 764,
+      "temp_change": 656,
+      "precip": 652
+    },
+    "bottom_features": {
+      "sku_store_share": 339,
+      "lag_diff": 247,
+      "lag_14d_2d": 225,
+      "is_saturday": 129,
+      "precip_saturday": 10
+    },
+    "kept": false,
+    "hypothesis": "If Saturday WAPE remains high, try adding 'store_weekend_intensity' (ratio of Sat+Sun demand vs Mon-Fri) to capture store-specific weekend profiles.",
+    "change_summary": "+and adding Saturday-specific interactions with weather and  | -df[\"payday_saturday\"] = ((",
+    "timestamp": "2026-03-22T15:02:40.145213",
+    "agent_code": null
+  },
+  {
+    "experiment": 18,
+    "wape": 0.3348,
+    "wape_by_dow": {
+      "Mon": 0.3482,
+      "Tue": 0.3288,
+      "Wed": 0.2791,
+      "Thu": 0.2601,
+      "Fri": 0.3519,
+      "Sat": 0.4775,
+      "Sun": 0.3525
+    },
+    "top_features": {
+      "trend_7d": 976,
+      "store_id": 828,
+      "sku_id": 652,
+      "temp_change": 610,
+      "precip": 558
+    },
+    "bottom_features": {
+      "demand_recent_bias": 240,
+      "sku_store_share": 234,
+      "lag_diff": 168,
+      "lag_14d_2d": 157,
+      "is_saturday": 111
+    },
+    "kept": false,
+    "hypothesis": "If Saturday WAPE remains high, try adding 'precip_weekend_interaction' to capture how bad weather specifically affects weekend demand profiles.",
+    "change_summary": "+\"store_id\", \"sku_id\", \"day\", \"is_weekend\", \"is_saturday\", | | -g = df.groupby([\"store_id\"",
+    "timestamp": "2026-03-22T15:02:59.249566",
+    "agent_code": null
+  },
+  {
+    "experiment": 19,
+    "wape": 0.3346,
+    "wape_by_dow": {
+      "Mon": 0.3419,
+      "Tue": 0.3355,
+      "Wed": 0.2741,
+      "Thu": 0.2616,
+      "Fri": 0.3515,
+      "Sat": 0.4768,
+      "Sun": 0.3557
+    },
+    "top_features": {
+      "trend_7d": 1070,
+      "store_id": 940,
+      "sku_id": 747,
+      "precip": 642,
+      "supply_2d_lag1w": 628
+    },
+    "bottom_features": {
+      "global_sku_dow_avg_2d": 342,
+      "lag_diff": 239,
+      "lag_14d_2d": 218,
+      "is_saturday": 142,
+      "precip_weekend": 51
+    },
+    "kept": true,
+    "hypothesis": "If Saturday WAPE remains high, try adding 'store_weekend_intensity' (ratio of Sat+Sun demand vs Mon-Fri) to capture store-specific weekend profiles.",
+    "change_summary": "+\"store_id\", \"sku_id\", \"day\", \"is_weekend\", \"is_saturday\", | | -df[\"payday_saturday\"] = ((",
+    "timestamp": "2026-03-22T15:03:18.306722",
+    "agent_code": "\"\"\"\nStable train.py for demand_d0_d1 target.\nFocus: Targeting high Saturday variance by introducing 'is_saturday' and 'precip_weekend' interaction, \nwhile removing low-importance binary flags (is_payday, is_month_end, payday_saturday).\n\"\"\"\n\nimport pandas as pd\n\nFEATURES = [\n    # IDs / calendar\n    \"store_id\", \"sku_id\", \"day\", \"is_weekend\", \"is_saturday\",\n    # 2D Consumption lags matches target demand_d0_d1\n    \"lag_2d\", \"lag_14d_2d\", \"lag_diff\", \"trend_7d\",\n    # OOS / Recent trend\n    \"oos_rate_4w\", \"dow_oos_rate\", \"demand_recent_bias\",\n    # Store / supply context\n    \"store_lag1d\", \"supply_2d_lag1w\", \"store_sku_dow_avg\", \"store_sku_dow_std\", \n    \"global_sku_dow_avg_2d\", \"store_total_lag1w\", \"store_growth_ratio\",\n    # Weather\n    \"temp_avg\", \"temp_change\", \"precip\", \"precip_weekend\",\n    # Derived\n    \"sku_store_share\"\n]\n\nPARAMS = {\n    \"n_estimators\": 1000,\n    \"learning_rate\": 0.02,\n    \"num_leaves\": 32,\n    \"max_depth\": 7,\n    \"min_child_samples\": 35,\n    \"colsample_bytree\": 0.8,\n    \"subsample\": 0.8,\n    \"reg_alpha\": 0.1,\n    \"reg_lambda\": 0.1,\n}\n\ndef extra_features(df: pd.DataFrame) -> pd.DataFrame:\n    df = df.sort_values(\"date\").copy()\n\n    # Binary flags for specific demand profiles\n    df[\"is_saturday\"] = (df[\"dow\"] == 5).astype(int)\n    \n    # Interaction: Weather impact is often amplified on weekends (leisure/shopping trips)\n    df[\"precip_weekend\"] = df[\"precip\"] * df[\"is_weekend\"]\n\n    # Historical averages: expanding window (anti-leak: only past information)\n    g = df.groupby([\"store_id\", \"sku_id\", \"dow\"])[\"lag_2d\"]\n    df[\"store_sku_dow_avg\"] = g.transform(\n        lambda x: x.shift(1).expanding(min_periods=1).mean()\n    ).fillna(0)\n    df[\"store_sku_dow_std\"] = g.transform(\n        lambda x: x.shift(1).expanding(min_periods=1).std()\n    ).fillna(0)\n    df[\"global_sku_dow_avg_2d\"] = (\n        df.groupby([\"sku_id\", \"dow\"])[\"lag_2d\"]\n        .transform(lambda x: x.shift(1).expanding(min_periods=1).mean())\n        .fillna(0)\n    )\n\n    # Weekly trend direction\n    df[\"lag_diff\"] = df[\"lag_2d\"] - df[\"lag_14d_2d\"]\n\n    # Bias of last week vs the historical mean\n    df[\"demand_recent_bias\"] = df[\"lag_2d\"] - df[\"store_sku_dow_avg\"]\n\n    # Store-level total volume (DOW-aligned, expanding) - using 2D lags\n    g_store = df.groupby([\"store_id\", \"dow\"])\n    df[\"store_total_lag1w\"] = g_store[\"lag_2d\"].transform(\n        lambda x: x.shift(1).expanding(min_periods=1).mean()\n    )\n    store_total_lag2w = g_store[\"lag_14d_2d\"].transform(\n        lambda x: x.shift(1).expanding(min_periods=1).mean()\n    )\n    df[\"store_growth_ratio\"] = df[\"store_total_lag1w\"] / (store_total_lag2w + 1.0)\n\n    # SKU importance within its specific store context\n    df[\"sku_store_share\"] = df[\"store_sku_dow_avg\"] / (df[\"store_total_lag1w\"] + 1.0)\n\n    return df\n\n# NEXT_HYPOTHESIS: If Saturday WAPE remains high, try adding 'store_weekend_intensity' (ratio of Sat+Sun demand vs Mon-Fri) to capture store-specific weekend profiles."
+  },
+  {
+    "experiment": 20,
+    "wape": 0.3349,
+    "wape_by_dow": {
+      "Mon": 0.3456,
+      "Tue": 0.3292,
+      "Wed": 0.2774,
+      "Thu": 0.2588,
+      "Fri": 0.3573,
+      "Sat": 0.4792,
+      "Sun": 0.3531
+    },
+    "top_features": {
+      "trend_7d": 991,
+      "store_id": 875,
+      "sku_id": 725,
+      "precip": 589,
+      "temp_change": 556
+    },
+    "bottom_features": {
+      "global_sku_dow_avg_2d": 280,
+      "sku_store_share": 277,
+      "lag_14d_2d": 191,
+      "lag_diff": 179,
+      "is_saturday": 109
+    },
+    "kept": false,
+    "hypothesis": "Try adding 'sku_dow_intensity' to capture SKU-specific daily patterns (e.g., luxury breads spiking on weekends) relative to their weekly average.",
+    "change_summary": "+Focus: Addressing high Saturday WAPE by replacing low-impor | -\"min_child_samples\": 35,",
+    "timestamp": "2026-03-22T15:04:00.379973",
+    "agent_code": null
+  },
+  {
+    "experiment": 21,
+    "wape": 0.3365,
+    "wape_by_dow": {
+      "Mon": 0.3513,
+      "Tue": 0.3278,
+      "Wed": 0.277,
+      "Thu": 0.2645,
+      "Fri": 0.3551,
+      "Sat": 0.4784,
+      "Sun": 0.3568
+    },
+    "top_features": {
+      "trend_7d": 960,
+      "store_id": 705,
+      "sku_id": 554,
+      "supply_2d_lag1w": 519,
+      "temp_change": 511
+    },
+    "bottom_features": {
+      "oos_rate_4w": 279,
+      "store_growth_ratio": 261,
+      "demand_recent_bias": 258,
+      "sku_store_share": 142,
+      "is_saturday": 105
+    },
+    "kept": false,
+    "hypothesis": "If Saturday WAPE remains high, try adding 'store_weekend_intensity' (ratio of Sat+Sun demand vs Mon-Fri) to capture store-specific weekend profiles.",
+    "change_summary": "+store_total_lag2w = g_store_dow[\"lag_14d_2d\"].transform( |  | -df.groupby([\"sku_id\", \"dow",
+    "timestamp": "2026-03-22T15:04:40.553589",
+    "agent_code": null
+  },
+  {
+    "experiment": 52,
+    "wape": 0.3364,
+    "wape_by_dow": {
+      "Mon": 0.3501,
+      "Tue": 0.3306,
+      "Wed": 0.2753,
+      "Thu": 0.2641,
+      "Fri": 0.3525,
+      "Sat": 0.4762,
+      "Sun": 0.3612
+    },
+    "top_features": {
+      "trend_7d": 1115,
+      "store_id": 827,
+      "sku_id": 740,
+      "precip": 613,
+      "temp_change": 592
+    },
+    "bottom_features": {
+      "day": 320,
+      "global_sku_dow_avg_2d": 254,
+      "sku_store_share": 239,
+      "lag_14d_2d": 213,
+      "is_saturday": 124
+    },
+    "kept": false,
+    "hypothesis": "If Saturday WAPE remains high, try adding 'store_weekend_intensity' (ratio of Sat+Sun demand vs Mon-Fri) to capture store-specific weekend profiles.",
+    "change_summary": "+\"lag_2d\", \"lag_14d_2d\", \"trend_7d\", | +\"min_child_samples\": | -g = df.groupby([\"store_id\"",
+    "timestamp": "2026-03-22T15:12:53.913140",
+    "agent_code": null
+  },
+  {
+    "experiment": 773,
+    "wape": 0.3355,
+    "wape_by_dow": {
+      "Mon": 0.3475,
+      "Tue": 0.3282,
+      "Wed": 0.292,
+      "Thu": 0.273,
+      "Fri": 0.3443,
+      "Sat": 0.4652,
+      "Sun": 0.3446
+    },
+    "top_features": {
+      "trend_7d": 921,
+      "store_id": 699,
+      "sku_id": 546,
+      "precip": 511,
+      "demand_d0_d1_lag1w_clipped": 479
+    },
+    "bottom_features": {
+      "lag_2d": 178,
+      "sku_store_share": 177,
+      "lag_14d_2d": 134,
+      "discount_share_lag1w": 132,
+      "is_saturday": 80
+    },
+    "kept": false,
+    "hypothesis": "Try adding 'store_weekend_intensity' (ratio of Sat+Sun demand vs Mon-Fri average) to distinguish residential stores from commuter-heavy stores.",
+    "change_summary": "+\"lag_2d\", \"lag_14d_2d\", \"trend_7d\", | +Focus: Addressing st | -df.groupby([\"sku_id\", \"dow",
+    "timestamp": "2026-03-22T18:21:25.611671",
+    "agent_code": null
+  },
+  {
+    "experiment": 1891,
+    "wape": 0.3375,
+    "wape_by_dow": {
+      "Mon": 0.3501,
+      "Tue": 0.3291,
+      "Wed": 0.2956,
+      "Thu": 0.2759,
+      "Fri": 0.3438,
+      "Sat": 0.4717,
+      "Sun": 0.3419
+    },
+    "top_features": {
+      "trend_7d": 946,
+      "store_id": 662,
+      "sku_id": 539,
+      "precip": 537,
+      "demand_d0_d1_lag1w_clipped": 491
+    },
+    "bottom_features": {
+      "sku_store_share": 182,
+      "demand_recent_bias": 177,
+      "lag_diff": 144,
+      "discount_share_lag1w": 128,
+      "is_saturday": 81
+    },
+    "kept": false,
+    "hypothesis": "If Saturday WAPE remains high, try adding 'store_weekend_intensity' (ratio of Sat+Sun demand vs Mon-Fri average) to distinguish residential stores from commuter-heavy stores.",
+    "change_summary": "+store_total_lag2w = g_store_dow[\"lag_14d_2d\"].transform( |  | -df.groupby([\"sku_id\", \"dow",
+    "timestamp": "2026-03-23T09:16:51.296071",
+    "agent_code": null
+  },
+  {
+    "experiment": 1892,
+    "wape": 0.3356,
+    "wape_by_dow": {
+      "Mon": 0.349,
+      "Tue": 0.3267,
+      "Wed": 0.2934,
+      "Thu": 0.2694,
+      "Fri": 0.3424,
+      "Sat": 0.4697,
+      "Sun": 0.3461
+    },
+    "top_features": {
+      "trend_7d": 887,
+      "store_id": 600,
+      "sku_id": 511,
+      "precip": 488,
+      "demand_d0_d1_lag1w_clipped": 462
+    },
+    "bottom_features": {
+      "lag_2d": 178,
+      "store_growth_ratio": 173,
+      "sku_store_share": 142,
+      "discount_share_lag1w": 92,
+      "is_saturday": 70
+    },
+    "kept": false,
+    "hypothesis": "If Saturday WAPE remains high, try adding 'store_weekend_intensity' (ratio of Sat+Sun demand vs Mon-Fri average) to distinguish residential stores from commuter-heavy stores.",
+    "change_summary": "+# Store-level overall average (to calculate Store-DOW inten | -\"min_child_samples\": 35,",
+    "timestamp": "2026-03-23T09:17:28.607140",
+    "agent_code": null
+  },
+  {
+    "experiment": 1893,
+    "wape": 0.3351,
+    "wape_by_dow": {
+      "Mon": 0.3476,
+      "Tue": 0.3284,
+      "Wed": 0.2895,
+      "Thu": 0.2719,
+      "Fri": 0.3431,
+      "Sat": 0.4704,
+      "Sun": 0.3419
+    },
+    "top_features": {
+      "trend_7d": 919,
+      "store_id": 618,
+      "sku_id": 559,
+      "precip": 543,
+      "demand_d0_d1_lag1w_clipped": 475
+    },
+    "bottom_features": {
+      "global_sku_dow_avg_2d": 178,
+      "lag_diff": 144,
+      "discount_share_lag1w": 130,
+      "lag_14d_2d": 116,
+      "is_saturday": 72
+    },
+    "kept": false,
+    "hypothesis": "Try adding 'sku_dow_rel_importance' (store_sku_dow_avg / global_sku_dow_avg_2d) to capture how much a specific SKU over/under-performs at a store compared to the chain average on that day.",
+    "change_summary": "+df[\"store_weekend_intensity\"] = df[\"st_wknd_mean\"] / (df[\"s | -\"min_child_samples\": 35,",
+    "timestamp": "2026-03-23T09:17:54.204949",
+    "agent_code": null
+  },
+  {
+    "experiment": 1894,
+    "wape": 0.3352,
+    "wape_by_dow": {
+      "Mon": 0.3519,
+      "Tue": 0.3281,
+      "Wed": 0.2908,
+      "Thu": 0.2679,
+      "Fri": 0.3427,
+      "Sat": 0.469,
+      "Sun": 0.3432
+    },
+    "top_features": {
+      "trend_7d": 859,
+      "store_id": 587,
+      "precip": 511,
+      "sku_id": 495,
+      "demand_d0_d1_lag1w_clipped": 457
+    },
+    "bottom_features": {
+      "global_sku_dow_avg_2d": 174,
+      "lag_2d": 164,
+      "sku_store_share": 142,
+      "discount_share_lag1w": 109,
+      "is_saturday": 67
+    },
+    "kept": false,
+    "hypothesis": "Try adding 'sku_dow_rel_importance' (store_sku_dow_avg / global_sku_dow_avg_2d) to capture how much a specific SKU over/under-performs at a store compared to the chain average on that day.",
+    "change_summary": "+# NEXT_HYPOTHESIS: Try adding 'sku_dow_rel_importance' (sto | -df[\"precip_weekend\"] = df[",
+    "timestamp": "2026-03-23T09:18:37.705447",
+    "agent_code": null
+  },
+  {
+    "experiment": 1895,
+    "wape": 0.3356,
+    "wape_by_dow": {
+      "Mon": 0.3494,
+      "Tue": 0.3261,
+      "Wed": 0.2904,
+      "Thu": 0.2728,
+      "Fri": 0.3401,
+      "Sat": 0.473,
+      "Sun": 0.3451
+    },
+    "top_features": {
+      "trend_7d": 833,
+      "store_id": 532,
+      "precip": 459,
+      "sku_id": 454,
+      "demand_d0_d1_lag1w_clipped": 452
+    },
+    "bottom_features": {
+      "lag_diff": 105,
+      "discount_share_lag1w": 96,
+      "sku_dow_rel_importance": 91,
+      "lag_14d_2d": 76,
+      "is_saturday": 68
+    },
+    "kept": false,
+    "hypothesis": "If Saturday WAPE remains high, try adding 'store_weekend_intensity' (ratio of Sat+Sun demand vs Mon-Fri) to capture store-specific weekend profiles.",
+    "change_summary": "+df[\"sku_dow_rel_importance\"] = df[\"store_sku_dow_avg\"] / (d | -# Interaction: Weather imp",
+    "timestamp": "2026-03-23T09:18:58.815519",
+    "agent_code": null
+  },
+  {
+    "experiment": 1896,
+    "wape": 0.3345,
+    "wape_by_dow": {
+      "Mon": 0.3469,
+      "Tue": 0.328,
+      "Wed": 0.2879,
+      "Thu": 0.2717,
+      "Fri": 0.3414,
+      "Sat": 0.4686,
+      "Sun": 0.3438
+    },
+    "top_features": {
+      "trend_7d": 1010,
+      "store_id": 723,
+      "sku_id": 686,
+      "precip": 572,
+      "demand_d0_d1_lag1w_clipped": 566
+    },
+    "bottom_features": {
+      "sku_store_share": 219,
+      "lag_diff": 173,
+      "discount_share_lag1w": 159,
+      "lag_14d_2d": 145,
+      "is_saturday": 79
+    },
+    "kept": true,
+    "hypothesis": "If WAPE remains high, try adding 'rolling_volatility_3w' (std dev of lag_2d, lag_14d_2d, lag_21d_2d) to help the model weight the trend based on recent stability.",
+    "change_summary": "+df[\"temp_anomaly\"] = df[\"temp_avg\"] - df[\"temp_hist_avg\"] | | -\"num_leaves\": 32,",
+    "timestamp": "2026-03-23T09:19:31.564195",
+    "agent_code": "\"\"\"\nStable train.py for demand_d0_d1 target.\nFocus: Breaking stagnation by replacing the low-importance 'precip_weekend' interaction with \n'temp_anomaly' (deviation from historical DOW average) and slightly increasing model regularization.\n\"\"\"\n\nimport pandas as pd\n\nFEATURES = [\n    # IDs / calendar\n    \"store_id\", \"sku_id\", \"day\", \"is_weekend\", \"is_saturday\",\n    # 2D Consumption lags matches target demand_d0_d1\n    \"lag_2d\", \"lag_14d_2d\", \"lag_diff\", \"trend_7d\",\n    # Hybrid Safe Features\n    \"demand_d0_d1_lag1w_clipped\", \"discount_share_lag1w\",\n    # OOS / Recent trend\n    \"oos_rate_4w\", \"dow_oos_rate\", \"demand_recent_bias\",\n    # Store / supply context\n    \"store_lag1d\", \"supply_2d_lag1w\", \"store_sku_dow_avg\", \"store_sku_dow_std\", \n    \"global_sku_dow_avg_2d\", \"store_total_lag1w\", \"store_growth_ratio\",\n    # Weather\n    \"temp_avg\", \"temp_change\", \"precip\", \"temp_anomaly\",\n    # Derived\n    \"sku_store_share\"\n]\n\nPARAMS = {\n    \"n_estimators\": 1000,\n    \"learning_rate\": 0.02,\n    \"num_leaves\": 35,\n    \"max_depth\": 7,\n    \"min_child_samples\": 40,\n    \"colsample_bytree\": 0.8,\n    \"subsample\": 0.8,\n    \"reg_alpha\": 0.1,\n    \"reg_lambda\": 0.1,\n}\n\ndef extra_features(df: pd.DataFrame) -> pd.DataFrame:\n    df = df.sort_values(\"date\").copy()\n\n    # Binary flags for specific demand profiles\n    df[\"is_saturday\"] = (df[\"dow\"] == 5).astype(int)\n    \n    # Weather anomaly: deviation of today's temp from historical average for this DOW\n    df[\"temp_hist_avg\"] = df.groupby(\"dow\")[\"temp_avg\"].transform(\n        lambda x: x.shift(1).expanding(min_periods=1).mean()\n    ).fillna(df[\"temp_avg\"])\n    df[\"temp_anomaly\"] = df[\"temp_avg\"] - df[\"temp_hist_avg\"]\n\n    # Historical averages: expanding window (anti-leak: only past information)\n    g = df.groupby([\"store_id\", \"sku_id\", \"dow\"])[\"lag_2d\"]\n    df[\"store_sku_dow_avg\"] = g.transform(\n        lambda x: x.shift(1).expanding(min_periods=1).mean()\n    ).fillna(0)\n    df[\"store_sku_dow_std\"] = g.transform(\n        lambda x: x.shift(1).expanding(min_periods=1).std()\n    ).fillna(0)\n    df[\"global_sku_dow_avg_2d\"] = (\n        df.groupby([\"sku_id\", \"dow\"])[\"lag_2d\"]\n        .transform(lambda x: x.shift(1).expanding(min_periods=1).mean())\n        .fillna(0)\n    )\n\n    # Weekly trend direction\n    df[\"lag_diff\"] = df[\"lag_2d\"] - df[\"lag_14d_2d\"]\n\n    # Bias of last week vs the historical mean\n    df[\"demand_recent_bias\"] = df[\"lag_2d\"] - df[\"store_sku_dow_avg\"]\n\n    # Store-level total volume (DOW-aligned, expanding) - using 2D lags\n    g_store = df.groupby([\"store_id\", \"dow\"])\n    df[\"store_total_lag1w\"] = g_store[\"lag_2d\"].transform(\n        lambda x: x.shift(1).expanding(min_periods=1).mean()\n    )\n    store_total_lag2w = g_store[\"lag_14d_2d\"].transform(\n        lambda x: x.shift(1).expanding(min_periods=1).mean()\n    )\n    df[\"store_growth_ratio\"] = df[\"store_total_lag1w\"] / (store_total_lag2w + 1.0)\n\n    # SKU importance within its specific store context\n    df[\"sku_store_share\"] = df[\"store_sku_dow_avg\"] / (df[\"store_total_lag1w\"] + 1.0)\n\n    return df\n\n# NEXT_HYPOTHESIS: If WAPE remains high, try adding 'rolling_volatility_3w' (std dev of lag_2d, lag_14d_2d, lag_21d_2d) to help the model weight the trend based on recent stability."
+  },
+  {
+    "experiment": 1897,
+    "wape": 0.337,
+    "wape_by_dow": {
+      "Mon": 0.35,
+      "Tue": 0.3285,
+      "Wed": 0.2865,
+      "Thu": 0.2764,
+      "Fri": 0.3483,
+      "Sat": 0.4701,
+      "Sun": 0.3468
+    },
+    "top_features": {
+      "trend_7d": 937,
+      "store_id": 677,
+      "sku_id": 551,
+      "precip": 493,
+      "demand_d0_d1_lag1w_clipped": 492
+    },
+    "bottom_features": {
+      "discount_share_lag1w": 132,
+      "lag_21d_2d": 125,
+      "lag_14d_2d": 118,
+      "lag_diff": 115,
+      "is_saturday": 78
+    },
+    "kept": false,
+    "hypothesis": "If Saturday WAPE remains high, try adding 'store_weekend_intensity' (ratio of Sat+Sun demand vs Mon-Fri average) to distinguish residential stores from commuter-heavy stores.",
+    "change_summary": "+\"lag_2d\", \"lag_14d_2d\", \"lag_21d_2d\", \"lag_diff\", \"trend_7d | -# NEXT_HYPOTHESIS: If WAPE",
+    "timestamp": "2026-03-23T09:19:59.941653",
+    "agent_code": null
+  },
+  {
+    "experiment": 1898,
+    "wape": 0.3369,
+    "wape_by_dow": {
+      "Mon": 0.3531,
+      "Tue": 0.3263,
+      "Wed": 0.2892,
+      "Thu": 0.2732,
+      "Fri": 0.3423,
+      "Sat": 0.4727,
+      "Sun": 0.3497
+    },
+    "top_features": {
+      "trend_7d": 1119,
+      "store_id": 796,
+      "sku_id": 707,
+      "precip": 612,
+      "demand_d0_d1_lag1w_clipped": 588
+    },
+    "bottom_features": {
+      "demand_zscore": 193,
+      "global_sku_dow_avg_2d": 175,
+      "temp_anomaly": 170,
+      "sku_store_share": 157,
+      "is_saturday": 104
+    },
+    "kept": false,
+    "hypothesis": "Try adding 'store_weekend_intensity' (ratio of Sat+Sun demand vs Mon-Fri average) to distinguish residential stores from commuter-heavy stores.",
+    "change_summary": "+\"num_leaves\": 32, | +# Bias and Z-score: identifying if las | -# NEXT_HYPOTHESIS: If WAPE",
+    "timestamp": "2026-03-23T09:20:43.228756",
+    "agent_code": null
+  },
+  {
+    "experiment": 1899,
+    "wape": 0.3361,
+    "wape_by_dow": {
+      "Mon": 0.3483,
+      "Tue": 0.33,
+      "Wed": 0.2858,
+      "Thu": 0.2753,
+      "Fri": 0.3449,
+      "Sat": 0.4681,
+      "Sun": 0.3475
+    },
+    "top_features": {
+      "trend_7d": 991,
+      "store_id": 724,
+      "sku_id": 616,
+      "demand_d0_d1_lag1w_clipped": 546,
+      "precip": 526
+    },
+    "bottom_features": {
+      "sku_store_share": 149,
+      "discount_share_lag1w": 147,
+      "lag_14d_2d": 143,
+      "lag_diff": 126,
+      "is_saturday": 77
+    },
+    "kept": false,
+    "hypothesis": "Try adding 'store_weekend_intensity' (ratio of Sat+Sun demand vs Mon-Fri average) to distinguish residential stores from commuter-heavy stores.",
+    "change_summary": "+\"lag_2d\", \"lag_14d_2d\", \"lag_21d_2d\", \"lag_diff\", \"trend_7d | -# NEXT_HYPOTHESIS: If WAPE",
+    "timestamp": "2026-03-23T09:21:09.757390",
+    "agent_code": null
+  },
+  {
+    "experiment": 1900,
+    "wape": 0.3369,
+    "wape_by_dow": {
+      "Mon": 0.3482,
+      "Tue": 0.3289,
+      "Wed": 0.2863,
+      "Thu": 0.2772,
+      "Fri": 0.3464,
+      "Sat": 0.4684,
+      "Sun": 0.3505
+    },
+    "top_features": {
+      "trend_7d": 1014,
+      "store_id": 713,
+      "sku_id": 623,
+      "precip": 564,
+      "demand_d0_d1_lag1w_clipped": 522
+    },
+    "bottom_features": {
+      "rolling_volatility_3w": 224,
+      "temp_anomaly": 192,
+      "lag_14d_2d": 168,
+      "lag_21d_2d": 167,
+      "is_saturday": 88
+    },
+    "kept": false,
+    "hypothesis": "Try adding 'sku_dow_rel_importance' (store_sku_dow_avg / global_sku_dow_avg_2d) to capture store-specific SKU profiles relative to the chain average on that day.",
+    "change_summary": "+\"num_leaves\": 32, | +# Volatility of the 3 most recent 2-da | -# NEXT_HYPOTHESIS: If WAPE",
+    "timestamp": "2026-03-23T09:21:46.244350",
+    "agent_code": null
+  },
+  {
+    "experiment": 1901,
+    "wape": 0.3391,
+    "wape_by_dow": {
+      "Mon": 0.351,
+      "Tue": 0.3355,
+      "Wed": 0.2939,
+      "Thu": 0.2774,
+      "Fri": 0.344,
+      "Sat": 0.4719,
+      "Sun": 0.3448
+    },
+    "top_features": {
+      "trend_7d": 801,
+      "store_id": 505,
+      "sku_id": 432,
+      "demand_d0_d1_lag1w_clipped": 425,
+      "precip": 380
+    },
+    "bottom_features": {
+      "lag_2d": 115,
+      "rolling_volatility_3w": 108,
+      "global_sku_dow_avg_2d": 103,
+      "lag_diff": 78,
+      "is_saturday": 54
+    },
+    "kept": false,
+    "hypothesis": "Try adding 'sku_dow_rel_importance' (store_sku_dow_avg / global_sku_dow_avg_2d) to capture store-specific SKU profiles relative to the chain average on that day.",
+    "change_summary": "+features like 'sku_store_share' and 'discount_share_lag1w'. | -# NEXT_HYPOTHESIS: If WAPE",
+    "timestamp": "2026-03-23T09:22:07.831582",
+    "agent_code": null
+  },
+  {
+    "experiment": 1902,
+    "wape": 0.3371,
+    "wape_by_dow": {
+      "Mon": 0.3476,
+      "Tue": 0.3314,
+      "Wed": 0.2904,
+      "Thu": 0.2745,
+      "Fri": 0.3468,
+      "Sat": 0.4652,
+      "Sun": 0.3506
+    },
+    "top_features": {
+      "trend_7d": 979,
+      "store_id": 710,
+      "sku_id": 617,
+      "precip": 523,
+      "demand_d0_d1_lag1w_clipped": 511
+    },
+    "bottom_features": {
+      "global_sku_dow_avg_2d": 229,
+      "temp_anomaly": 207,
+      "sku_dow_rel_importance": 185,
+      "lag_diff": 170,
+      "is_saturday": 79
+    },
+    "kept": false,
+    "hypothesis": "If Saturday WAPE remains high, try adding 'store_weekend_intensity' (ratio of Sat+Sun demand vs Mon-Fri average) to distinguish residential stores from commuter-heavy stores.",
+    "change_summary": "+df[\"sku_dow_rel_importance\"] = df[\"store_sku_dow_avg\"] / (d | -# NEXT_HYPOTHESIS: If WAPE",
+    "timestamp": "2026-03-23T09:22:35.132810",
+    "agent_code": null
+  },
+  {
+    "experiment": 1903,
+    "wape": 0.3368,
+    "wape_by_dow": {
+      "Mon": 0.3482,
+      "Tue": 0.3298,
+      "Wed": 0.2925,
+      "Thu": 0.2763,
+      "Fri": 0.3448,
+      "Sat": 0.4688,
+      "Sun": 0.3429
+    },
+    "top_features": {
+      "trend_7d": 923,
+      "store_id": 694,
+      "sku_id": 558,
+      "demand_d0_d1_lag1w_clipped": 548,
+      "precip": 528
+    },
+    "bottom_features": {
+      "global_sku_dow_avg_2d": 179,
+      "lag_14d_2d": 147,
+      "lag_diff": 139,
+      "discount_share_lag1w": 123,
+      "is_saturday": 69
+    },
+    "kept": false,
+    "hypothesis": "If WAPE remains high, try adding 'rolling_volatility_3w' (std dev of lag_2d, lag_14d_2d, lag_21d_2d) to help the model weight the trend based on recent stability.",
+    "change_summary": "+df[\"store_dow_intensity\"] = df[\"store_total_lag1w\"] / (stor | -store_total_lag2w = g_stor",
+    "timestamp": "2026-03-23T09:23:04.229790",
+    "agent_code": null
+  },
+  {
+    "experiment": 1904,
+    "wape": 0.3369,
+    "wape_by_dow": {
+      "Mon": 0.3493,
+      "Tue": 0.33,
+      "Wed": 0.2891,
+      "Thu": 0.2758,
+      "Fri": 0.3474,
+      "Sat": 0.4668,
+      "Sun": 0.346
+    },
+    "top_features": {
+      "trend_7d": 967,
+      "store_id": 668,
+      "sku_id": 583,
+      "demand_d0_d1_lag1w_clipped": 542,
+      "precip": 527
+    },
+    "bottom_features": {
+      "sku_store_share": 173,
+      "temp_anomaly": 156,
+      "lag_14d_2d": 149,
+      "lag_21d_2d": 141,
+      "lag_diff": 116
+    },
+    "kept": false,
+    "hypothesis": "Try adding 'sku_dow_rel_importance' (store_sku_dow_avg / global_sku_dow_avg_2d) to capture how much a specific SKU over/under-performs at a store compared to the chain average on that day.",
+    "change_summary": "+# NEXT_HYPOTHESIS: Try adding 'sku_dow_rel_importance' (sto | -# NEXT_HYPOTHESIS: If WAPE",
+    "timestamp": "2026-03-23T09:23:28.540112",
+    "agent_code": null
+  },
+  {
+    "experiment": 1905,
+    "wape": 0.3369,
+    "wape_by_dow": {
+      "Mon": 0.351,
+      "Tue": 0.3314,
+      "Wed": 0.2906,
+      "Thu": 0.2762,
+      "Fri": 0.3435,
+      "Sat": 0.4693,
+      "Sun": 0.3407
+    },
+    "top_features": {
+      "trend_7d": 803,
+      "store_id": 508,
+      "demand_d0_d1_lag1w_clipped": 484,
+      "sku_id": 446,
+      "precip": 420
+    },
+    "bottom_features": {
+      "lag_2d": 141,
+      "lag_14d_2d": 129,
+      "volatility_3w": 92,
+      "lag_diff": 85,
+      "lag_21d_2d": 81
+    },
+    "kept": false,
+    "hypothesis": "Try adding 'store_weekend_intensity' (ratio of Sat+Sun demand vs Mon-Fri average) to capture store-specific Saturday profiles if WAPE remains high on Sat.",
+    "change_summary": "+\"volatility_3w\" | +df[\"volatility_3w\"] = df[[\"lag_2d\", \"lag | -# NEXT_HYPOTHESIS: If WAPE",
+    "timestamp": "2026-03-23T09:24:08.244256",
+    "agent_code": null
+  },
+  {
+    "experiment": 1906,
+    "wape": 0.3351,
+    "wape_by_dow": {
+      "Mon": 0.3501,
+      "Tue": 0.3297,
+      "Wed": 0.29,
+      "Thu": 0.2694,
+      "Fri": 0.3445,
+      "Sat": 0.4667,
+      "Sun": 0.3418
+    },
+    "top_features": {
+      "trend_7d": 909,
+      "store_id": 538,
+      "demand_d0_d1_lag1w_clipped": 469,
+      "sku_id": 456,
+      "precip": 433
+    },
+    "bottom_features": {
+      "demand_recent_bias": 144,
+      "temp_anomaly": 131,
+      "lag_diff": 106,
+      "discount_share_lag1w": 102,
+      "lag_14d_2d": 101
+    },
+    "kept": false,
+    "hypothesis": "Try adding 'sku_dow_rel_importance' (store_sku_dow_avg / global_sku_dow_avg_2d) to capture store-specific SKU profiles relative to the chain average on that day.",
+    "change_summary": "+store_total_lag2w = g_store_dow[\"lag_14d_2d\"].transform( |  | -# NEXT_HYPOTHESIS: If WAPE",
+    "timestamp": "2026-03-23T09:24:34.998396",
+    "agent_code": null
+  },
+  {
+    "experiment": 1907,
+    "wape": 0.3344,
+    "wape_by_dow": {
+      "Mon": 0.3483,
+      "Tue": 0.3307,
+      "Wed": 0.2907,
+      "Thu": 0.2692,
+      "Fri": 0.3425,
+      "Sat": 0.4625,
+      "Sun": 0.342
+    },
+    "top_features": {
+      "trend_7d": 896,
+      "store_id": 580,
+      "sku_id": 531,
+      "temp_change": 499,
+      "demand_d0_d1_lag1w_clipped": 497
+    },
+    "bottom_features": {
+      "lag_2d": 195,
+      "global_sku_dow_avg_2d": 186,
+      "demand_recent_bias": 169,
+      "temp_anomaly": 155,
+      "lag_diff": 135
+    },
+    "kept": true,
+    "hypothesis": "Try adding 'store_weekend_intensity' (ratio of Sat+Sun demand vs Mon-Fri) to capture store-specific weekend spikes.",
+    "change_summary": "+\"oos_rate_4w\", \"dow_oos_rate\", \"demand_recent_bias\", \"sku_r | -# NEXT_HYPOTHESIS: If WAPE",
+    "timestamp": "2026-03-23T09:25:30.398974",
+    "agent_code": "\"\"\"\nStagnation Breakthrough: Removing bottom-performing features (is_saturday, lag_14d_2d, discount_share_lag1w, sku_store_share) \nand introducing 'sku_recent_performance' which captures the ratio of the recent 7-day trend to the long-term store-day baseline.\nThis ratio helps the model identify if a SKU is currently over-performing its historical average for that specific day.\n\"\"\"\n\nimport pandas as pd\n\nFEATURES = [\n    # IDs / calendar\n    \"store_id\", \"sku_id\", \"day\", \"is_weekend\",\n    # 2D Consumption lags / Trend\n    \"lag_2d\", \"lag_diff\", \"trend_7d\",\n    # Hybrid Safe Features\n    \"demand_d0_d1_lag1w_clipped\",\n    # OOS / Recent trend\n    \"oos_rate_4w\", \"dow_oos_rate\", \"demand_recent_bias\", \"sku_recent_performance\",\n    # Store / supply context\n    \"store_lag1d\", \"supply_2d_lag1w\", \"store_sku_dow_avg\", \"store_sku_dow_std\", \n    \"global_sku_dow_avg_2d\", \"store_total_lag1w\", \"store_growth_ratio\",\n    # Weather\n    \"temp_avg\", \"temp_change\", \"precip\", \"temp_anomaly\"\n]\n\nPARAMS = {\n    \"n_estimators\": 1000,\n    \"learning_rate\": 0.02,\n    \"num_leaves\": 35,\n    \"max_depth\": 7,\n    \"min_child_samples\": 40,\n    \"colsample_bytree\": 0.8,\n    \"subsample\": 0.8,\n    \"reg_alpha\": 0.1,\n    \"reg_lambda\": 0.1,\n}\n\ndef extra_features(df: pd.DataFrame) -> pd.DataFrame:\n    df = df.sort_values(\"date\").copy()\n\n    # Weather anomaly: deviation of today's temp from historical average for this DOW\n    df[\"temp_hist_avg\"] = df.groupby(\"dow\")[\"temp_avg\"].transform(\n        lambda x: x.shift(1).expanding(min_periods=1).mean()\n    ).fillna(df[\"temp_avg\"])\n    df[\"temp_anomaly\"] = df[\"temp_avg\"] - df[\"temp_hist_avg\"]\n\n    # Historical averages: expanding window (anti-leak: only past information)\n    g = df.groupby([\"store_id\", \"sku_id\", \"dow\"])[\"lag_2d\"]\n    df[\"store_sku_dow_avg\"] = g.transform(\n        lambda x: x.shift(1).expanding(min_periods=1).mean()\n    ).fillna(0)\n    df[\"store_sku_dow_std\"] = g.transform(\n        lambda x: x.shift(1).expanding(min_periods=1).std()\n    ).fillna(0)\n    df[\"global_sku_dow_avg_2d\"] = (\n        df.groupby([\"sku_id\", \"dow\"])[\"lag_2d\"]\n        .transform(lambda x: x.shift(1).expanding(min_periods=1).mean())\n        .fillna(0)\n    )\n\n    # Weekly trend direction (momentum)\n    df[\"lag_diff\"] = df[\"lag_2d\"] - df[\"lag_14d_2d\"]\n\n    # Bias of last week vs the historical DOW mean\n    df[\"demand_recent_bias\"] = df[\"lag_2d\"] - df[\"store_sku_dow_avg\"]\n    \n    # Recent trend ratio vs historical DOW baseline\n    # High ratio = SKU is currently \"hot\" compared to its usual performance on this DOW\n    df[\"sku_recent_performance\"] = (df[\"trend_7d\"] + 1.0) / (df[\"store_sku_dow_avg\"] + 1.0)\n\n    # Store-level total volume (DOW-aligned, expanding) - using 2D lags\n    g_store = df.groupby([\"store_id\", \"dow\"])\n    df[\"store_total_lag1w\"] = g_store[\"lag_2d\"].transform(\n        lambda x: x.shift(1).expanding(min_periods=1).mean()\n    )\n    store_total_lag2w = g_store[\"lag_14d_2d\"].transform(\n        lambda x: x.shift(1).expanding(min_periods=1).mean()\n    )\n    df[\"store_growth_ratio\"] = df[\"store_total_lag1w\"] / (store_total_lag2w + 1.0)\n\n    return df\n\n# NEXT_HYPOTHESIS: Try adding 'store_weekend_intensity' (ratio of Sat+Sun demand vs Mon-Fri) to capture store-specific weekend spikes."
+  },
+  {
+    "experiment": 1908,
+    "wape": 0.3341,
+    "wape_by_dow": {
+      "Mon": 0.3485,
+      "Tue": 0.3317,
+      "Wed": 0.2888,
+      "Thu": 0.2711,
+      "Fri": 0.3426,
+      "Sat": 0.458,
+      "Sun": 0.3418
+    },
+    "top_features": {
+      "trend_7d": 886,
+      "store_id": 751,
+      "sku_id": 585,
+      "temp_change": 510,
+      "demand_d0_d1_lag1w_clipped": 506
+    },
+    "bottom_features": {
+      "global_sku_dow_avg_2d": 226,
+      "lag_2d": 218,
+      "demand_recent_bias": 212,
+      "temp_anomaly": 168,
+      "lag_diff": 132
+    },
+    "kept": true,
+    "hypothesis": "Try adding 'sku_dow_rel_importance' (store_sku_dow_avg / global_sku_dow_avg_2d) to capture how much a specific SKU over/under-performs at a store compared to the chain average on that day.",
+    "change_summary": "+# NEXT_HYPOTHESIS: Try adding 'sku_dow_rel_importance' (sto | -\"global_sku_dow_avg_2d\", \"",
+    "timestamp": "2026-03-23T09:26:05.855843",
+    "agent_code": "\"\"\"\nExploring the 'store_dow_rel_strength' hypothesis. By calculating the ratio of a store's average 2-day demand on a specific day of the week to its overall average 2-day demand, \nwe help the model distinguish between different store profiles (e.g., residential stores with weekend spikes vs. office-area stores that are quiet on weekends). \nThis is intended to address the high WAPE on Saturdays.\n\"\"\"\n\nimport pandas as pd\n\nFEATURES = [\n    # IDs / calendar\n    \"store_id\", \"sku_id\", \"day\", \"is_weekend\",\n    # 2D Consumption lags / Trend\n    \"lag_2d\", \"lag_diff\", \"trend_7d\",\n    # Hybrid Safe Features\n    \"demand_d0_d1_lag1w_clipped\",\n    # OOS / Recent trend\n    \"oos_rate_4w\", \"dow_oos_rate\", \"demand_recent_bias\", \"sku_recent_performance\",\n    # Store / supply context\n    \"store_lag1d\", \"supply_2d_lag1w\", \"store_sku_dow_avg\", \"store_sku_dow_std\", \n    \"global_sku_dow_avg_2d\", \"store_total_lag1w\", \"store_growth_ratio\", \"store_dow_rel_strength\",\n    # Weather\n    \"temp_avg\", \"temp_change\", \"precip\", \"temp_anomaly\"\n]\n\nPARAMS = {\n    \"n_estimators\": 1000,\n    \"learning_rate\": 0.02,\n    \"num_leaves\": 35,\n    \"max_depth\": 7,\n    \"min_child_samples\": 40,\n    \"colsample_bytree\": 0.8,\n    \"subsample\": 0.8,\n    \"reg_alpha\": 0.1,\n    \"reg_lambda\": 0.1,\n}\n\ndef extra_features(df: pd.DataFrame) -> pd.DataFrame:\n    df = df.sort_values(\"date\").copy()\n\n    # Weather anomaly: deviation of today's temp from historical average for this DOW\n    df[\"temp_hist_avg\"] = df.groupby(\"dow\")[\"temp_avg\"].transform(\n        lambda x: x.shift(1).expanding(min_periods=1).mean()\n    ).fillna(df[\"temp_avg\"])\n    df[\"temp_anomaly\"] = df[\"temp_avg\"] - df[\"temp_hist_avg\"]\n\n    # Historical averages: expanding window (anti-leak: only past information)\n    g = df.groupby([\"store_id\", \"sku_id\", \"dow\"])[\"lag_2d\"]\n    df[\"store_sku_dow_avg\"] = g.transform(\n        lambda x: x.shift(1).expanding(min_periods=1).mean()\n    ).fillna(0)\n    df[\"store_sku_dow_std\"] = g.transform(\n        lambda x: x.shift(1).expanding(min_periods=1).std()\n    ).fillna(0)\n    df[\"global_sku_dow_avg_2d\"] = (\n        df.groupby([\"sku_id\", \"dow\"])[\"lag_2d\"]\n        .transform(lambda x: x.shift(1).expanding(min_periods=1).mean())\n        .fillna(0)\n    )\n\n    # Weekly trend direction (momentum)\n    df[\"lag_diff\"] = df[\"lag_2d\"] - df[\"lag_14d_2d\"]\n\n    # Bias of last week vs the historical DOW mean\n    df[\"demand_recent_bias\"] = df[\"lag_2d\"] - df[\"store_sku_dow_avg\"]\n    \n    # Recent trend ratio vs historical DOW baseline\n    df[\"sku_recent_performance\"] = (df[\"trend_7d\"] + 1.0) / (df[\"store_sku_dow_avg\"] + 1.0)\n\n    # Store-level total volume (DOW-aligned, expanding)\n    g_store = df.groupby([\"store_id\", \"dow\"])\n    df[\"store_total_lag1w\"] = g_store[\"lag_2d\"].transform(\n        lambda x: x.shift(1).expanding(min_periods=1).mean()\n    )\n    store_total_lag2w = g_store[\"lag_14d_2d\"].transform(\n        lambda x: x.shift(1).expanding(min_periods=1).mean()\n    )\n    df[\"store_growth_ratio\"] = df[\"store_total_lag1w\"] / (store_total_lag2w + 1.0)\n\n    # Store DOW Profile: How much stronger/weaker is this store on this specific DOW compared to its average day?\n    store_overall_avg = df.groupby(\"store_id\")[\"lag_2d\"].transform(\n        lambda x: x.shift(1).expanding(min_periods=1).mean()\n    )\n    df[\"store_dow_rel_strength\"] = df[\"store_total_lag1w\"] / (store_overall_avg + 1.0)\n\n    return df\n\n# NEXT_HYPOTHESIS: Try adding 'sku_dow_rel_importance' (store_sku_dow_avg / global_sku_dow_avg_2d) to capture how much a specific SKU over/under-performs at a store compared to the chain average on that day."
+  },
+  {
+    "experiment": 1909,
+    "wape": 0.3368,
+    "wape_by_dow": {
+      "Mon": 0.3505,
+      "Tue": 0.3301,
+      "Wed": 0.2935,
+      "Thu": 0.2749,
+      "Fri": 0.3449,
+      "Sat": 0.4642,
+      "Sun": 0.3439
+    },
+    "top_features": {
+      "trend_7d": 836,
+      "store_id": 527,
+      "sku_id": 475,
+      "demand_d0_d1_lag1w_clipped": 463,
+      "precip": 425
+    },
+    "bottom_features": {
+      "demand_recent_bias": 155,
+      "global_sku_dow_avg_2d": 139,
+      "temp_anomaly": 127,
+      "lag_diff": 110,
+      "sku_dow_rel_importance": 93
+    },
+    "kept": false,
+    "hypothesis": "Try adding 'store_weekend_intensity' (ratio of Sat+Sun demand vs Mon-Fri average) to distinguish residential stores from commuter-heavy stores and specifically target Saturday performance.",
+    "change_summary": "+Exploring the 'sku_dow_rel_importance' hypothesis. By calcu | -# NEXT_HYPOTHESIS: Try add",
+    "timestamp": "2026-03-23T09:26:32.095167",
+    "agent_code": null
+  },
+  {
+    "experiment": 1910,
+    "wape": 0.3357,
+    "wape_by_dow": {
+      "Mon": 0.35,
+      "Tue": 0.3302,
+      "Wed": 0.2931,
+      "Thu": 0.2724,
+      "Fri": 0.3437,
+      "Sat": 0.461,
+      "Sun": 0.3443
+    },
+    "top_features": {
+      "trend_7d": 852,
+      "store_id": 534,
+      "sku_id": 477,
+      "demand_d0_d1_lag1w_clipped": 473,
+      "precip": 465
+    },
+    "bottom_features": {
+      "global_sku_dow_avg_2d": 143,
+      "temp_anomaly": 143,
+      "demand_recent_bias": 140,
+      "lag_diff": 119,
+      "sku_dow_rel_importance": 94
+    },
+    "kept": false,
+    "hypothesis": "Try adding 'rolling_volatility_3w' (standard deviation of lag_2d, lag_14d_2d, and lag_21d_2d) to help the model weight the importance of the trend based on recent sales stability at the store-sku level.",
+    "change_summary": "+df[\"sku_dow_rel_importance\"] = df[\"store_sku_dow_avg\"] / (d | -# NEXT_HYPOTHESIS: Try add",
+    "timestamp": "2026-03-23T09:27:06.268235",
+    "agent_code": null
+  },
+  {
+    "experiment": 1971,
+    "wape": 0.3375,
+    "wape_by_dow": {
+      "Mon": 0.3564,
+      "Tue": 0.3257,
+      "Wed": 0.2942,
+      "Thu": 0.277,
+      "Fri": 0.3434,
+      "Sat": 0.4614,
+      "Sun": 0.3485
+    },
+    "top_features": {
+      "trend_14d": 649,
+      "store_id": 613,
+      "sku_id": 540,
+      "precip": 528,
+      "demand_d0_d1_lag1w_clipped": 497
+    },
+    "bottom_features": {
+      "demand_recent_bias": 160,
+      "global_sku_dow_avg_2d": 149,
+      "temp_anomaly": 136,
+      "lag_diff": 134,
+      "is_saturday": 78
+    },
+    "kept": false,
+    "hypothesis": "Try adding 'sku_store_share' (store_sku_dow_avg / store_total_lag1w) to capture the relative importance of a specific SKU within its store's bread category on a given DOW.",
+    "change_summary": "+\"store_id\", \"sku_id\", \"day\", \"is_weekend\", \"is_saturday\", | | -# NEXT_HYPOTHESIS: Try add",
+    "timestamp": "2026-03-23T09:43:43.682850",
+    "agent_code": null
+  },
+  {
+    "experiment": 2577,
+    "wape": 0.3374,
+    "wape_by_dow": {
+      "Mon": 0.3524,
+      "Tue": 0.3332,
+      "Wed": 0.2927,
+      "Thu": 0.2708,
+      "Fri": 0.3462,
+      "Sat": 0.4657,
+      "Sun": 0.3467
+    },
+    "top_features": {
+      "trend_7d": 776,
+      "store_id": 540,
+      "sku_id": 469,
+      "demand_d0_d1_lag1w_clipped": 425,
+      "precip": 393
+    },
+    "bottom_features": {
+      "store_sku_dow_avg": 192,
+      "lag_2d": 171,
+      "global_sku_dow_avg_2d": 119,
+      "sku_store_share": 87,
+      "is_saturday": 67
+    },
+    "kept": false,
+    "hypothesis": "Try adding 'rolling_volatility_3w' (standard deviation of lag_2d, lag_14d_2d, and lag_21d_2d) to help the model weight the importance of the trend based on recent sales stability.",
+    "change_summary": "+total bread volume for a given DOW, helping identify SKU-sp | -# NEXT_HYPOTHESIS: Try add",
+    "timestamp": "2026-03-23T12:22:57.911280",
+    "agent_code": null
+  },
+  {
+    "experiment": 3029,
+    "wape": 0.3344,
+    "wape_by_dow": {
+      "Mon": 0.3478,
+      "Tue": 0.3274,
+      "Wed": 0.2914,
+      "Thu": 0.2746,
+      "Fri": 0.3404,
+      "Sat": 0.4567,
+      "Sun": 0.3468
+    },
+    "top_features": {
+      "trend_7d": 924,
+      "store_id": 738,
+      "sku_id": 631,
+      "temp_change": 566,
+      "demand_d0_d1_lag1w_clipped": 536
+    },
+    "bottom_features": {
+      "store_sku_dow_avg": 275,
+      "demand_recent_bias": 254,
+      "lag_2d": 245,
+      "global_sku_dow_avg_2d": 207,
+      "sku_dow_rel_importance": 198
+    },
+    "kept": false,
+    "hypothesis": "Try adding 'rolling_volatility_3w' (standard deviation of lag_2d, lag_14d_2d, and lag_21d_2d) to help the model weight the importance of the trend based on recent sales stability at the store-sku level.",
+    "change_summary": "+\"num_leaves\": 38, | +df[\"sku_dow_rel_importance\"] = df[\"sto | -df[\"temp_anomaly\"] = df[\"t",
+    "timestamp": "2026-03-23T19:22:15.333609",
+    "agent_code": null
+  }
+]

@@ -1,0 +1,2800 @@
+{
+  "version": 1,
+  "skills": {
+    "A/B Test Analysis": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "af3bf8a38cbc022041070dd51110a2ef76757049e73abae58f6c4647bb077d03"
+    },
+    "Anomaly Detection": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "7aea7436d2835e8ab40fdf7de99313d6054f469d5860c655591ea5cd65b1271a"
+    },
+    "Causal Inference": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "c36b6489f112d7c2c72f5352bbf72c98b9f796476b4010d4ac5b0f31f9a6b7a7"
+    },
+    "Classification Modeling": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "7a953061cf2e24b2c2be6a113397316c3da86e2f5b5db71e6d1dcf57c8b3fb15"
+    },
+    "Clustering Analysis": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "a1d07f207f24087da08a7eb1d5d324e8d6d9c9a338f06a3c87f2b37ff1ca56af"
+    },
+    "Cohort Analysis": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "e472be2178d6c54432fd54f4fc9b5966336cdeb994a01722d5d93e8407b3a069"
+    },
+    "Computer Vision": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "7bcc6ebd1247aa977d31a8c4c20a23d81ee0ac6a2903e10c6781d4150a996ac8"
+    },
+    "Correlation Analysis": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "09dc1cc295dc43b841fab565a2b4455d15b7d3d481ede6ec5cf576f695c96d6e"
+    },
+    "Data Cleaning Pipeline": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "8280a230dc943d397753b4fe40fd4cbd3e58550de8d9de9274ffec218ef37cf2"
+    },
+    "Data Visualization": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "ff2cc556584ffef1750c404e68497a15741cff9b886d1632b65722ad5e913b4b"
+    },
+    "Dimensionality Reduction": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "a26a139511a6d36cdbaab1492291c25874eeb9ad4c687b886973c9cc2c8609b6"
+    },
+    "Exploratory Data Analysis": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "cd96edb59b2b9f1c4f0b18cd5620b19d4cc4fc27e2010080da62e0c746d077f7"
+    },
+    "Feature Engineering": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "0dd00b635a9daee1ba0e4ab4cbf009b3e84864001c8ae11fa453b9204482b55d"
+    },
+    "Funnel Analysis": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "2327c03397859627690aeee2b9523e2a70ede91fc1329a1f213c0aace6af37a9"
+    },
+    "HTML Injection Testing": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "8d08955ecd69a5de60a7ae1a34cb6649408287991705f2e5ce66fc926cf21d84"
+    },
+    "MCP Integration": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "86ffeac975a45eb4f74ce43ef0f6fba9556283f7968c93790e8fd57c1f9146b0"
+    },
+    "ML Model Explanation": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "a05dee5e4f707bfcb3167789df809563b762fd61a0f24c114895439cf2114260"
+    },
+    "ML Model Training": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "04fc0a37e9432f1a9ec6b3dd960980ef2102bb7d2a43b83561c2790bec9ed2ca"
+    },
+    "ML Pipeline Automation": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "d0675a49803e42ab028cb78ad5d4627661bb09e60a6db6ec13d27f481b4abf20"
+    },
+    "Model Deployment": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "1756dc7aced0c1a24c2b8132fddc548726e2c13482481870b6c2464fc1ac6353"
+    },
+    "Model Hyperparameter Tuning": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "e78c9b81de66a22a62b3dffe5da3fbbb8e9fb30a84ff8479c833c705f45ffe62"
+    },
+    "Model Monitoring": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "c5dd6d26c3a24a3ccd9216fde9eb3af20a32b52609bf42cce657d7537b4b8d03"
+    },
+    "Natural Language Processing": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "f62943900377869f476c5a82cd4285628613747f37fcbd80a7de2885ba5d2570"
+    },
+    "Network Analysis": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "ade977220adf23252936228e27cba7c8e4da7996dc8eabba234e61305d988249"
+    },
+    "Recommendation Engine": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "4873bc15901d2fbeb73f759515400af2dfb16e2541260018b764268614ade3ff"
+    },
+    "Recommendation System": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "9e4561e304e2578fe176e08108435e8f74b40f3241541cd28000e5a69b9f86fc"
+    },
+    "SQL Injection Testing": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "01edbeab083d31cfc24537a13569f0edb2db879dc78cd43258c0b6ad046feed1"
+    },
+    "Security Scanning Tools": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "ac803f9df02467233052286970156e4ab58699e02038dee65a538759842bbab2"
+    },
+    "Sentiment Analysis": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "dacdd1d2c27197677ad7d76da54cc9ea302c3759dc7f93412fdbb42f967a3864"
+    },
+    "Statistical Hypothesis Testing": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "8bef9366739b156ab9f414401a43b9033898ebded9db54210d3e13d2ae2b9a3f"
+    },
+    "Survival Analysis": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "33cc6a67290c866b9186dc1e2fe1b2b1f093107bfb2d6e02f9ab292570f88777"
+    },
+    "Telegram Bot Builder": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "e9a2a0cae316b54cc992a4c23494ab7f72dd9db0d85611d26c52c9e119c4dfd8"
+    },
+    "Time Series Analysis": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "3b54f962680f7143d8424975786cb1e4ae6d68dc93486b7b392941962fef9b1a"
+    },
+    "access-control-rbac": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "da43d66056c50af4c5ea3f24331d5862c9928b5a4dcbbab6d9dc4930b02fc0b3"
+    },
+    "accessibility-compliance": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "68004234c9b99519b713047c894c5fa2f751a8cd7c08fe52c2198f85ff40b2f2"
+    },
+    "accessibility-testing": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "152a1bf81991b02f3a6134c4f4a83dc7788e1241918c002197f24b13438801dc"
+    },
+    "adaptyv": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "9ac1adadeae6a80497262807160276ed90eb0167b850c4c4292c1ef9eb2f0f31"
+    },
+    "aeon": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "8d26dd47633d3543d6d2df4cdb14bf1e692ad38dd1300e9711bf9069a16c451a"
+    },
+    "agent-evaluation": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "224a2974eef26aa1bedb9378663f8da1e51fb4ad5af248611e18e7e908402450"
+    },
+    "agent-harness-construction": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "computedHash": "d9a2517c996efbace963d617df2af1843ed7cfb8b94fdfd5e5e91c53059aa9d5"
+    },
+    "agent-manager-skill": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "154fd5a91bd387092405cc68651f0021fe7416ffe194fa992c81673a23124684"
+    },
+    "agent-memory-mcp": {
+      "source": "sickn33/antigravity-awesome-skills",
+      "sourceType": "github",
+      "computedHash": "417f0df4469e6587535b25ddbc33437c85a85cc7352942a30e62484b4e73f657"
+    },
+    "agent-memory-systems": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "a708b11bf9cbb053b8c557096943488ead89a29f0b1c0d0cfa4adbff28e0a5e3"
+    },
+    "agent-tool-builder": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "4eeb4a86f65d1d5ca961a8c67175f9eed8b7683e39841bbdb976c3a383930bee"
+    },
+    "agentic-engineering": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "computedHash": "bb94a05897dcf53c8548885da09427b0537d98dc84755d6e2e9e65111df9ae71"
+    },
+    "agile-sprint-planning": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "7396dbe309e298e4993b02728f90ddfa02bd4ad5ca589cf000d23ea590a1b8c5"
+    },
+    "ai-agents-architect": {
+      "source": "sickn33/antigravity-awesome-skills",
+      "sourceType": "github",
+      "computedHash": "e425b68c06c339464a2593f2b18d2b4af116752cfc8fb95cc389f37f412f38e0"
+    },
+    "ai-first-engineering": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "computedHash": "e6a54a137c855d5ad07ab9f8f4cf2175be5ab5e56a378f876f2235a6a516b93c"
+    },
+    "ai-ml": {
+      "source": "sickn33/antigravity-awesome-skills",
+      "sourceType": "github",
+      "computedHash": "d697ab52de7d0f59a52167c57941286a9f5415038a868014992131fdb3999df1"
+    },
+    "alert-management": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "263da6ae3f81526d2e035c48effb593acf2979e0c5bf1464fdb7257eaa9aa32f"
+    },
+    "algorithmic-art": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "computedHash": "7c446629c20a537aba3496490550bbfddf71b3bb71904c9c0056c9daa025a330"
+    },
+    "alpha-vantage": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "a25075a35412ef28b7e4fbc863cd86e3d44433ff3d840f6ca48509c3109b01f5"
+    },
+    "alphafold-database": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "987e2a5631e510f909a44fc9a7184448ce238f5c04e809ebcb7c7854007d583c"
+    },
+    "analytics-tracking": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "f2716f09e03c6a3a9b4baabab0c3562c918dab5ba3505b12307c33bbcf5164ef"
+    },
+    "android-kotlin-development": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "9b39cad777a0d84b87b9c8093d700b2e4339691e5cf5fb99ccf9a832c9fe4fe1"
+    },
+    "angular-module-design": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "5cb2e4823cb46c46f7e2d941311dcb9fea53f5099d8201c7eb4e15d5dcd5cf5e"
+    },
+    "anndata": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "219616099e42c63b3b71bc064615b19260c846d39c4a9528d2f30b12119b9210"
+    },
+    "ansible-automation": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "abfbe106f0aaec127c0f77759df468bf23255bd09d4a17e38b3e795fe0d85f7f"
+    },
+    "api-authentication": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "da093972b72908b941d2255e1b717292cb5220d850efbb38e80b0e38bd6072f9"
+    },
+    "api-changelog-versioning": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "1768a3f9ba939d10bf861222c6c4488bd69bc61646f5a7538e9074a86def5568"
+    },
+    "api-contract-testing": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "2b466cec96a71c0bfde22a73a984b89342311fe742d58d0a681b8dd5ae735ec8"
+    },
+    "api-design": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "computedHash": "1c62d406f7c4cf29e39605a8bff69e797d983deb70f0b8a82313692ea30ca89f"
+    },
+    "api-error-handling": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "92f7e9408df080873494325afd75b91b91b4ed75ecc27e84086fa56d7eaca382"
+    },
+    "api-filtering-sorting": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "ee68e95196a14b042914fea6d9dc625178c75c8326b6e70f9db51cebbe1f8120"
+    },
+    "api-gateway-configuration": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "8ef47371bc31ffa389aaf11d161f4b93446c9603f57c9556cc08c979bbcc7ca3"
+    },
+    "api-pagination": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "d8a2c3fec9b05eb052f3f42f339f40406f8b6255966510cc6932df15b780db2b"
+    },
+    "api-rate-limiting": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "9fec48cc40d1b83dbfe337e92239f2e1acce81e9b158547185d61ea78d7c9d70"
+    },
+    "api-reference-documentation": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "e1cb3553caf4384e1416ed33082d28f5bac3a5f8299abf69a7abb3f44d5213e1"
+    },
+    "api-response-optimization": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "953ad17d6f96e7710ff27c4e0a2051bbd3974b34208c128f2036319bdd8769f4"
+    },
+    "api-security-hardening": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "d6ce866c17f268a6eb86b7c2afc0c06178ca653cc8f655860a6997b4e6a11bcf"
+    },
+    "api-versioning-strategy": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "d421cf34c9257c93d8db371a28467a10cb63a7344734e0420a4e0d5971551f99"
+    },
+    "app-builder": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "81e6bfdc83f5b2e2e46e0c602ca1d041214502c9a00cf11c4b08b92310324fd6"
+    },
+    "app-store-deployment": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "bd1723e19c1a1619b787bbfe96191d1c21b3c2955caee3f10230bf90db4d9778"
+    },
+    "app-store-optimization": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "7107ba66d053dbcf664463fa4511ef997e91ff22ca1253d660a1b3e1fb2db53f"
+    },
+    "application-logging": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "ef3e77c8c1cf7c26c12cc5698ab4b07a04e036b34019e72f05cf0a841f75be5c"
+    },
+    "arboreto": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "d444ebecbfc4553c28653c262854b94853966cfa3c3dc8a9024090ce20e7f019"
+    },
+    "architecture-diagrams": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "f324df48ef5583e3ac57bdb1354506cffbe95c4d5d115a47fb7d05dd2e33a719"
+    },
+    "artifact-management": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "4a4383c67e4a201a1beb2d7242a834337d27849f87357a3b42ced93e66d79b39"
+    },
+    "astropy": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "f2148d3ebf8373d514a7ae78fa27b89d8e3e16795c3a758087a1bca891f675fa"
+    },
+    "autoscaling-configuration": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "94b4de024ee559dcb2e8ce52dfdf80519dc06616b4414707f6ea65438e495f71"
+    },
+    "aws-cloudfront-cdn": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "f0c19d24a182b1e5ae4527f84b2bde61b348c70d62d7197e6a24b9cd7247b0f5"
+    },
+    "aws-ec2-setup": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "97b7abc775d5fe44822558bbeb93f87fa9da73022abe831c5b5a0dbf3d52ac1b"
+    },
+    "aws-lambda-functions": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "72367535cb90fe14362dc97df9cba0465a656b619fcd64075c5abad149ae8344"
+    },
+    "aws-rds-database": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "e326012e5dfa3bef1e735e0befd6a460afcc3cda664f49c333696866779d003d"
+    },
+    "aws-s3-management": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "d00e0e6c872703f79683725e26d606fd318a6510504e7b8de936c097f2eb145e"
+    },
+    "azure-app-service": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "cc7d84ab926de59f8206a8031f51e3f618b408bced1106bcd4be274cd45ee92b"
+    },
+    "azure-functions": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "b50d64f8937cf2cba67a06ba83be016056e498a22f441dbd37f782617a536f68"
+    },
+    "backend-patterns": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "computedHash": "8a68c4039e93172fa2647fe13260a7fef5456e75a4514de49831b6b8ecbd2dc4"
+    },
+    "background-job-processing": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "b083e1140a758381cfba13dc4d1456be260542a0b19219f273a7889859312fd5"
+    },
+    "backup-disaster-recovery": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "004c24fdcf060ef41bca9d6c0391d192c2dc66d85b96e2f7fbaee5d290d76976"
+    },
+    "batch-processing-jobs": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "63f6f38dff6c9e8b54fff67acd1cffe3118d3e8d0c8e64883ae6eb99c32cdd17"
+    },
+    "benchling-integration": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "08ecc7875fbdf8207df898b74324cc6d4730ef03d4009614dd8b815a6466653b"
+    },
+    "bgpt-paper-search": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "03e3a947b6cda17f2867d10efb3ecb90280b36620b02c546c54a4711e886ba48"
+    },
+    "bindingdb-database": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "fb089e9dc94c281f5a31e7717e41ce4c4d6375b4940ca4af6bc4596bdc3296e5"
+    },
+    "biopython": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "fecd3ae6a55b9b206e7a101a9656c701c0aade4484c54c2ea150935f61f3afbb"
+    },
+    "biorxiv-database": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "3d406e3bb0316d7456201a869d6eb1d70468247878b0ab8f3843b41d6a048a06"
+    },
+    "bioservices": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "6b94cac7930574bca19be94f4b457d5542a6b1411c5417605b819718b975a144"
+    },
+    "blue-green-deployment": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "6152cafda3e9a3501d3092bd251a394040ed8fc88c9b150d425f37d1f4a9a861"
+    },
+    "brenda-database": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "b631ee26488d40bd049a4ed83eff8ace7998dfc0f9d3f6dd9808ed2040e43c51"
+    },
+    "brightdata-web-mcp": {
+      "source": "patchy631/ai-engineering-hub",
+      "sourceType": "github",
+      "computedHash": "e83eeb2b8c21398636d0a9eeb2cae623197d62573c26298e86bbfb36fa235bf7"
+    },
+    "browser-debugging": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "64d2868af12875a859d4e4f836b9ef5cff5aecc2083547589127d11cf2be9060"
+    },
+    "bundle-size-optimization": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "f0c8c23e32f85b08ac244df738418905d586f3cfc6003e978b95f7baa1b40800"
+    },
+    "business-case-development": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "62d8ea937a90d5a3acddf9e5ec029c34673572a1b47b6846eea250826a3f0b12"
+    },
+    "caching-strategy": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "705bd3b69590088e7946904a5c6d7c9974b0615152e568f0405a3ffe2d0cba19"
+    },
+    "canary-deployment": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "95a0826da95f4f3f4f7953158dde1088a38b8ab3ba35bf9dd70d0d2f92671b7f"
+    },
+    "capacity-planning": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "6b2ccbe5ee89aa0516965bb172c11f2eaefb372fe0689c17fbe5a31aae6d6db8"
+    },
+    "cbioportal-database": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "65bb5304e02dae17646855dffeb01191565c5d89cede668f6650e9c95e551bf9"
+    },
+    "cellxgene-census": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "ab9ea2545e85349c95f54ac5cabb0066b5a8cdd06c325a932edc849bc2cd09e2"
+    },
+    "changelog-maintenance": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "153a641f7da036f5ae36d1d5bf4b397660c5a5bfef08732e68ee53e78247c21f"
+    },
+    "chembl-database": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "1dc359af0ea207a8638f9f68fac9ca6be9dcd394e7dda321cf959a748a1b5d23"
+    },
+    "cicd-pipeline-setup": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "f978d614437e8f9354595fc48dc5e21cd10179336bb1d562374d037f1bdef243"
+    },
+    "circuit-breaker-pattern": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "4b0328f0fad861c7dcaf4668f56477e63d719b37d22c7fcfcc8cf09cbc7190e7"
+    },
+    "cirq": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "8075425891994746c98a164496dbc1791ec119a0041899fb6512795c566da8ba"
+    },
+    "citation-management": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "b8f04e3b4a7aca2e4ea9942978fb8c8e04755a8b8b3f6c5e7e823fadcf8e8c18"
+    },
+    "ckm:banner-design": {
+      "source": "nextlevelbuilder/ui-ux-pro-max-skill",
+      "sourceType": "github",
+      "computedHash": "2237d5aafec7ab0223a91a9c4a13a8d25a4bd8a29b4ae9f9ea74d2cbfb9c6f91"
+    },
+    "ckm:brand": {
+      "source": "nextlevelbuilder/ui-ux-pro-max-skill",
+      "sourceType": "github",
+      "computedHash": "a5f623ca3998b832a4a254426bc184479bf1cfbf4275b786a6319d014d06803c"
+    },
+    "ckm:design": {
+      "source": "nextlevelbuilder/ui-ux-pro-max-skill",
+      "sourceType": "github",
+      "computedHash": "356a9ffc8ae2174dee4ac0b35458b383756e349dfa00de17b79394154cc99905"
+    },
+    "ckm:design-system": {
+      "source": "nextlevelbuilder/ui-ux-pro-max-skill",
+      "sourceType": "github",
+      "computedHash": "0206bc1d866ba6a93c6683d28b801314979fd164939d53830a7592ce0fb7a8a2"
+    },
+    "ckm:slides": {
+      "source": "nextlevelbuilder/ui-ux-pro-max-skill",
+      "sourceType": "github",
+      "computedHash": "f3e6594f5dd3f341afbd2b6c71d8b7cc44a97cdb85f76d5868b715f650c97ac2"
+    },
+    "ckm:ui-styling": {
+      "source": "nextlevelbuilder/ui-ux-pro-max-skill",
+      "sourceType": "github",
+      "computedHash": "b5f892864e479f969820c353f44faeedc61981bf2d7a854367069a80e0a264e1"
+    },
+    "clickhouse-io": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "computedHash": "1889d9e98b577799c31ed44f6f0ff2549dc96b85bbe790dc02b37e1c8315bbf0"
+    },
+    "clinical-decision-support": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "978492228f038a5486cf61768f358e3dd76dbd869cdefeb3c2afc66db00ca3fe"
+    },
+    "clinical-reports": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "568d0b4cb8791e7f3765f88f3e0fed49f623aba54fc7fbbc86729525d5303d65"
+    },
+    "clinicaltrials-database": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "af769bede0cfc37c706954050cf064d017aba83bb0cfed4a08da2178b9e4c870"
+    },
+    "clinpgx-database": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "d668aff317c86177bbd3f62db112f98f4d39b42c22e39db5ccc788b1f0c6bb80"
+    },
+    "clinvar-database": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "e6b97fc7362c41a827d93b0b4f759dc0d625b96233a29d083f94cf5d9d069f9e"
+    },
+    "cloud-cost-management": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "6ffcf7f509c4a8d7ddd94769f92370164674d9745709437733819aa848b60c9a"
+    },
+    "cloud-migration-planning": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "ee8c16182dbf13836bee94bdba2dd0c9aa155ee9a58a1d60498e915b63556458"
+    },
+    "cloud-security-configuration": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "abff98b1d349ddae591e107068cf91ff1144c024fe31076fbffc5247112452a6"
+    },
+    "cloud-storage-optimization": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "ea9b2a9ddbde64ad44b4db2e2e1ae588435acdea9e5c20f7524ad5926bb4c31c"
+    },
+    "cobrapy": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "cbfd5ab4d6208c9346e7cc6df3da109bca37a64eecce2b7367af83f3ac0e55b3"
+    },
+    "code-documentation": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "c713230f6630c4f01421a53653b6cd4ba391e195e4fa39de9ccf8d0194ddce4a"
+    },
+    "code-generation-template": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "200780cc9fcaeceb2385c1abea4b708cbf9857bc869cdc364e93a12d58e8a51c"
+    },
+    "code-metrics-analysis": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "99ae86bd72ac0260a0b0f6b90a2dd70ae03d3d8a51fda3a35a6c822a7bdbaba9"
+    },
+    "code-review-analysis": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "88f67c71272bdb9249426c36bfb2a41c4894d8a92e1cd2a233dd1b406c4a215c"
+    },
+    "code-reviewer": {
+      "source": "Shubhamsaboo/awesome-llm-apps",
+      "sourceType": "github",
+      "computedHash": "20cc3ad7431ddaa86a8560b65afde7ba016d14c37ddafa4eeb441e7fec77be1b"
+    },
+    "coding-standards": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "computedHash": "574803faf98d8a698c2b2151d7ed211208bb084320d411bd3a0919e6b08e48f6"
+    },
+    "color-accessibility": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "a948a4c18efb1cfc0e4545816457eaab4c488625776661350f74fb049efeddcb"
+    },
+    "competitor-analysis": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "6a478d158b398681bc0335ce4a2456c56fd923512b7eed89d397f99490b94139"
+    },
+    "computer-use-agents": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "e2e60d76ae77c8cdb19bc258c41618fc28aecb49670e051a8e9e5db8245fe62d"
+    },
+    "concurrency-patterns": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "dca77386dd8f911298e53e15da6fc7e167e6bb3a7dfa740b796245bd2d0096ef"
+    },
+    "configuration-management": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "16d11213c362578daedb8b38f358653269d89114eba19ba4c3d5b7569006079d"
+    },
+    "consciousness-council": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "1a2e8b8494ebb39a6732795a6a0f8c388ac386dbec748fee8f68adc577944799"
+    },
+    "container-debugging": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "0b893d49d68afb8e4dd49fc242ca25d2090a050c57a2f57c34a286a6f00a7621"
+    },
+    "container-registry-management": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "0343b2130949099fdfce5a27fd8bc91877bcadde266503e01b27584b25365e0b"
+    },
+    "continuous-learning": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "computedHash": "963dd8135e4bb521215fd057e1a43a88be3f353286566f49a886b4c95630f255"
+    },
+    "continuous-learning-v2": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "computedHash": "f7c8ee48cb57dbd61842e7c2f3cd826f97eded0cc9daf4220d76f143d4873f7a"
+    },
+    "continuous-testing": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "ce80fccce1d785447e99de9d76aa6ba937261c52f98ad3209403c4752c584bb8"
+    },
+    "correlation-tracing": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "b18acc6c27f512d8fc6562d09939ee19fa881055f92c81a2e256e84f045395ae"
+    },
+    "cosmic-database": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "1bfeffa3aa5a2baf2041709876ad331669044c564d80ac93942a139f496733e3"
+    },
+    "cpu-profiling": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "284d4238db36f6c3b8bb724abac9e85088f50b5857eb36694027443e446a5b04"
+    },
+    "cross-platform-compatibility": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "39aa24e80bcaabea7ac18973b9b53f861b98f93d1b00ef3260002a69c6cd0c88"
+    },
+    "csrf-protection": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "c00837d39638a52363e2052981237bb33750c954d9ae41b370c366d4a909e9fb"
+    },
+    "css-architecture": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "afbd9d491483b0ece46564fdaaf17b30990dfc83b1855aa6817ef3102a97ea91"
+    },
+    "dask": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "647be333d422a491fb87c12b2bbb6b60e27d83cd814eafb2c7ffffeb91a01333"
+    },
+    "data-analyst": {
+      "source": "Shubhamsaboo/awesome-llm-apps",
+      "sourceType": "github",
+      "computedHash": "b927391093b9e04f091c9c04da47096e2217deb7acaccbfbc9690261626085b6"
+    },
+    "data-encryption": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "0185a021715a8a2c10f763e09da63796411ef1a5a72a9362ea89da28812b60c8"
+    },
+    "data-engineer": {
+      "source": "sickn33/antigravity-awesome-skills",
+      "sourceType": "github",
+      "computedHash": "1fe71f7ae249224c5eee80a8c70a41461bb3fd1ef6c6b08b44539f550e30b165"
+    },
+    "data-engineering-data-driven-feature": {
+      "source": "sickn33/antigravity-awesome-skills",
+      "sourceType": "github",
+      "computedHash": "5c0810d8cf40932b1fb80374afe4e4e7bd722c0bf2b369d6551f685980bdaee9"
+    },
+    "data-engineering-data-pipeline": {
+      "source": "sickn33/antigravity-awesome-skills",
+      "sourceType": "github",
+      "computedHash": "7e7c38c1b98ee664c16acc9d55ddeee2d58ef17830d617194e26ca20c9e8fabc"
+    },
+    "data-migration-scripts": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "e98a9d17141de4ef81bbde5af0142ef2afd111f283b6c58f80e846d9070bde44"
+    },
+    "data-quality-frameworks": {
+      "source": "sickn33/antigravity-awesome-skills",
+      "sourceType": "github",
+      "computedHash": "4d555ad6570c8327447c07b9832b5bf4723b01b66b3325dd314b79c7c1af2a9f"
+    },
+    "data-replication-setup": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "5e2e9f4d97a0898b8740fe5bfdb1d555ccb1d52c4c2d9b93172f6ad87ad68860"
+    },
+    "data-scientist": {
+      "source": "sickn33/antigravity-awesome-skills",
+      "sourceType": "github",
+      "computedHash": "1edd195c0603b7477494905aa5c882b3e826f66e20ce8d157960c552081dba1d"
+    },
+    "data-storytelling": {
+      "source": "sickn33/antigravity-awesome-skills",
+      "sourceType": "github",
+      "computedHash": "5861412363bb9ed2a3553b107b7ec540aff83e9da372bffe3bf76d1075a6e43c"
+    },
+    "data-structure-protocol": {
+      "source": "sickn33/antigravity-awesome-skills",
+      "sourceType": "github",
+      "computedHash": "5b9b530a93c8d01dd1a5d1affcfbe0ce5cfa98fe162efdd89a40c9889f9587d8"
+    },
+    "database": {
+      "source": "sickn33/antigravity-awesome-skills",
+      "sourceType": "github",
+      "computedHash": "b5f2b31feca692e0b01b8ab9a228eef3679d0509a793f47de8d22e0a06cf3a52"
+    },
+    "database-admin": {
+      "source": "sickn33/antigravity-awesome-skills",
+      "sourceType": "github",
+      "computedHash": "7474ecc37f39dc51b56e97213be8acfc980e299f8632137c7db8145af33ec3ee"
+    },
+    "database-architect": {
+      "source": "sickn33/antigravity-awesome-skills",
+      "sourceType": "github",
+      "computedHash": "ca086b311b4c32c94c7a51aa44aa2728260a9e19d7b9bae1c0d2be56c47177b9"
+    },
+    "database-backup-restore": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "c1d0eb5225ec8a50034a7475096e3fdc8b5abc1717871f8b90df88acf87d2c11"
+    },
+    "database-cloud-optimization-cost-optimize": {
+      "source": "sickn33/antigravity-awesome-skills",
+      "sourceType": "github",
+      "computedHash": "ba3c7ca57f810d520a181bd16547f92c1d0760cf656f62f3333a328ca4449e58"
+    },
+    "database-design": {
+      "source": "sickn33/antigravity-awesome-skills",
+      "sourceType": "github",
+      "computedHash": "d57f91f3914e1809bd5f5da7bb7a835a2285868e96e4494f2fd5f753e514d801"
+    },
+    "database-indexing-strategy": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "5f3fc2adf375c202671142799d15451a530e3b58b45901f139fd0bb5669d635d"
+    },
+    "database-migration": {
+      "source": "sickn33/antigravity-awesome-skills",
+      "sourceType": "github",
+      "computedHash": "709b2335dbe1c9f049f6e372b0114252527726cb5f99284ceb5d313f3761d81b"
+    },
+    "database-migration-management": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "27405b4a690f29239e557aeaf526e7e32c8312535bb91c60ca60a52c8adeb0cc"
+    },
+    "database-migrations": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "computedHash": "5be50d1b88799b22a9a1fe0ea79408484ea9e20bd3a7ddce2ad6309c9a991dc7"
+    },
+    "database-migrations-migration-observability": {
+      "source": "sickn33/antigravity-awesome-skills",
+      "sourceType": "github",
+      "computedHash": "c016d7f16c38708faacac128c2ab910af8ea139705d3b194a396dbb2246ce4ca"
+    },
+    "database-migrations-sql-migrations": {
+      "source": "sickn33/antigravity-awesome-skills",
+      "sourceType": "github",
+      "computedHash": "f3cf2a0872b88198e78bc153f7d784c4f561b176c00a955bf9183a929700f64f"
+    },
+    "database-monitoring": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "de77fe7146b74ef33f723516218c6014b5418484975c1c3bb722d424639f3268"
+    },
+    "database-optimizer": {
+      "source": "sickn33/antigravity-awesome-skills",
+      "sourceType": "github",
+      "computedHash": "fbe68c754b0153bb1b4f7d69204e616008fed081974992fa7ce5fc32ded78e84"
+    },
+    "database-performance-debugging": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "9946628d0e33ebf426c2b234da3a78cd8c282841f010ff3eb915a7e046e28c28"
+    },
+    "database-query-optimization": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "0a672545cd04309ce36835629f002545dfbca53e3ee041081ccc7a21f67a2000"
+    },
+    "database-schema-design": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "d9e7e4d99e7441c47bc524c361d8ed407295beff4b794c1736081de54e9ee48b"
+    },
+    "database-schema-designer": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "f23c909d45c6207e974dbce0db4c648de13d586abb37057cfec34d62f25bb526"
+    },
+    "database-schema-documentation": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "668bba1f053a6a2fb08ec04a24bf13b6c2f0d438f6b6476cc8f29a98d292b917"
+    },
+    "database-sharding": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "408fb066f1f12d100c4facdc2f55a53aee4fa0192099da83ddd515d07a7ff88b"
+    },
+    "datacommons-client": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "ed365f18e526ff9e0191481e237443dd5d319b4a82a68bde92d64668734a5365"
+    },
+    "datamol": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "ff162c11aad61cf870a9ae0451101dcc469dca8537472e5f1a3694a7bef3758e"
+    },
+    "debugger": {
+      "source": "Shubhamsaboo/awesome-llm-apps",
+      "sourceType": "github",
+      "computedHash": "23565496cf079e75ef18f4f06d7703dad0d96b2a2be29f5b9da159fc50278b78"
+    },
+    "deep-research": {
+      "source": "Shubhamsaboo/awesome-llm-apps",
+      "sourceType": "github",
+      "computedHash": "0f11d17f968300db3ca6544edc7398234982f9006c3d02c45c73fca3e4706237"
+    },
+    "deepchem": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "4b1a34af7bab9b344cc14fcf6368aae307232fe592ef3670769e6a332009b50b"
+    },
+    "deeptools": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "6b78e1633ae820af693bdde6f5e8f4b20886fa63498589b4bcdb5192629dcee8"
+    },
+    "denario": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "73ff81e84a178962eda0a43974e054f00c8fab3441c71aeaa25a4f4faa5f6d00"
+    },
+    "dependency-management": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "046076134b2cdf10c518e3932c4188553f35a3b39169dbc2006008a623453b50"
+    },
+    "dependency-tracking": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "b4d778a67fb0179875f5d520698bafd3ed61c5ebb95853bcb5fc3c7f4482d15b"
+    },
+    "deployment-automation": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "ccd22cc60f099c8c4de339be404ce2a45ee78d57121217fd103fca1bccf13097"
+    },
+    "deployment-documentation": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "2b60adfdd04c74b3b9551956ed5f0738b570109132dc4e24aaf524303ddde384"
+    },
+    "deployment-patterns": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "computedHash": "1a8a000f5ca0d10119ecc332d6dfe14e10c275219b87e78aaa9436a38e0caa75"
+    },
+    "depmap": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "c44c7d54622a97d91b27dbbf14b544ade08de38244f27744f498193b7d588fc1"
+    },
+    "design-handoff": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "cc871314572d0e3e50aa2d21fd602933e32ad4e436e8dd5f1b675582e90d4e35"
+    },
+    "design-patterns-implementation": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "aaee1e6f7f3052d6ef0110e0427c164f4aaad9375fd61027f147fc0ddaa5e303"
+    },
+    "design-system-creation": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "5017f3e12abc370076d61b75a38535633de7ea418376d65e0166b3b0e3e3be2e"
+    },
+    "developer-onboarding": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "aa64c25e57f7c4785a419f9d425d167b0a33600148075ae992689cf0be31e598"
+    },
+    "dhdna-profiler": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "7674a3cac3a5f2ba1c3310e1d8340fd2630d0584fc16273fa6bca05e4e096b8b"
+    },
+    "diffdock": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "ab0d5bac3856ee6a1a0eb3f2fa860a74b15229884f197210dd1be4dacd5d6d4c"
+    },
+    "disaster-recovery-testing": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "941d720e4a51e3bece6a6938bddd02537de284d55b32f5da04607acc4d56c7df"
+    },
+    "distributed-tracing": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "e39934437c73be55d3aaf49c4c3971707a4f60c3d49cfa8a43f1b953643bd816"
+    },
+    "django-application": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "07be7c3f7516eab5c437441a3c8b48634acb84d704aedfe7a665771913536c46"
+    },
+    "django-patterns": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "computedHash": "68b6f71bf032d7a2ed9a74bcf9c0732a7f2fe2d6126996d0d813baab9d7170d9"
+    },
+    "django-security": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "computedHash": "7d7a2cd3340482d1a99b5f0a5ab2929ad7a5259c81973d09e8676fb19565c624"
+    },
+    "dnanexus-integration": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "25b975108f9d664f670485d93d980c6f65098de864a0cfb792310ff21f64668c"
+    },
+    "dns-management": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "a302f1a58c77d47dc84c298aa59af617f8361f780ce67760361ae284ca0725c9"
+    },
+    "docker-containerization": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "16d82830748801733720c1422c30924267886c71d7d3e41aaa41783534e7da77"
+    },
+    "docs-writer": {
+      "source": "google-gemini/gemini-cli",
+      "sourceType": "github",
+      "computedHash": "3910559dd53ebea1c3468d69537bf1d6a3ba23d6db0b1e0328c9758fe345da10"
+    },
+    "documentation-site-setup": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "03122b161ee66196408a787703b088f3c416b1b7daec3d68002e471010c9f0b9"
+    },
+    "docx": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "150be87ff7b18f273ad07da303adb1cf2ca21cc3e76db7a2cf0373405178a278"
+    },
+    "drugbank-database": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "e035e047543784d3bbec49163359f6a9feba22e7de54903492b4026958dfe645"
+    },
+    "e2e-testing": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "computedHash": "8e3ac8d268f7ccd4994fa3368e551df13fa48f489674ed57a6c764bcb31b7d00"
+    },
+    "e2e-testing-automation": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "c1636f15e36ae147b377db3e53924cc84cc86482400c92830322a28c65299dac"
+    },
+    "edgartools": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "9fc7defa673141bdd37f34b18af2efa5e5cd0477b5597a464a937298ba2b30e6"
+    },
+    "email-service-integration": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "302143b9a7f0d3414ff37dcb459ab8735837f8224348b5fad0554d67b3e7d4db"
+    },
+    "ena-database": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "c2acf93ec2f3a4ffa825d82451648a8e92960957369f8d3e93a0c487161f17cb"
+    },
+    "ensembl-database": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "b970251b0ccf0d0b01075778952045aafbc63b7d23662823709c085b0aeef3e4"
+    },
+    "error-tracking": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "1650c89f475f5a3ba6dd52c2c43a039013c0c2ece90c7f4855cd3418df4dc65e"
+    },
+    "esm": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "0d776038e8d6177815e031310f75e382ff83a8aa3e18926a1853a976a543ff52"
+    },
+    "etetoolkit": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "048cdf3116c42da2e1138642c4b92bffee2f72ca93c7fe977daddcc906d82d46"
+    },
+    "event-sourcing": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "ba5fc9fec9ea7c2f3469b8699900a818971c4dec3b6834827b257bb7416e81bf"
+    },
+    "exploratory-data-analysis": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "60d274a1329d7ce57c07a9e1b2e24822c5016711110f7142955ac802fb8f3e05"
+    },
+    "fact-checker": {
+      "source": "Shubhamsaboo/awesome-llm-apps",
+      "sourceType": "github",
+      "computedHash": "b8b003553b0c268b4c21cfc149e6ff53f8beb1aa1ac8e2642a74104426d8cb3a"
+    },
+    "fastapi-development": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "2b0498d6e7c510d09e60dab8a1c6f001c218a3904cabd167f0d1749cb6a407b1"
+    },
+    "fda-database": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "7653c0d3e44d95de863dbc1cad75dd9858ca81f0b2375d6a032a0db3a8cb87b1"
+    },
+    "feature-flag-system": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "02b737065d4ec7f8da9f65151e4eeb719dad0fa5726020bffe0e4de211acbfb1"
+    },
+    "figma": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "36a18d074be50ee2f9329946ead9c0c4b3fddc543108aedbd23bd098b0b58ddb"
+    },
+    "figma-implement-design": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "984529e68f43a9d20f991c3f4a9127bc2a041f879ffe8e64bf32cbf725a43101"
+    },
+    "file-upload-handling": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "19c2891d63521bccd9f6b0ad2c4d4a943c79828277bfbd71c8ca9e00afb79df3"
+    },
+    "flask-api-development": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "9e5213f9fa4bde4175b717ab679d5a46497bd9edfff6673724a05320c741c6a9"
+    },
+    "flowio": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "b22a63e36edd394a86374944a53faf1fac7bd7ae1b6d3ded3987a6e9c62315b4"
+    },
+    "fluidsim": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "641882f193b4e7520fd5695e52a6640d7e377be74c30b4ebb4152ada40e1bf9d"
+    },
+    "flutter-development": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "fccbc77348d1e9c7cfa64829c013ff706afc8c9d28900967a8969511912c55be"
+    },
+    "form-validation": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "940308708dc39ad885212aacc56d11018757c2f08bd3fd1b384d4be75f61d914"
+    },
+    "fred-economic-data": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "58e8ba61bbc09a928718fe37db9425801985d6545173afb80337725e00f95d1e"
+    },
+    "frontend-accessibility": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "e1a968d73398b1489c29c92cbe09252524d8ccd6a1ab5038f45ff460e8e8057a"
+    },
+    "frontend-design": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "516bd2154eb843a8240e43d5b285229129853114ad7075a5e141e1c08e408c84"
+    },
+    "frontend-patterns": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "computedHash": "7480aecb8525c96e71ccf240ecef11a7aabcbff284f25131f26a5248c6ce95e9"
+    },
+    "frontend-routing": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "c19b889c7c50d01670569059544c21f9f5abd2124a15c0c3b91bb10cc6651425"
+    },
+    "frontend-state-management": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "474394a221a3a19d776d16d8de02b95bea432221bb3cb6deb872de97a6c10811"
+    },
+    "frontend-testing": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "196c17a328d5db6914f790c4939a02073eeab5e95c155f5fe5971ffe8fbd42a5"
+    },
+    "fullstack-developer": {
+      "source": "Shubhamsaboo/awesome-llm-apps",
+      "sourceType": "github",
+      "computedHash": "92f6f4f9bbdde529237f1840d94c4269abb62ad1d5e41d9c76bd14266001cbe8"
+    },
+    "gap-analysis": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "82f782b3a00f11b73853b088623f1a0b7cd5d883e24eb59f704ab984e2086d78"
+    },
+    "gcp-cloud-functions": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "2072e4a013cbfbb2fb8cbfd999abc694a2b4aa1771cdc4ae46b3cdfadf4dd15f"
+    },
+    "gcp-cloud-run": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "aca490e9ed6b4e5d26eb71a3b2a7d0c40817d7c71f56aa9c7e8449d5aa47a366"
+    },
+    "gemini": {
+      "source": "openclaw/openclaw",
+      "sourceType": "github",
+      "computedHash": "e55fc6c2095152b5d35029ac69a34a9d858b09cebe3b7b6469d8a42816640bee"
+    },
+    "gene-database": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "62c9f00bf68c4252e901e10f61627331974c5a6e1f1ddfcca3514ce137507aef"
+    },
+    "generate-image": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "133f3db064fa09a45e38e4125f53a035ebad678f77d48ae365e10d7328e1e6a1"
+    },
+    "geniml": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "576b904bec799fe5e856d67b885d513ca800fbc91f3b0c964f00eeb1bb83d0df"
+    },
+    "geo-database": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "af8842930006e0b8c86a696f90a9dd2a132bfba2eac2d6fe8742a08008e5c18b"
+    },
+    "geomaster": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "9404c1a6fb9a666939b62f945797a1e50659d36749549eeb7247fe53430aa61c"
+    },
+    "geopandas": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "50af1775d476741bd7c6cf57c7f6ababb8b200d3185fca919d9f507929a66d58"
+    },
+    "get-available-resources": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "373b0d3ee78bea819562ceb2d73368b6cd160f82495d8ced869f0c58a59d887d"
+    },
+    "gget": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "a3481ee54cedf84b37bccb40628b1ebebf84315bcfafc89e3dafa39839cb1d58"
+    },
+    "ginkgo-cloud-lab": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "a905ed64ff36bb56feec4b883c50b5a91aae713e5c12591276457819ae9ce1b9"
+    },
+    "git-hooks-setup": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "202a1b8f33a33174b3b04c3693fb124a47583260e2899fd670a68c9b2749615d"
+    },
+    "git-workflow-strategy": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "44ed4e09950aa95dfc9203b9f2dd4bf54b41741a1cf632394008f490b1bfac8b"
+    },
+    "github-actions-workflow": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "8d430e8c4e7feb56f81aa4a2bf669ec2ad51eb2293652ce95fde7fd6487fd880"
+    },
+    "gitlab-cicd-pipeline": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "c79e11541edc63294b1512ec6c38381c5efee1f1caaab0443ac59f60d4e2cbf3"
+    },
+    "glycoengineering": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "fe393225a4d9ef441a39ba5c3bb964c3f401ea24f501e64040c651efb8e7be1f"
+    },
+    "gnomad-database": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "dc78b71488ba5dad2f662b4c4efd6b5d66fd13085faaab665d02f012b33c051d"
+    },
+    "graceful-shutdown": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "9e3260831068230e61acaeba1b776c60a299060067e1e4013ef333dfe178468c"
+    },
+    "grafana-dashboard": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "33e342f4a248a9d8f7ccf1bbc8139c0d77a9e719682b4743c0fbff9b2e339a3b"
+    },
+    "graphql-implementation": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "46db5b61549a46dacae4694bc5a85db8aecb9b86c4ff8c2e574fd59fd6a20c02"
+    },
+    "grpc-service-development": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "3631c454b326eefd1b6288d2ad44b4a0ffc0440068b0e8535936c95ec2d1f816"
+    },
+    "gtars": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "80930d2118a16b05ddc2a1b0d4bcd19bc571f4e88386352082d841085b1edcf6"
+    },
+    "gtex-database": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "44c1b609b04f3cf3acf21e7112c4700c99b9ebf57765c6e09037629b33bd2745"
+    },
+    "gwas-database": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "a3278c1c6c1f08865607c6a2b7d3e76f48a079c4603ecd80b7c7307ae624c254"
+    },
+    "health-check-endpoints": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "a7a70f43484eb88305534c294964aa411ccdc0e300b33c6b74503ec2f8a1a9b9"
+    },
+    "hedgefundmonitor": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "3b2db19fa48bb0c57bb88b1f7b427003c3da2b008418836bd36a62cafa788d04"
+    },
+    "histolab": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "f223e68658ee6cd6d20ee456ab31e0d903cb9f1c138b01dbf2477fa4bbc76815"
+    },
+    "hmdb-database": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "d5e74792cbca40abdc6229a3450b730bec8183e09a443fb834f79e1a967999da"
+    },
+    "hugging-face-cli": {
+      "source": "patchy631/ai-engineering-hub",
+      "sourceType": "github",
+      "computedHash": "e3cdabfe1434e9d40bdf58319f784a9445af97e3555c1215c6b28761bda9baac"
+    },
+    "hugging-face-datasets": {
+      "source": "patchy631/ai-engineering-hub",
+      "sourceType": "github",
+      "computedHash": "2064aa33c5c987fb903ca9cb362ce8b4ee67e9ec129835b8e8330cf0e84f29b8"
+    },
+    "hugging-face-evaluation": {
+      "source": "patchy631/ai-engineering-hub",
+      "sourceType": "github",
+      "computedHash": "355e304f50fc96885c1b4da7760ccc56e935af3178bc03fa1188788b718132c5"
+    },
+    "hugging-face-jobs": {
+      "source": "patchy631/ai-engineering-hub",
+      "sourceType": "github",
+      "computedHash": "3135c5a9ee5b3986c12b5f66ec8ee97bf99a4207cde31bccb2effe879acf4a00"
+    },
+    "hugging-face-model-trainer": {
+      "source": "patchy631/ai-engineering-hub",
+      "sourceType": "github",
+      "computedHash": "c4879c788f8dbab68f21ddd48f7029f36603b4eba31a73ddc2279eb2aa9179f1"
+    },
+    "hugging-face-paper-publisher": {
+      "source": "patchy631/ai-engineering-hub",
+      "sourceType": "github",
+      "computedHash": "cda6af9992ee2330628381eba0577ac372a3d29f4c20e8ce1ff208bc222dd807"
+    },
+    "hugging-face-tool-builder": {
+      "source": "patchy631/ai-engineering-hub",
+      "sourceType": "github",
+      "computedHash": "5aafdcf958a53df290c12afe623eba8aab4d0214de19dbcf0135d2ce8d3a0dae"
+    },
+    "hugging-face-trackio": {
+      "source": "patchy631/ai-engineering-hub",
+      "sourceType": "github",
+      "computedHash": "b4c46f39963fa07a11fe6eee8d3971f66ecccc5c41b7ae56107ceb19975f0485"
+    },
+    "hypogenic": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "9c50218be3a6d913a3a8d75e3eb939bd8b9166729eb966fa813347c4911162b3"
+    },
+    "hypothesis-generation": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "3692e1f7a9224ace6df3987b06f80f8cdcc1d900340333528be78303a4f21eb5"
+    },
+    "i18n": {
+      "source": "lobehub/lobehub",
+      "sourceType": "github",
+      "computedHash": "b411c62147bb1186721d53f58e6093dfe93a141a4cfe49187869e416bb9c5ea2"
+    },
+    "idempotency-handling": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "05c27cc300d97e61f60b7180a13b762d7d1900fae31495374677affed8649f04"
+    },
+    "image-optimization": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "6c43be40d06c38d2fd3170e35b177e5afeaaa801ba23429562da5960f1ba1c72"
+    },
+    "imaging-data-commons": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "cef64b19109cac2573ee1a9744c73ff075cbf34f65c7d91fe617ced6dc8832f8"
+    },
+    "incident-response-plan": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "c8b21d16cc9f52fe9dfe4f5a19752a682f5712990a1649d8255ed6f315ea8ef8"
+    },
+    "infographics": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "788b10a041a4e653b2e383a4b3da4b0ff4a182995a7f35a8ce07875597123823"
+    },
+    "information-architecture": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "a19f85a76f85ec1ba3f74da22db504d42781ae4c1ec8731aa23178930419068b"
+    },
+    "infrastructure-cost-optimization": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "f85c4c9bba8028acd32680fe146668c3a0d9213bc998b93878c0bee7efc38f3c"
+    },
+    "infrastructure-monitoring": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "9d3d1f541a059b28e0d40a0cd4c2a2cf66dc92679cbd51b30966a98e8b7134d4"
+    },
+    "integration-testing": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "fd4a07a49dac2591ba87564b8cae33670800fb23bd2851d191528bed5169e079"
+    },
+    "interaction-design": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "641502f29361c3fc3573b438d2711ccabc4020fa3edce60451dec2635cef54e6"
+    },
+    "intermittent-issue-debugging": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "71baeee866a48c8b3afce948796245b4275d8ecf61ec07e81d1020e73164db91"
+    },
+    "internationalization-i18n": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "7c1bd56080428abcc15856e5df0a820532ed98ce92c0b4cf8774a7d2c681e622"
+    },
+    "interpro-database": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "a138e0af2379a73b77d3881fa9db3066077bb897e056123fd9ac20cbd0a9d9e7"
+    },
+    "ios-swift-development": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "f7ed7fceb06273c55c096c0ce67d2575c3051ea8e385bd53797dcb21cd8aed9a"
+    },
+    "iso-13485-certification": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "e115b63b651f28e1d5ea8ec395edf0f8408629d5ee506410e7f6ea12e81a9f26"
+    },
+    "jaspar-database": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "9c8af882a46c06db301d83033052ea08997785760f7f5ca3688fc7b2971cc817"
+    },
+    "jenkins-pipeline": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "a2e6786638cf1bcad057f2b983e98b153e3a4b519dd89e87014d4bd9f93fc025"
+    },
+    "kegg-database": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "206c658f27215e3c7dcffbd603788f320cf255d76452e1389aa5a6c5c3ff8387"
+    },
+    "kpi-dashboard-design": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "288b9a6a0458f64a68ec31a838d2b287c28f22efe79cc7bd5b50fc03e895a082"
+    },
+    "kubernetes-deployment": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "4772145d7750b7b1bfc7396335fea21662277462114da22bc335ec3a6e64f203"
+    },
+    "labarchive-integration": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "0e20001c4aeeb3dcaac1d2d8042de9d2e55cca2cfe8905d8e859f7835ecbfc5b"
+    },
+    "lamindb": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "2f3cffe9a0c2e3cbc76d3a0cc3f0650ec9a576bb1535032a7874ec94d5a06b78"
+    },
+    "latchbio-integration": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "1d329fbe8cfc36fb55d43539d94923c179087833585e0c6282ed4e1bcd916c43"
+    },
+    "latex-posters": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "247b6d93f284dcd72b488b21106c4e66d8650ab43876ffc61048044f872880b2"
+    },
+    "liquid-glass-design": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "computedHash": "18c81c59796c6280db62d5fb9ac544c094259c51a9c69cfc225ba6c428b9ed57"
+    },
+    "literature-review": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "6584aa572eede3fb2b0e5401626c7af348784bea57732b16e1e8ca731fb55e61"
+    },
+    "load-balancer-setup": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "0f6fc3cc5d77b87d23f9df1bacbd70d0ee6ddc9a76598978688419d3d28239f8"
+    },
+    "log-aggregation": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "d22d412c3d489759d9d48af832b81a8e3ab3217881e0b7dc9d342dbdbad9c3d1"
+    },
+    "log-analysis": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "263064bb37ef1264e54cf6af7e4f5185e293410c6fc17da63ead5c49f2d32a47"
+    },
+    "logging-best-practices": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "e7fd822c9e40d192715e3e82e3dd3cb9152a554f1bf323bc9aedffa3801d5ba4"
+    },
+    "logistics-exception-management": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "computedHash": "57446247f72cac746a0c9a2e1e034f535935923cbacc47aa1e6e2ff4c6edbcc3"
+    },
+    "markdown-documentation": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "eefb1e461b3791b45a0dc9a56fb2e04c6bdf4a2f76413d65c851b8bd94f0dcc4"
+    },
+    "markdown-mermaid-writing": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "a1da456e814701bf21bda7ef0e9a86a9ba93d6d0ec87e5284aecda94486e9178"
+    },
+    "market-research-reports": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "5c653d68f165d0321a1d20b7fbafde7a8818bda1aaa7228a88efd2a7f6b87605"
+    },
+    "markitdown": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "2b9bce94e62b2b79b83d9d64e055f8b456231b4deadd44efe646b05f9b56ea0c"
+    },
+    "matchms": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "abe163979985ef45523a0e5ecc201c23a8626dbf568b5816f40fab3e54044313"
+    },
+    "matlab": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "ac1c4ce582ac454f0a004f4bd4addaef3d0d7db98a250d306c3a4717cbfd0d44"
+    },
+    "matplotlib": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "6aa1b561363b3d51b8ba589564b6040007e95aa66897915ab9bb6495063e62e1"
+    },
+    "mcp-builder": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "e257cceb3e4724db5ada5bcb750308f00c5f3597f047230138c5ff741fc3ab1b"
+    },
+    "medchem": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "686edf29a111082336de900a9ec3d4c2b0ea25498678f73490503c31323b4dc6"
+    },
+    "memory-leak-detection": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "e048698d8c2aa8b3497820f1b38b8670bb0d5eb1c0c00638e69907981d84b1e5"
+    },
+    "memory-optimization": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "edb4b1872292f1f47f12f32ed877991ef3708603b5cff029424c7155fe93f6fd"
+    },
+    "metabolomics-workbench-database": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "60a43a3f24d9a5ea8b3b0fab80bf041ea3d08084a4865bab676284dd28c21caf"
+    },
+    "microservices-architecture": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "4f309c256954a097a484c32fa8cc388e6d51ba9ed75c979a11cd1c33e2efe441"
+    },
+    "ml-engineer": {
+      "source": "sickn33/antigravity-awesome-skills",
+      "sourceType": "github",
+      "computedHash": "d11074401db078c2e5199daf6ac4ba7de74b957615a31d4709f7b9a24d4aa696"
+    },
+    "ml-pipeline-workflow": {
+      "source": "sickn33/antigravity-awesome-skills",
+      "sourceType": "github",
+      "computedHash": "4294fecd1e2566e021ed66a82388558e53fc4e158b197f65e69fd591df55997a"
+    },
+    "mlops-engineer": {
+      "source": "sickn33/antigravity-awesome-skills",
+      "sourceType": "github",
+      "computedHash": "333c438733aa317c5697acdfd8bcd59ff0acb7bdeca2d68af993758ccf219544"
+    },
+    "mobile-app-debugging": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "381207efb21d231388d3c59ba68878508eef5f2819e5a17ffcc0ca0c28381630"
+    },
+    "mobile-app-testing": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "48db4732b70e67ced515fd5a7a165162107a6cbc6d28f3f950edc86318e7071a"
+    },
+    "mobile-design": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "2cd07193e7c49d7450bb68364ce3d2b0155a7ea645164b671dfa4d32b7afb77f"
+    },
+    "mobile-first-design": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "f168af468af4367f85d8b3edc3a7421e759e7a0e49214542566bd8f1317ff411"
+    },
+    "mobile-offline-support": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "c0025f471485833eca5ddc516c7e87484b1317bc1c2c7416fb3837246359ad9d"
+    },
+    "mocking-stubbing": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "bb424c34d759d856c6860036511bd1e69b486badc25d46df02c85ffc3475d420"
+    },
+    "modal": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "c1c69ed0c13c0e1f4777318d1bf804c7a5b0c013ca18ba6e0da3f71310b1545d"
+    },
+    "molecular-dynamics": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "16750fef7596ed7d70b50ada567f62b858d84595199dceacebebf12fd60f45c2"
+    },
+    "molfeat": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "7973fcefd72ed99c35c6891e15576bc83d16086ef2dd06ae50e6e2abf86edf23"
+    },
+    "monarch-database": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "2d6d51a1b7dda3f63b7b9e5ce40dd937bcbb0bd11151b0a3ba578e37bd4e9d6a"
+    },
+    "monorepo-management": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "1906fd50a7765e525860cbabc280d2f12904c30f8cdcf0a4652b1260ad45776f"
+    },
+    "mutation-testing": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "5076e8ce70361bad3588ef90b311debf0ac0cec735bc9f0751dcb4817032df82"
+    },
+    "network-debugging": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "f6f3f8f40ca7b8c45dcec50673379c684186a104fc42c1e541efdcda53165536"
+    },
+    "network-security-groups": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "85f88915c5fa5e70a281e81dbb37b54fbe73b7ab7e9067d8aa12cabf593ce372"
+    },
+    "networkx": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "c7c252ba95ed7b85b650c446ccb90da8fc3ae139a457277ec14ec3b40822880d"
+    },
+    "neurokit2": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "583c533da1671fe07fb18359fba8c4383ef932402d40d59150c33999846b1d56"
+    },
+    "neuropixels-analysis": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "93ce5d40987728c5ae312117811c7170edbdedc8b0074acc5edc9e2e902e4de6"
+    },
+    "nginx-configuration": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "9931a0039c76d7642a4822552c39901f5f0330055260fe4032daaadef2b9924e"
+    },
+    "nodejs-express-server": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "8a7fe50351131f99b7bc7750bb4be6e7cbd7919b3b346c8fc7f857fb1ecad059"
+    },
+    "nosql-database-design": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "9c4a655cbf2777ece269b5cd19e23985f343958480de18af13bb36ccceccb570"
+    },
+    "oauth-implementation": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "5b81a54db4628a01ff69530d4e5fd82077fcfeed98e11e5f73e18f827061d61c"
+    },
+    "offer-k-dense-web": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "2ac8b52ff8be66509ba2fcf9ac52a2fd064d1442bf69e6abee0bd00ac8a01c04"
+    },
+    "omero-integration": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "b350214d7ef1cd56980456d127f2e4f48bd4be507a9ebe9f6b244a33c7997cc3"
+    },
+    "open-notebook": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "f283bc419da0756b06d72ea817ca4ef11bf5f012df4df04e4855729fbc1f6537"
+    },
+    "openalex-database": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "d0e2182281d68a80c3980c6690067779d6bcedc8aea211078ecdfbf94e5c16d5"
+    },
+    "opentargets-database": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "d2ef69d4425dd70ecddc3ab601684e1dafe11eb5834a28695d99e57eccfdfded"
+    },
+    "opentrons-integration": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "5578ea4d2171337678252cb61fbf1231a85dea008223671fb656ef2eca5b9798"
+    },
+    "paper-2-web": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "f4a1c6e56c100f11dd8e7f6ade6123bac99e57a79afa47f802431398e44b6f76"
+    },
+    "parallel-web": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "dd2748b210c4814c4c346b3ab338b9c6e6e85d16d7a3681239971a3c61617393"
+    },
+    "pathml": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "87825a076eccc82daae9504ad3044616f269d596bb22e61b20b5ce308dc0c427"
+    },
+    "payment-gateway-integration": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "aaa5801bbd8775dcdddcd278d80e97a9a040c6bc975587471b0bda5af215030f"
+    },
+    "pdb-database": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "4f529e285c43d215e51945158d95f39886e17a35caf7c85d53ae70e7912900c2"
+    },
+    "pdf": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "37226d4220d844377e6b2a386c51a011df4cd130855ff0b80bcc22f9c28abd57"
+    },
+    "peer-review": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "8fd4df46a8474bd4bf12e0eee6d1f68c7321f1c615900619c59c1e7b6399c400"
+    },
+    "penetration-testing": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "30583dda249de9b05fdbe2c447c973b5951a35930907eecd90a9eb5fd27c9c85"
+    },
+    "pennylane": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "ef793105ffe4d4dcfb5592d6f6e6e5891a0a203dcf08dd3b4beb1e37d36b90a6"
+    },
+    "performance-regression-debugging": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "4f71e261ba98b9d0024a2b07a5750b62be77a9bff2beacbcbccc4775327f2ea4"
+    },
+    "performance-testing": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "e004e22948d397e2d706e14b3e74b80e51cd0b021d3ffb6eed98aeb101f44953"
+    },
+    "perplexity-search": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "25951f6abc2e5bb7830d5980bd0cf7a27c462e1d6e320a67da002671eed95f63"
+    },
+    "phylogenetics": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "0d3a7c397fbdfe527afdb19ccba7fe722a886d408171217bbada725fe5cb9938"
+    },
+    "pirate-skill": {
+      "source": "google-gemini/gemini-cli",
+      "sourceType": "github",
+      "computedHash": "92ca72eb748be50dffc8704cf47648e29cf40a8b214732e32820b2d8c58a79c4"
+    },
+    "plotly": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "9af52f99bdbc087b1d512ff9e43fede8738c3be1b853eaeae8b5c418ee2a7856"
+    },
+    "polars": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "85fff219a480a69cb3414be12e5ca1a6259e29c3385263c32d1e23f3fe8c13d1"
+    },
+    "polyglot-integration": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "0112e8035ae2029d57b4b03bcee897777a739a45868d7109fe159c9e53e37c08"
+    },
+    "postgres-patterns": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "computedHash": "8056467956521c8f4b58caefa9f91584be64e4bcccdaa8090a147c0b81f88aeb"
+    },
+    "postgres-schema-design": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "7769f180d078491ef2c4603fb8af4cd4300b68af293e03f6469027f4fcec07bb"
+    },
+    "pptx": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "2275e4d8dba1790d52f6619b3e2fed04edc948beef545a2ad18e4a1be644426d"
+    },
+    "pptx-posters": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "b5c42e61ca3a9bce2c306cfabdbaae119e4ec9554e84495ac1f3e1841411d519"
+    },
+    "process-mapping": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "966799c0878ce58175dd1190ddc0ef53c327a81f1292fcdf5127634f2c18980d"
+    },
+    "profiling-optimization": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "35513b05df1dda33f79045e84ba1de400d77fc673ca909cf15be47783a1cad5d"
+    },
+    "progressive-web-app": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "722a299a041549e7f7ab8b82a4607445882be65071a7fac4234eca826335197a"
+    },
+    "project-estimation": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "30e07d3057275d7c37ac876c5e04b7272dc757984e1246965d187dd24cc31513"
+    },
+    "project-planner": {
+      "source": "Shubhamsaboo/awesome-llm-apps",
+      "sourceType": "github",
+      "computedHash": "24c15eb0dd79411a7d78250dbf1dc96ecadbab7b2a23ee5e52bff65ed62b0487"
+    },
+    "prometheus-monitoring": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "a1f57d299f33f76ff628c45788fe398080c9667b2a14a00f236c44e3351c81a6"
+    },
+    "prompt-engineer": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "8fdaa14384b7a83271e1a03bf0828627dd78525aa3c65ccb2566519623ad96ae"
+    },
+    "prompt-engineering": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "c4d5b6a2e49423e586aed0d5e198b8c452fd2b56a82ee02d2fa66ae60f099556"
+    },
+    "property-based-testing": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "888400119c6503afacb3b19bedd636aff337c05c8a0f594dab9ef2bfffb19e85"
+    },
+    "protocolsio-integration": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "c997aa18ef71127e11125a556a3631ece024bc24f30e4d4d504bf7440ceeb8a0"
+    },
+    "pubchem-database": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "e6b053933a165c935cbe57cdc5159dd9ed73d08f8bb01df44bb171580dadb9bc"
+    },
+    "pubmed-database": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "1e7cd8283c423b8e967ed86797c3d244e6e27ee63dc0115bb6bc62e52d0c6d9b"
+    },
+    "pufferlib": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "520a410f0daa7e09b521c94574534d417ea565017f6bc650cf9dd605a1bf6100"
+    },
+    "pull-request-automation": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "aaf9030b1b51c6048c1e30a0b02f1c4303eb3908f7b25d473a6059650d9f42d3"
+    },
+    "push-notification-setup": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "b50328ea6d2aff0494a81c5528da7049c6cc5ac39f5c5e670f534451d8cbcb1e"
+    },
+    "pydeseq2": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "3d55b2d1f27efe14618f7ce67d544d535ddd234003eb7aba9423ded3418290dc"
+    },
+    "pydicom": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "bd4f6d11dd9929ed042d8311cb8fd6d0340545de8b3dd9c509e56a714aa326de"
+    },
+    "pyhealth": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "e73dbda98bb628ed5178893f0a4ba6d235da41f206fcbc5bb9d50abc36278b55"
+    },
+    "pylabrobot": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "2f21c78ffc57fb55590243ccd54b6ee48b80f6da070876b96676e97613547be1"
+    },
+    "pymatgen": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "8ee9cb5e415227a351b504c4aafa8fc0cfbb5fe4087ad4225dadfce31090c570"
+    },
+    "pymc": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "0c4b71f7357557c8082bbcef76a0c784c0a68e30b3a1e57c81abedce9719983c"
+    },
+    "pymoo": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "c277dcdd954059a50cbb470e795495a249beba712794954fd0d83d525b586048"
+    },
+    "pyopenms": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "a40d2173357e1d59734075c620ad85e65771befe31d266539153c19c19533614"
+    },
+    "pysam": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "1e494d8e5780f1f7fa61480de8d56292390ed936791d548f5c2cada1cdc6f1e6"
+    },
+    "pytdc": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "02878bca302b447f6fc4400c9789f965009fcaad67979f324b845d55edd7107b"
+    },
+    "python-expert": {
+      "source": "Shubhamsaboo/awesome-llm-apps",
+      "sourceType": "github",
+      "computedHash": "aaefc22f80eb2b50bc24cf2be6121d0ec3b63a8f025a4f7c583c049d2ebab60b"
+    },
+    "python-patterns": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "computedHash": "fb08a3345b09766c7423a837cd8a3e416abc4b71a51ff8c1901622bb73b999ef"
+    },
+    "python-testing": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "computedHash": "9bb9ccc595dbc4fd6ea1e70ba14e0d9c17f0ed0dc55331d593b1e0965d31df39"
+    },
+    "pytorch-fsdp": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "21a0bac9f1943c5861d90a17e0f073d26c3dc15acb9d1050e729153ce2dc41d7"
+    },
+    "pytorch-lightning": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "ed3d9ed63ebadab3997e8a9d52eb8076641802fe043ef2471dbcda6e92d580c7"
+    },
+    "pyzotero": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "85ec3db2e7951b98d3d8bc7106f3a76fc66e245eab1391312f8d36edbd57f7a9"
+    },
+    "qiskit": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "3fcd825252c555f2d23d19c1776ab86fcb06bbbdfe51d9dbff869ca1b966cbe6"
+    },
+    "query-caching-strategies": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "bdd29592ec715eb432824d03df39db3bb03277419d9015471425fbd0956f8e17"
+    },
+    "qutip": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "41dba9a98f93413dc6606c15b44e41c1e5e8656458cb8546dbc5bb5b1ebe21ae"
+    },
+    "rate-limiting-implementation": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "c94115a55a617cc186787beb8510a07cd31e321b52928174133d6cd3a5c10793"
+    },
+    "rdkit": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "0475300154e9c8be879b9579e82f842000c90902e8ed33ff0b8231e372a5e79f"
+    },
+    "react": {
+      "source": "lobehub/lobehub",
+      "sourceType": "github",
+      "computedHash": "ec98a32434475c4bd1826b8aa9c62efda8c38030bb9f1450cfd2d736f3af99e6"
+    },
+    "react-component-architecture": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "1efc7d4774ceb431883cd5d19019d4c0fc96186dce2aec71a9c93dab8234c2d9"
+    },
+    "react-dev": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "da3caa5f2bfd7274fad3f08524ff3ad4f427978773c3e77e7b14e44aaac31d78"
+    },
+    "react-native-app": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "440e0686b0b580f0452bc63fc6f3f94dde288457d2bc4e45d9ec0af30db17b8f"
+    },
+    "react-patterns": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "ddec119b3bde73b8aa93ffb5f0e7bbc17fa7c9dcdec813edb2511925806ffe2e"
+    },
+    "react-ui-patterns": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "60d5bc3b421fd351c0e69e4f96bae87de60ef415429a70c0691d36360c298b2b"
+    },
+    "react-useeffect": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "1fdf524f8335afac6f44d3460d6d20e71db9c1d14643e4a31ea17d6463504447"
+    },
+    "reactive-programming": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "53b4866f8fa4484f6394cbfc0ee63feb5e438a02812eba174ea8975e18eda62d"
+    },
+    "reactome-database": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "c6345fb78f3a83efa205cd6792004e85fddb13985c27122556c39d9e7e6c7d64"
+    },
+    "real-time-features": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "8269a0097b3d7a907ac95cc6924f73dae6626befc3d267384d374d4bb8a74a74"
+    },
+    "refactor-legacy-code": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "4f0379eb1ec83c3ba6f3b3cc0d9393dda10eb317efeef0ac51ddd0ab66213ff4"
+    },
+    "release-planning": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "583a571c34745ebb13eced29ef7ee2b2bb3b5b8eb332b3fc502b2417914c1561"
+    },
+    "requirements-gathering": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "f5ed701308d3e6089fb1d9af81d36cd9685fc8b8462898461c490dd36d41a83d"
+    },
+    "research-grants": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "ad7bb61c13f6a67fcd2ebbfaf15e72ceabb638b152e1ea047dc4ea39ce31eafa"
+    },
+    "research-lookup": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "4b08eaec72c9f49699e6b10ffac50c842feb1bec5205e7d5f9744714bd5a0b7b"
+    },
+    "responsive-web-design": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "aadc6611d00a63ebe47e1d86b24cc67ffcd0a609e9972d3d7dcda4df7f095a1d"
+    },
+    "rest-api-design": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "4e84e39b1a3915ee1920f504b2b08b5d1d836f100c8d389dd0b48e9c3cfc9d4c"
+    },
+    "retrospective-facilitation": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "a7d9c37c0b028de6aff49f067b4ac83e734355f98ecb8915f739a4f46b67884b"
+    },
+    "risk-assessment": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "8f996dfee3f6453b4e99a827b5a130d156824a2727910f43f6129b55538a2a96"
+    },
+    "root-cause-analysis": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "8fff88b140eae44f6076c423702c00da8c74943f702e251e57cb48b01017b989"
+    },
+    "rowan": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "05f968efaf48c5fde7cc087d86a7639706cdd06455d5709d2b6a994a10e71cfc"
+    },
+    "ruby-rails-application": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "76c9585ae9e8ad0b107f419cda56b5b57c1238cbb62399f501072dade34db7ea"
+    },
+    "runbook-creation": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "da55ac0326e342dff8b92786f24a314f18af4e5f3a3dfecce74e0f4422d12599"
+    },
+    "scanpy": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "b43815d017a4fe815a901d5c4c4883a4c18c4dca576575d6c7cd58efcdb09dad"
+    },
+    "scholar-evaluation": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "8a3b89a0c27ce8b648df1bdb613ae111fe9feb7bb8dc28b88853318a05e937b0"
+    },
+    "scientific-brainstorming": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "3d8777a55223f7b3c48bf2f6f45619dfb155d2932008973dd1fbfef973d6324f"
+    },
+    "scientific-critical-thinking": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "bf6c226951d39ce4d4bd3669599d5a3e25e084a77c0601fad8de0478f11cd130"
+    },
+    "scientific-schematics": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "bd4b43bc9755999c8486b35565362ca1c72d25f2bf445f48fed946b3b489548b"
+    },
+    "scientific-slides": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "f009bac523e8ff46107466143b681ba5637042483b9ef32ab1c0ae82b40968bd"
+    },
+    "scientific-visualization": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "285b85e94417d3235a51006def1d94cc1a35bd7d089925a1af742d0b4125f78f"
+    },
+    "scientific-writing": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "91d83a843853576cc24699d6f58e37b0d769173fe29288e8beddcf35f3147dcd"
+    },
+    "scikit-bio": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "31560ce0bf606961545e59bf7f7f75762eadd1f051f344dd7caecd78a2a5436b"
+    },
+    "scikit-learn": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "20a2532d5c88577e44d7d73cba1801471816408a4ff38f327f45e3e74d50f857"
+    },
+    "scikit-survival": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "0104c05875a841b28090adf1cf0ab35167e5f9ab3cf348aa21755d1833ebe82a"
+    },
+    "scvelo": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "90c50a7d2b85f5a56aa78089d4a9da0f73ddb307fa23c897bd3539a909ac7e43"
+    },
+    "scvi-tools": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "54adb3293c05471bfd4d937c36dcf9e6e2d955d2ea4873f0f9e15d21ee2f8a8c"
+    },
+    "seaborn": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "113d2d3dfbffdaffd63843ef2ac5bd7b9e38c8c682b8638d4ebf7df3642d1397"
+    },
+    "secrets-management": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "b4e95666e3782d303514081adfb45d9a2b9e62601ebb43422d8b8e2498861add"
+    },
+    "secrets-rotation": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "4b2995bd774db902e90522fa6658eb872151b55798605a1c21e93f7a7df6265a"
+    },
+    "security-audit-logging": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "e90f8a1d9b28cce37089b7957f22ee42894694d20f4c569c7498b5318193b93e"
+    },
+    "security-best-practices": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "ce47a30fd15b47f829074c186ebdd8ff4449eebeeff509d7c4faf3a07633c41d"
+    },
+    "security-compliance": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "747a25a95f4cdca6bfe132515251b989c315c855dc2ad7591f52b64c139b9d4e"
+    },
+    "security-documentation": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "39e04282a6be8bf363509e19e3eafdf9c90959d57cad3ca9fc641cb01625e652"
+    },
+    "security-headers-configuration": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "e2e7247ce81046a032be3da2934e05f8c6d0376e08795d2df66dca3b0d7000c1"
+    },
+    "security-ownership-map": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "9e2c5a1a08056be8b6ff5953ed05cf7e947a15c88fc8e4fba2efaa213ebe3f3e"
+    },
+    "security-testing": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "8081982f6a5e3c908098a8ac8c0d4943c717aef2db8109cf50a8173bb4000eb6"
+    },
+    "security-threat-model": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "e2198bc2b4c67c1ae12392f74406aecd6227b0cb1a2fb9cc36627bf3073d87b4"
+    },
+    "semantic-versioning": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "7c75d5e1c9a48074b5035c0d00e8b566fc937ef96081b296b3a9405b0b6c0e86"
+    },
+    "senior-architect": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "03f75291acbd3934c4a1d8aa73b24357d74d848fa587bf5d7dc0a90e7437b5b7"
+    },
+    "senior-backend": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "c15972382ed35ec141f419c3caec031156721d85b26c29fd22cd4cf9991acd7b"
+    },
+    "senior-computer-vision": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "9bc4400ddfe302fd2406ba1cec5e69d77e59b6b27548df20246328c656a1ca73"
+    },
+    "senior-data-engineer": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "16514d8e6382d6d3377d57a09f04cccbfc1fbed274c4fadd64d2340dea61fe2c"
+    },
+    "senior-data-scientist": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "42804288d4f9036199a5e8ff73ceda214ae8c12bf04e712577b0eb9751c69710"
+    },
+    "senior-devops": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "1bcff120b84c851b3c16aa3abc9c66b1ffd93c9482616467a4cca1c86b66c809"
+    },
+    "senior-frontend": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "e0e83f80d3eb965b1e36acb8a336333a5db1152ddacdc07e19bd715187a6a455"
+    },
+    "senior-fullstack": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "f5e896578aa49e4d9b573c9950336cada44821bf7a1d4771b547c05bf2e42449"
+    },
+    "senior-ml-engineer": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "7d570f11118b12a8be7eb893439fc3baa280aba625b7a96e33302cb4501156b7"
+    },
+    "senior-prompt-engineer": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "64350494e583aa1d3c3b9a8a0623f217bf7cff04a685cea23811dbb7edfa47f6"
+    },
+    "senior-qa": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "d08a98dae716b409de5ef92f0a50278b2b6add0e4360cbb70456b5b9957a8de3"
+    },
+    "senior-secops": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "506dafd7c132e4d2a22778784bb7af6009588d39e04f5d7075ab62a2895a22b9"
+    },
+    "senior-security": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "9489abd6ae7b28d6d7fba1a75cdcc78cb370558d9c3129cc6a0276bc1630823a"
+    },
+    "server-side-rendering": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "62c93cdcd839fe6776be21d6633a0871f1014fac2b57e6b84ac86809ce5569e9"
+    },
+    "serverless-architecture": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "0e4b82cbd8b18f6626ea798fa7701cbe174603fcc48da7256fca9a29d7f3bfb2"
+    },
+    "service-mesh-implementation": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "61dd7db2add6da45609cc68ff2fa63b68b3a4083e964fde0d6c05056dc15ec0e"
+    },
+    "session-management": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "b48e0e80486d9539b38bc7ca02a3669ffc6b10499340e027980c02a4f8e4e8d2"
+    },
+    "shap": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "dcfa936db04d35faee4814a5da2e1fc1eb4439bfb738e8e3a9379641ef8d3197"
+    },
+    "simpy": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "a0b6176981d11ec441ec3bbaf249a2d0f330b453da1fe6b9294caf2340b99e1b"
+    },
+    "slack-bot-builder": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "49436f821ab5c5089ba065339ba221e2738de92b08e924e0fd2b5c8af03a4c92"
+    },
+    "spring-boot-application": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "332a969a15e077cf3ccb1fbd601129853af294015106be0187a30cdec39afc69"
+    },
+    "sql-injection-prevention": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "742dc10760a96fdbb7ff7881a5a9291259ebf014ce17e3efefdbb269188d0fa8"
+    },
+    "sql-query-optimization": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "387bcedb2c11d516a9dda1c1e456fdfdc13ada77fcf8880b7bf203b2c7d6f1a8"
+    },
+    "ssl-certificate-management": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "f39ad358104e913c7ee31155df9eb17ec976e02aa33fc3fe62f11cd75bbb8882"
+    },
+    "stable-baselines3": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "22eadcd9626a86c0f995233bc32aaf375290c24e201fdbf5b1ee5e35385bc7a8"
+    },
+    "stakeholder-communication": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "b5b9c2326261a52e6728608731f68591f73df644c6da6d411279cb211eb72298"
+    },
+    "static-code-analysis": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "c9495e9ca55d754374eceb27d792235ef84862f8d2b14eecd2482d8b6ccb5e53"
+    },
+    "statistical-analysis": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "4e28fbd8815493a2758aeda73fe3733f78344843dc021b77f6c82ab193aa25af"
+    },
+    "statsmodels": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "e2de2071d36e26d17c8fcbc11ac2558efb34c92c0ef9a82e522755efa743024c"
+    },
+    "stored-procedures": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "355b9dfba1a06661ce5bed0faed650f14539e1044d30e910b9b23bf559825c4d"
+    },
+    "string-database": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "45f99977e2a1420107e6276ebfda6f21f95dee4e0f5f2c66aaa1b38d31d593f7"
+    },
+    "supabase-postgres-best-practices": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "4ca30065b3947eb024a6161e295ad8affbbf3cb71da947becabc0d1b4f2217d8"
+    },
+    "sympy": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "688445031a408da01ca8e4624f7f0d299df96aa71d585292f168668aee157aad"
+    },
+    "synthetic-monitoring": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "6a6efab83fc76383bce5f1def76847520afee37282338de7cf85d0f65295d8f0"
+    },
+    "tailwind-patterns": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "f290ab4c14cc322a2631afec394d711dff83ca0c5b05322d03e14a4bc6859674"
+    },
+    "technical-debt-assessment": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "8cab558e9848820f96503583deb63ff198bd7378cf9bc2dee93f769024dea3dd"
+    },
+    "technical-roadmap-planning": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "08b2b064993b63628bf83721594e0816e6c2bc0733797b11fca8f0aa921429ce"
+    },
+    "technical-specification": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "37c7f29eedc4888435603b5591bfc944781551f009a333c2a296f70da13e7029"
+    },
+    "telegram-bot-builder": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "0443dbe20b2af93f86638c82c087d9040990ff7b688d26a25656530a80b76097"
+    },
+    "telegram-mini-app": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "8d242be176cf2c29a0bef82ee1e9baeb976fd4a366ac5f09ce6c7c9f9db4337c"
+    },
+    "terraform-infrastructure": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "b8fb2bde92e943ed420fdc1f5512782f28a960a98cab5d3e13ba11820d4be360"
+    },
+    "test-automation-framework": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "716e48bf12117cf659dd107dc3ac2d28459fbbd5481ddf61dbabfff0c10d59e1"
+    },
+    "test-data-generation": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "268dde9ce7ae2e6f97a87ebb95fcfe40b8f6a8dd6abf3170b8703fefca243445"
+    },
+    "testing": {
+      "source": "lobehub/lobehub",
+      "sourceType": "github",
+      "computedHash": "fd02540d15c87cb7964700bbd5d8065fb6ebca1473181b45cf2b2d172abc84fe"
+    },
+    "theme-factory": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "0290eabfd6fea9fcfd59c12de15e3f4046593185089956802b6d48ba1d07f428"
+    },
+    "third-party-integration": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "7d95ab413d6a9faa193f433e1b6206f6fac760d3e4e0cde87369142854c967b6"
+    },
+    "tiledbvcf": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "f309d01fdd8755b70a57f8a206870e513d5e902f26c6198b0c63ecf12ef67a9b"
+    },
+    "timesfm-forecasting": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "043ba090044f4fb4ef50f8c064b973c5a8eaffcd451620deeb9504efe5b63c63"
+    },
+    "torch-geometric": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "df8b2f3fb12806e87cfad8a460f0a7113a55a5d49debea06c988b37b01d02420"
+    },
+    "torchdrug": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "923adda991e9ce859b06b804171d1d7937491f690e4d74b8375c1e942c7fef7f"
+    },
+    "transaction-management": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "f2914d1b07c195ff7efcee3cd83af27a00853a22ded576ab845b5c96105035b8"
+    },
+    "transformers": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "5014832acab70e75157b6693a6602bc2a70ccffdd03765c0613c6c583acefb06"
+    },
+    "treatment-plans": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "3bf123159b3fdf659bcd8243e11e82836b1ce870cd0b200d858c533840dac092"
+    },
+    "troubleshooting-guide": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "a135a06dee15c4c04385d9cdab6fed5fe5e3354dcee1abe4425243884ba20243"
+    },
+    "ui-design-system": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "df7ee532a89043b7964152ea84a9794d0faefadad255bfb354d9a6997fdd1846"
+    },
+    "ui-ux-pro-max": {
+      "source": "nextlevelbuilder/ui-ux-pro-max-skill",
+      "sourceType": "github",
+      "computedHash": "6337038fe1fe6bbe1b9f252ab678ee575859190bab6f0f246f4061824eb40875"
+    },
+    "umap-learn": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "c8fd5cba2ae13ebc39eb37bec8b04e334980d7eecfbb037b2be97047cf687e10"
+    },
+    "uniprot-database": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "531c355311a9c7482ee6cb90b58d5a3a7bf3520c61581f2c1ea17663d56f78fd"
+    },
+    "unit-testing-framework": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "bbe32ab8abd3f8e47695b7830c37b3d93dbed0db93df0a5342884b31d9b309f7"
+    },
+    "uptime-monitoring": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "4874332b558443d2f35bfa788bf6ffd99a6ac1d28b43da55f7d0b57b0e19da69"
+    },
+    "user-guide-creation": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "f38271b4402351d5a1685dce96a0f866f5c57e87e600e7a43005f38dffefd6a4"
+    },
+    "user-persona-creation": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "e8083b600a85b44e5268303d2064e2347c768a984be24cf00ac9d79b7dafb917"
+    },
+    "user-research-analysis": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "ec931ccc149f6a55cc1477ef94711ff3c02ead2c94ed00578d293e04590d047c"
+    },
+    "user-story-writing": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "291696e1a52139d5a927f44ee779199340243413067b589d22c3a284601a08a0"
+    },
+    "usfiscaldata": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "a90d707c8a9c09b5c568cbb5dfe1439a098aab45658d7974f33c7f92a74f67c3"
+    },
+    "uspto-database": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "6167ce8857dbc1e7f98b1a126e2fc21b642a97fea3a5da707dd59a56d3e70cdf"
+    },
+    "ux-designer": {
+      "source": "Shubhamsaboo/awesome-llm-apps",
+      "sourceType": "github",
+      "computedHash": "5059addf2e11d8f1062c524fd7363c9a2bd4deb038924f02436ffb6957c6c938"
+    },
+    "ux-researcher-designer": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "c710ba2b486644d58e305e2d5a2631d8b04bb04ff7cfb07529810c2326631bbb"
+    },
+    "vaex": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "7cde1dcf2c791cb6e1ad10124a00f3f4875ca012729767294cf424e997758956"
+    },
+    "venue-templates": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "e7c088d2258c0a6cab17c12a771c73b21fb9faa2c9be3fd09f4c4b54363cf3b4"
+    },
+    "vercel-react-best-practices": {
+      "source": "calcom/cal.com",
+      "sourceType": "github",
+      "computedHash": "da5dd35a96e0ba9f9789488add4503409abb1ddce919340206e9b10dc6c87c54"
+    },
+    "version-release": {
+      "source": "lobehub/lobehub",
+      "sourceType": "github",
+      "computedHash": "db1b635822bd0c3d9a4a96d481ccf8e3852d9b5419e39c5f994ab9653b09491b"
+    },
+    "visual-regression-testing": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "738885bcb02db0fc29db26a22a141c5cbe9cc9b28e8ea336b2e91e8381ba73f6"
+    },
+    "visualization-expert": {
+      "source": "Shubhamsaboo/awesome-llm-apps",
+      "sourceType": "github",
+      "computedHash": "9b44f1746fe56c2c74011dc3b0a038d20ac2101382c3f3164d0d5047a36da174"
+    },
+    "vue-application-structure": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "d3c4313dcd443ca1804bb18503f7c7e750c2e1f059d9f08f452db91c0a6164bd"
+    },
+    "vulnerability-scanning": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "6ca8f121ebfb1d1df91bc235c6aedf31939ae84ccbe81a29cc88eb882808c900"
+    },
+    "web-artifacts-builder": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "computedHash": "8506451d6d3a3494ddca091b0f0ff7a9961ddd4301df2b6264dd3f98bed75b0a"
+    },
+    "web-design-guidelines": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "9e3990bbf0bae401ccc1d74608e87ef5d1879bce925121f72f049877ac86963d"
+    },
+    "web-performance-audit": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "7c2fe93cf0c9418924dfe3d05ec3e50a58ac3ccc8cf7ab79534cfd5d34efcc71"
+    },
+    "web-performance-optimization": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "5a8684891a0ac70317f4e11a6e75d8c162d171a3e47ab24a12638ffed0e36333"
+    },
+    "webapp-testing": {
+      "source": "davila7/claude-code-templates",
+      "sourceType": "github",
+      "computedHash": "5a6a18c0137cfbabec058e86fc1c8f6919d846a7b2a34ee978cc8ced866ee2e5"
+    },
+    "webhook-development": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "d3e4e2eb70bf36f87fab8e923096042574f1a99ebbd344cc89baa6f8a39fed08"
+    },
+    "webhook-integration": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "0986d6acfee52231e775ccdc84fbc96e6be9deaf27a2e3963f615913afb9ece2"
+    },
+    "websocket-implementation": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "3a6903011b610fdb1e617a89e7d8a8412853950acd110737179ccc220fbdaf15"
+    },
+    "what-if-oracle": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "39b46e83092f96e4f2c96c363e2762a5f785dbff979981625f25ad999e282f86"
+    },
+    "wireframe-prototyping": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "f3ecd86053011e0b34a1703cd0da969e39633e689cbd3542b7d818355658bfbd"
+    },
+    "xlsx": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "cb7fba2177d0d35d14b3244272b25d1b05246e99b3468a087fe06c84193dbd20"
+    },
+    "xss-prevention": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "8586885c6ab61bc57e9448082c04ccd12b6c78ef4bf76ab7098c53d9e4cb1de8"
+    },
+    "zarr-python": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "9d45a675b4fb3f2bdb7d55885015fd67738fcc960d5979c7f57dd520104b9745"
+    },
+    "zero-trust-architecture": {
+      "source": "aj-geddes/useful-ai-prompts",
+      "sourceType": "github",
+      "computedHash": "16c1cc8c8288333f7911d996f2f38eaf91ba64e2dd9e243e788d2c076fbf3ec5"
+    },
+    "zinc-database": {
+      "source": "K-Dense-AI/claude-scientific-skills",
+      "sourceType": "github",
+      "computedHash": "3b3db86f8bc86df791483e602928b1f928f0b3404d7227328c089ef9874b72b0"
+    }
+  }
+}
