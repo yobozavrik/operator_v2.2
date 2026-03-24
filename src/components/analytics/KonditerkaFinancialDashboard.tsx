@@ -281,12 +281,12 @@ export const KonditerkaFinancialDashboard = () => {
                                     <LineChart data={revenueTrendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                                         <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" vertical={false} />
                                         <XAxis dataKey="name" stroke="#6b7280" fontSize={12} tickLine={false} axisLine={false} />
-                                        <YAxis stroke="#6b7280" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${(value / 1000).toFixed(0)}к`} />
+                                        <YAxis stroke="#6b7280" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${(Number(value ?? 0) / 1000).toFixed(0)}к`} />
                                         <Tooltip
                                             contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', borderRadius: '8px' }}
                                             itemStyle={{ fontSize: '12px', fontWeight: 'bold' }}
                                             labelStyle={{ color: '#94a3b8', fontSize: '12px', marginBottom: '4px' }}
-                                            formatter={(value: number | undefined | string) => [`${Number(value).toLocaleString('uk-UA')} грн`, 'Виторг']}
+                                            formatter={(value) => [`${Number(value ?? 0).toLocaleString('uk-UA')} грн`, 'Виторг']}
                                         />
                                         <Line type="monotone" dataKey="previous" stroke="#475569" strokeWidth={2} strokeDasharray="5 5" dot={false} activeDot={{ r: 4 }} />
                                         <Line type="monotone" dataKey="current" stroke="#10b981" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6, strokeWidth: 0 }} />
@@ -312,12 +312,12 @@ export const KonditerkaFinancialDashboard = () => {
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart data={storesData} layout="vertical" margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                                         <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" horizontal={false} />
-                                        <XAxis type="number" stroke="#6b7280" fontSize={10} tickLine={false} axisLine={false} tickFormatter={(value) => `${(value / 1000).toFixed(0)}к`} />
+                                        <XAxis type="number" stroke="#6b7280" fontSize={10} tickLine={false} axisLine={false} tickFormatter={(value) => `${(Number(value ?? 0) / 1000).toFixed(0)}к`} />
                                         <YAxis dataKey="name" type="category" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} width={80} />
                                         <Tooltip
                                             cursor={{ fill: 'rgba(255,255,255,0.05)' }}
                                             contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', borderRadius: '8px' }}
-                                            formatter={(value: number | undefined | string) => [`${Number(value).toLocaleString('uk-UA')} грн`, 'Виторг']}
+                                            formatter={(value) => [`${Number(value ?? 0).toLocaleString('uk-UA')} грн`, 'Виторг']}
                                         />
                                         <Bar dataKey="revenue" fill="#2b80ff" radius={[0, 4, 4, 0]}>
                                             {storesData.map((entry: any, index: number) => (
@@ -404,4 +404,3 @@ export const KonditerkaFinancialDashboard = () => {
         </div>
     );
 };
-

@@ -69,7 +69,7 @@ function Spark({ data, dataKey, color }: { data: SparkPoint[]; dataKey: keyof Sp
                 />
                 <Tooltip
                     contentStyle={{ fontSize: 11, padding: '2px 6px', borderRadius: 4 }}
-                    formatter={(v: number) => [fmt(v), '']}
+                    formatter={(v) => [fmt(Number(v ?? 0)), '']}
                     labelFormatter={() => ''}
                 />
             </LineChart>
