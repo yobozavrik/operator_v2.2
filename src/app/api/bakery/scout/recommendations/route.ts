@@ -3,12 +3,26 @@ import { createClient } from '@supabase/supabase-js';
 
 export const dynamic = 'force-dynamic';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey);
-
 export async function GET() {
   const useLegacy = false;
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
+    if (!useLegacy) {
+      return NextResponse.json(
+        {
+          recommendations: [],
+          source: 'market_intel',
+          error: 'Supabase env vars are not configured',
+        },
+        { status: 200 }
+      );
+    }
+    return NextResponse.json({ error: 'Supabase env vars are not configured' }, { status: 500 });
+  }
+
+  const supabase = createClient(supabaseUrl, supabaseKey);
 
   try {
     const to = new Date().toISOString().split('T')[0];
