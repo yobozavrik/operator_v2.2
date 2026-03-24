@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { requireAuth } from '@/lib/auth-guard';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/konditerka/distribution-stats
  * Fetches distribution statistics from v_konditerka_distribution_stats view

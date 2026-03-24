@@ -4,6 +4,8 @@ import { createClient } from '@supabase/supabase-js';
 import { requireAuth } from '@/lib/auth-guard';
 import { normalizeSadovaName, syncSadovaCatalogFromManufactures } from '@/lib/sadova-catalog';
 
+export const dynamic = 'force-dynamic';
+
 const POSTER_TOKEN = process.env.POSTER_TOKEN || '';
 const POSTER_ACCOUNT = process.env.POSTER_ACCOUNT || 'galia-baluvana34';
 

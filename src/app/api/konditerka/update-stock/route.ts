@@ -6,6 +6,8 @@ import { syncKonditerkaStocksFromEdge } from '@/lib/konditerka-stock-sync';
 import { fetchKonditerkaTodayProduction } from '@/lib/konditerka-production-source';
 import { syncKonditerkaCatalogFromPoster } from '@/lib/konditerka-catalog';
 
+export const dynamic = 'force-dynamic';
+
 function toPositiveInt(value: unknown): number {
     const raw = Number(value);
     if (!Number.isFinite(raw) || raw <= 0) return 0;

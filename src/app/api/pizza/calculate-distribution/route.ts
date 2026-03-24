@@ -4,6 +4,8 @@ import { createServiceRoleClient } from '@/lib/branch-api';
 import { syncPizzaLiveDataFromPoster } from '@/lib/pizza-live-sync';
 import { Logger } from '@/lib/logger';
 
+export const dynamic = 'force-dynamic';
+
 interface DistributionRequest {
     productId: number;
     productionQuantity: number;

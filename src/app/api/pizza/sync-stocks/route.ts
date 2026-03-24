@@ -4,6 +4,8 @@ import { createServiceRoleClient } from '@/lib/branch-api';
 import { syncPizzaLiveDataFromPoster } from '@/lib/pizza-live-sync';
 import { Logger } from '@/lib/logger';
 
+export const dynamic = 'force-dynamic';
+
 function hasInternalApiAccess(request: Request): boolean {
     const secret = process.env.INTERNAL_API_SECRET;
     if (!secret) return false;

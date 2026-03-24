@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { requireRole } from '@/lib/auth-guard';
 import { createServiceRoleClient } from '@/lib/branch-api';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
     const auth = await requireRole(['owner']);
     if (auth.error) return auth.error;

@@ -21,12 +21,14 @@ export default function WorkshopProductionPage() {
         notFound();
     }
 
-    if (workshop === 'graviton') {
-        // Ensure "All" is selected by default when entering the generic workshop view
-        React.useEffect(() => {
+    // Ensure "All" is selected by default when entering the generic workshop view
+    React.useEffect(() => {
+        if (workshop === 'graviton') {
             setSelectedStore('Усі');
-        }, [setSelectedStore]);
+        }
+    }, [workshop, setSelectedStore]);
 
+    if (workshop === 'graviton') {
         return <BIDashboard />;
     }
 

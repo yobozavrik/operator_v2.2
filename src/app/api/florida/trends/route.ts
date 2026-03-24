@@ -3,6 +3,8 @@ import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { requireAuth } from '@/lib/auth-guard';
 import { fetchFloridaProduction180dProductIds } from '@/lib/florida-production-180d';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
     const auth = await requireAuth();
     if (auth.error) return auth.error;

@@ -3,6 +3,8 @@ import { OrderItem } from '@/types/order';
 import { formatOrderMessageHTML } from '@/lib/messageFormatter';
 import { requireAuth } from '@/lib/auth-guard';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: Request) {
     const auth = await requireAuth();
     if (auth.error) return auth.error;
