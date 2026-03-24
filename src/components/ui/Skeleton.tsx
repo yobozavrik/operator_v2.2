@@ -178,12 +178,12 @@ export const SkeletonChart = ({ className }: { className?: string }) => {
                 </div>
             </div>
             <div className="flex items-end gap-2 h-48">
-                {Array.from({ length: 12 }).map((_, i) => (
+                {[45, 70, 35, 80, 55, 65, 40, 75, 50, 60, 30, 85].map((h, i) => (
                     <Skeleton
                         key={i}
                         className="flex-1 rounded-t-lg"
                         style={{
-                            height: `${Math.random() * 60 + 20}%`,
+                            height: `${h}%`,
                             animationDelay: `${i * 100}ms`
                         } as React.CSSProperties}
                     />

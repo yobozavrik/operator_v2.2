@@ -5,6 +5,7 @@ export interface ForecastRow {
     sku_id: number;
     predicted_demand: number;
     oos_correction: number;
+    oos_count?: number;
     production_order: number;
     final_distribution: number;
 }

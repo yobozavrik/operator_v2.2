@@ -214,7 +214,7 @@ export async function POST(request: Request) {
             catalogData.set(norm, c.product_id);
         });
 
-        let manufactures: any[] = [];
+        const manufactures: any[] = [];
         let totalManufacturedKg = 0;
 
         try {
