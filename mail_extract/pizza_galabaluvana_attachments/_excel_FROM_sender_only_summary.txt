@@ -1,0 +1,1242 @@
+﻿FROM filter only: pizza.galabaluvana.bukovina@gmail.com
+Messages with excel attachments: 177
+
+[1] Date: Sun, 14 Dec 2025 20:33:23 +0200
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 14/12/25
+    Files:
+      - export_ingredients_251214.xlsx
+
+[2] Date: Mon, 20 Oct 2025 08:01:39 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 20.10.2025
+    Files:
+      - export_ingredients_251020.xlsx
+
+[3] Date: Sat, 8 Nov 2025 10:47:14 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 08.11.2025
+    Files:
+      - export_ingredients_251108.xlsx
+
+[4] Date: Fri, 19 Dec 2025 10:25:46 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 19.12.2025
+    Files:
+      - export_ingredients_251219.xlsx
+
+[5] Date: Wed, 15 Oct 2025 06:39:51 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 15.10.25
+    Files:
+      - export_ingredients_251015.xlsx
+
+[6] Date: Mon, 13 Oct 2025 07:50:19 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 13.10.2025
+    Files:
+      - export_ingredients_251013.xlsx
+
+[7] Date: Sun, 11 Jan 2026 20:19:16 +0200
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 11/01/25
+    Files:
+      - export_ingredients_260111.xlsx
+
+[8] Date: Wed, 1 Oct 2025 08:24:09 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 01.10.2025
+    Files:
+      - export_ingredients_251001.xlsx
+
+[9] Date: Thu, 5 Feb 2026 18:24:05 +0200
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: =?UTF-8?B?MDUvMDIvMjYg0LLQtdGH0YvRgA==?=
+    Files:
+      - export_ingredients_260205.xlsx
+
+[10] Date: Tue, 28 Oct 2025 07:06:44 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 28.10.25
+    Files:
+      - export_ingredients_251028 (1).xlsx
+
+[11] Date: Tue, 18 Nov 2025 11:10:31 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 18.11.12
+    Files:
+      - export_ingredients_251118.xlsx
+
+[12] Date: Wed, 5 Nov 2025 07:47:17 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 05.11.2025
+    Files:
+      - export_ingredients_251105.xlsx
+
+[13] Date: Mon, 29 Dec 2025 07:09:22 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 29.12.25
+    Files:
+      - export_ingredients_251229.xlsx
+
+[14] Date: Fri, 23 Jan 2026 11:02:15 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 23.01.2026
+    Files:
+      - export_ingredients_260123.xlsx
+
+[15] Date: Mon, 15 Dec 2025 07:02:33 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 15.12.25
+    Files:
+      - export_ingredients_251215.xlsx
+
+[16] Date: Thu, 25 Sep 2025 08:13:17 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 25.09.2025
+    Files:
+      - export_ingredients_250925.xlsx
+
+[17] Date: Sat, 4 Oct 2025 07:28:26 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 04.10.25
+    Files:
+      - export_ingredients_251004.xlsx
+
+[18] Date: Sun, 25 Jan 2026 10:55:30 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 25.01.2026
+    Files:
+      - export_ingredients_260125.xlsx
+
+[19] Date: Tue, 23 Dec 2025 07:36:06 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 23.12.25
+    Files:
+      - export_ingredients_251223.xlsx
+
+[20] Date: Fri, 10 Oct 2025 08:27:14 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 10.10.25
+    Files:
+      - export_ingredients_251010.xlsx
+
+[21] Date: Wed, 14 Jan 2026 08:37:03 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 14.01.25
+    Files:
+      - export_ingredients_260114.xlsx
+
+[22] Date: Thu, 9 Oct 2025 07:37:13 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 09.10.25
+    Files:
+      - export_ingredients_251009.xlsx
+
+[23] Date: Fri, 24 Oct 2025 07:50:42 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 24.10.2025
+    Files:
+      - export_ingredients_251024.xlsx
+
+[24] Date: Thu, 8 Jan 2026 08:58:42 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 08.01.2026
+    Files:
+      - export_ingredients_260108.xlsx
+
+[25] Date: Fri, 12 Sep 2025 08:18:01 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 12.09.2025
+    Files:
+      - export_ingredients_250912.xlsx
+
+[26] Date: Tue, 25 Nov 2025 07:31:44 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 25.11.25
+    Files:
+      - export_ingredients_251125.xlsx
+
+[27] Date: Fri, 5 Sep 2025 01:21:47 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: To: gala.baluvana.bukovina@gmail.com
+    Files:
+      - export_ingredients_250904 (2).xlsx
+
+[28] Date: Wed, 3 Sep 2025 06:46:50 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 03.09.25
+    Files:
+      - export_ingredients_250903.xlsx
+
+[29] Date: Sat, 1 Nov 2025 09:01:17 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 01.11,2025
+    Files:
+      - export_ingredients_251101.xlsx
+
+[30] Date: Mon, 10 Nov 2025 07:31:01 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 10.11.25
+    Files:
+      - export_ingredients_251110.xlsx
+
+[31] Date: Wed, 12 Nov 2025 07:25:43 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 121.11.25
+    Files:
+      - export_ingredients_251112.xlsx
+
+[32] Date: Tue, 7 Oct 2025 08:45:00 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 07.10.2025
+    Files:
+      - export_ingredients_251007.xlsx
+
+[33] Date: Mon, 6 Oct 2025 08:20:50 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 06.10.2025
+    Files:
+      - export_ingredients_251006.xlsx
+
+[34] Date: Tue, 4 Nov 2025 07:45:48 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 04.11.25
+    Files:
+      - export_ingredients_251104.xlsx
+
+[35] Date: Sat, 25 Oct 2025 07:58:24 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 25.10.2025
+    Files:
+      - export_ingredients_251025.xlsx
+
+[36] Date: Fri, 10 Oct 2025 06:35:37 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 10.10.25
+    Files:
+      - export_ingredients_251010.xlsx
+
+[37] Date: Sun, 28 Dec 2025 11:29:01 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 28.12.2025
+    Files:
+      - export_ingredients_251228.xlsx
+
+[38] Date: Fri, 17 Oct 2025 06:48:23 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 17.10.25
+    Files:
+      - export_ingredients_251017.xlsx
+
+[39] Date: Sat, 6 Dec 2025 11:39:02 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 06.12.2025
+    Files:
+      - export_ingredients_251206.xlsx
+
+[40] Date: Fri, 29 Aug 2025 18:42:04 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 28.08.25
+    Files:
+      - export_ingredients_250829 (3).xlsx
+
+[41] Date: Thu, 13 Nov 2025 08:05:53 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 13.11.25
+    Files:
+      - export_ingredients_251113.xlsx
+
+[42] Date: Tue, 11 Nov 2025 07:29:23 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 11.11.25
+    Files:
+      - export_ingredients_251111.xlsx
+
+[43] Date: Sat, 22 Nov 2025 10:52:34 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 22.11.2025
+    Files:
+      - export_ingredients_251122.xlsx
+
+[44] Date: Tue, 25 Nov 2025 10:50:01 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 25.11.25
+    Files:
+      - export_ingredients_251125.xlsx
+
+[45] Date: Tue, 25 Nov 2025 07:38:48 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 25.11.25
+    Files:
+      - export_ingredients_251125.xlsx
+
+[46] Date: Tue, 13 Jan 2026 08:32:31 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 13.01.26
+    Files:
+      - export_ingredients_260113.xlsx
+
+[47] Date: Mon, 3 Nov 2025 08:32:13 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 03.10.25
+    Files:
+      - export_ingredients_251103.xlsx
+
+[48] Date: Fri, 10 Oct 2025 07:17:56 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 10.10.25
+    Files:
+      - export_ingredients_251010.xlsx
+
+[49] Date: Thu, 30 Oct 2025 08:58:06 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 30.10.2025
+    Files:
+      - export_ingredients_251030.xlsx
+
+[50] Date: Mon, 1 Sep 2025 21:33:58 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: pzal
+    Files:
+      - export_ingredients_250901.xlsx
+
+[51] Date: Sat, 6 Sep 2025 07:54:33 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 06.09.2025
+    Files:
+      - export_ingredients_250906.xlsx
+
+[52] Date: Mon, 19 Jan 2026 08:26:45 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 19.01.25
+    Files:
+      - export_ingredients_260119.xlsx
+
+[53] Date: Wed, 19 Nov 2025 09:08:38 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 19.11.2025
+    Files:
+      - export_ingredients_251119.xlsx
+
+[54] Date: Sun, 4 Jan 2026 20:08:20 +0200
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 04/01/26
+    Files:
+      - export_ingredients_260104.xlsx
+
+[55] Date: Tue, 14 Oct 2025 07:38:07 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 14.10.2025
+    Files:
+      - export_ingredients_251014.xlsx
+
+[56] Date: Sat, 17 Jan 2026 19:20:06 +0200
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 17/01/26
+    Files:
+      - export_ingredients_260117.xlsx
+
+[57] Date: Mon, 29 Sep 2025 07:15:28 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 29.09.25
+    Files:
+      - export_ingredients_250929.xlsx
+
+[58] Date: Thu, 13 Nov 2025 23:14:27 +0200
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 111
+    Files:
+      - export_ingredients_251114.xlsx
+
+[59] Date: Wed, 10 Sep 2025 09:27:33 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 10/09/25
+    Files:
+      - export_ingredients_250910.xlsx
+
+[60] Date: Tue, 30 Dec 2025 06:57:36 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 30.12.25
+    Files:
+      - export_ingredients_251230.xlsx
+
+[61] Date: Sat, 24 Jan 2026 08:04:29 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 24.01.26
+    Files:
+      - export_ingredients_260124.xlsx
+
+[62] Date: Sun, 19 Oct 2025 07:54:54 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 19.10.2025
+    Files:
+      - export_ingredients_251019.xlsx
+
+[63] Date: Fri, 29 Aug 2025 13:44:05 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 11
+    Files:
+      - export_ingredients_250828 (2).xlsx
+
+[64] Date: Thu, 4 Dec 2025 20:12:32 +0200
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 04/12/25
+    Files:
+      - export_ingredients_251204.xlsx
+
+[65] Date: Wed, 22 Oct 2025 06:48:26 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 22/10/25
+    Files:
+      - export_ingredients_251022.xlsx
+
+[66] Date: Tue, 9 Sep 2025 06:38:28 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: To: gala.baluvana.bukovina@gmail.com
+    Files:
+      - export_ingredients_250909.xlsx
+
+[67] Date: Wed, 3 Dec 2025 10:14:44 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 3.12.25
+    Files:
+      - export_ingredients_251203.xlsx
+
+[68] Date: Sun, 21 Sep 2025 07:15:39 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 21.09.2025
+    Files:
+      - export_ingredients_250921.xlsx
+
+[69] Date: Sat, 30 Aug 2025 06:28:58 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 30.08.25
+    Files:
+      - export_ingredients_250830 (1).xlsx
+
+[70] Date: Sat, 18 Oct 2025 08:13:03 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 18.10.2025
+    Files:
+      - export_ingredients_251018.xlsx
+
+[71] Date: Mon, 24 Nov 2025 09:55:29 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 24.11.25
+    Files:
+      - export_ingredients_251124.xlsx
+
+[72] Date: Mon, 22 Dec 2025 06:47:57 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 22.12.25
+    Files:
+      - export_ingredients_251222.xlsx
+
+[73] Date: Wed, 1 Oct 2025 22:12:05 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 222
+    Files:
+      - export_ingredients_251001 (1).xlsx
+
+[74] Date: Mon, 15 Dec 2025 23:18:24 +0200
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 15/112/25
+    Files:
+      - export_ingredients_251216.xlsx
+
+[75] Date: Fri, 21 Nov 2025 10:59:35 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 21.11.2025
+    Files:
+      - export_ingredients_251121.xlsx
+
+[76] Date: Sun, 1 Feb 2026 12:04:58 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 01.02.26
+    Files:
+      - export_ingredients_260201.xlsx
+
+[77] Date: Thu, 4 Dec 2025 11:34:25 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 04.12.2025
+    Files:
+      - export_ingredients_251204.xlsx
+
+[78] Date: Sat, 7 Feb 2026 20:50:29 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 08.02.26
+    Files:
+      - export_ingredients_260207 (1).xlsx
+
+[79] Date: Fri, 26 Sep 2025 09:08:04 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 26.09.2025
+    Files:
+      - export_ingredients_250926.xlsx
+
+[80] Date: Sun, 14 Sep 2025 07:24:28 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 14.09.2025
+    Files:
+      - export_ingredients_250914.xlsx
+
+[81] Date: Fri, 3 Oct 2025 07:23:32 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 3.10.25
+    Files:
+      - export_ingredients_251003.xlsx
+
+[82] Date: Sun, 21 Dec 2025 19:50:28 +0200
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 20/12/25
+    Files:
+      - export_ingredients_251221.xlsx
+
+[83] Date: Mon, 27 Oct 2025 08:09:29 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 27.10.2025
+    Files:
+      - export_ingredients_251027.xlsx
+
+[84] Date: Thu, 11 Dec 2025 10:58:01 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 11.12.2025
+    Files:
+      - export_ingredients_251211.xlsx
+
+[85] Date: Wed, 8 Oct 2025 07:54:15 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 08.10.2025
+    Files:
+      - export_ingredients_251008.xlsx
+
+[86] Date: Sun, 23 Nov 2025 17:08:50 +0200
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 23/11/25
+    Files:
+      - export_ingredients_251123.xlsx
+
+[87] Date: Sat, 20 Dec 2025 09:58:39 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 20.12.2025
+    Files:
+      - export_ingredients_251220.xlsx
+
+[88] Date: Sat, 3 Jan 2026 09:06:34 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 03.01.2026
+    Files:
+      - export_ingredients_260103.xlsx
+
+[89] Date: Sat, 13 Sep 2025 08:17:04 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 13.09.2025
+    Files:
+      - export_ingredients_250913 (1).xlsx
+
+[90] Date: Mon, 17 Nov 2025 08:39:41 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 17.11.25
+    Files:
+      - export_ingredients_251117.xlsx
+
+[91] Date: Thu, 22 Jan 2026 08:16:17 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 22.01.26
+    Files:
+      - export_ingredients_260122.xlsx
+
+[92] Date: Fri, 16 Jan 2026 08:53:20 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 16.01.2026
+    Files:
+      - export_ingredients_260116.xlsx
+
+[93] Date: Thu, 9 Oct 2025 09:02:55 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 09.10.25
+    Files:
+      - export_ingredients_251009.xlsx
+
+[94] Date: Sun, 14 Dec 2025 23:59:57 +0200
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 15/12/25
+    Files:
+      - export_ingredients_251214.xlsx
+
+[95] Date: Wed, 10 Dec 2025 07:31:28 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 10.12.25
+    Files:
+      - export_ingredients_251210.xlsx
+
+[96] Date: Sun, 30 Nov 2025 17:03:12 +0200
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 30/11/25
+    Files:
+      - export_ingredients_251130 (1).xlsx
+
+[97] Date: Sun, 31 Aug 2025 08:23:43 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 31.08.2025
+    Files:
+      - export_ingredients_250831 (2).xlsx
+
+[98] Date: Thu, 16 Oct 2025 06:16:08 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 16.10.25
+    Files:
+      - export_ingredients_251016.xlsx
+
+[99] Date: Sun, 12 Oct 2025 07:54:27 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 12.10.2025
+    Files:
+      - export_ingredients_251012.xlsx
+
+[100] Date: Tue, 2 Sep 2025 07:08:40 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 02.09.25
+    Files:
+      - export_ingredients_250902.xlsx
+
+[101] Date: Sat, 20 Sep 2025 08:01:06 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 20.09.2025
+    Files:
+      - export_ingredients_250920.xlsx
+
+[102] Date: Tue, 23 Sep 2025 06:20:34 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 21.09.25
+    Files:
+      - export_ingredients_250923.xlsx
+
+[103] Date: Tue, 30 Sep 2025 08:31:14 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 30.09.2025
+    Files:
+      - export_ingredients_250930.xlsx
+
+[104] Date: Fri, 31 Oct 2025 08:55:22 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 31.10.2025
+    Files:
+      - export_ingredients_251031.xlsx
+
+[105] Date: Fri, 26 Sep 2025 07:31:01 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 26.09.2025
+    Files:
+      - export_ingredients_250926.xlsx
+
+[106] Date: Sat, 17 Jan 2026 10:36:55 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 17.01.2026
+    Files:
+      - export_ingredients_260117.xlsx
+
+[107] Date: Sat, 30 Aug 2025 07:25:58 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: To: gala.baluvana.bukovina@gmail.com
+    Files:
+      - export_ingredients_250830.xlsx
+
+[108] Date: Thu, 5 Feb 2026 09:50:59 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 05.02.26
+    Files:
+      - export_ingredients_260205.xlsx
+
+[109] Date: Thu, 6 Nov 2025 08:49:39 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 06.11.2025
+    Files:
+      - export_ingredients_251106.xlsx
+
+[110] Date: Thu, 13 Nov 2025 08:14:58 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 13.11.25
+    Files:
+      - export_ingredients_251113.xlsx
+
+[111] Date: Mon, 8 Sep 2025 07:35:38 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 08.09.2025
+    Files:
+      - export_ingredients_250908.xlsx
+
+[112] Date: Fri, 12 Dec 2025 10:39:42 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 12.11.2025
+    Files:
+      - export_ingredients_251212.xlsx
+
+[113] Date: Sun, 26 Oct 2025 08:02:09 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 26.10.2025
+    Files:
+      - export_ingredients_251026.xlsx
+
+[114] Date: Sat, 30 Aug 2025 06:36:28 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 30.08.25
+    Files:
+      - export_ingredients_250830 (1).xlsx
+
+[115] Date: Wed, 24 Sep 2025 08:19:19 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 24.09.2025
+    Files:
+      - export_ingredients_250924.xlsx
+
+[116] Date: Sat, 24 Jan 2026 09:04:19 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 24.01.2026
+    Files:
+      - export_ingredients_260124 (1).xlsx
+
+[117] Date: Wed, 17 Sep 2025 06:51:28 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 17.09.25
+    Files:
+      - export_ingredients_250917.xlsx
+
+[118] Date: Mon, 8 Dec 2025 10:27:37 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 8.12.25
+    Files:
+      - export_ingredients_251208.xlsx
+
+[119] Date: Sun, 11 Jan 2026 11:32:36 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 11.01.2026
+    Files:
+      - export_ingredients_260111.xlsx
+
+[120] Date: Wed, 3 Sep 2025 07:08:02 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: To: gala.baluvana.bukovina@gmail.com
+    Files:
+      - export_ingredients_250903.xlsx
+
+[121] Date: Wed, 17 Dec 2025 10:13:38 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 17.12.25
+    Files:
+      - export_ingredients_251217.xlsx
+
+[122] Date: Fri, 24 Oct 2025 08:04:49 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 24.10.2025
+    Files:
+      - export_ingredients_251024.xlsx
+
+[123] Date: Mon, 12 Jan 2026 10:13:38 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 12.01.2026
+    Files:
+      - export_ingredients_260112.xlsx
+
+[124] Date: Thu, 20 Nov 2025 10:52:47 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 20.11.25
+    Files:
+      - export_ingredients_251120.xlsx
+
+[125] Date: Fri, 7 Nov 2025 10:15:31 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 07.11.2025
+    Files:
+      - export_ingredients_251107.xlsx
+
+[126] Date: Sat, 7 Feb 2026 10:47:31 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 07.02.26
+    Files:
+      - export_ingredients_260207.xlsx
+
+[127] Date: Thu, 13 Nov 2025 08:08:07 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 13.11.25
+    Files:
+      - export_ingredients_251113.xlsx
+
+[128] Date: Fri, 29 Aug 2025 18:31:24 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 29,08,25
+    Files:
+      - export_ingredients_250829.xlsx
+
+[129] Date: Sun, 28 Dec 2025 19:39:27 +0200
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 28/12/25
+    Files:
+      - export_ingredients_251228.xlsx
+
+[130] Date: Thu, 23 Oct 2025 05:48:42 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 23.10.25
+    Files:
+      - export_ingredients_251023.xlsx
+
+[131] Date: Tue, 25 Nov 2025 09:23:33 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 25.11.25
+    Files:
+      - export_ingredients_251125.xlsx
+
+[132] Date: Mon, 2 Feb 2026 10:00:30 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 02.02.26
+    Files:
+      - export_ingredients_260202.xlsx
+
+[133] Date: Thu, 15 Jan 2026 10:18:24 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 15.01.2026
+    Files:
+      - export_ingredients_260115.xlsx
+
+[134] Date: Tue, 21 Oct 2025 08:04:05 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 21.10.25
+    Files:
+      - export_ingredients_251021.xlsx
+
+[135] Date: Tue, 20 Jan 2026 09:22:41 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 20.01.26
+    Files:
+      - export_ingredients_260120.xlsx
+
+[136] Date: Tue, 2 Dec 2025 07:11:20 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 02.12.25
+    Files:
+      - export_ingredients_251202.xlsx
+
+[137] Date: Fri, 5 Sep 2025 07:44:26 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 05.09.2025
+    Files:
+      - export_ingredients_250905.xlsx
+
+[138] Date: Sat, 27 Sep 2025 07:22:26 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 27.09.2025
+    Files:
+      - export_ingredients_250927 (1).xlsx
+
+[139] Date: Wed, 15 Oct 2025 06:47:18 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 15.10.25
+    Files:
+      - export_ingredients_251015.xlsx
+
+[140] Date: Fri, 10 Oct 2025 08:59:22 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 10/10/25
+    Files:
+      - export_ingredients_251010.xlsx
+
+[141] Date: Sat, 13 Dec 2025 10:24:20 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 13.12.2025
+    Files:
+      - export_ingredients_251213.xlsx
+
+[142] Date: Fri, 19 Sep 2025 09:06:27 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 19.09.2025
+    Files:
+      - export_ingredients_250919.xlsx
+
+[143] Date: Sun, 5 Oct 2025 06:00:18 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 05.10.25
+    Files:
+      - export_ingredients_251005.xlsx
+
+[144] Date: Fri, 9 Jan 2026 08:38:11 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 09.01.2026
+    Files:
+      - export_ingredients_260109.xlsx
+
+[145] Date: Tue, 2 Sep 2025 07:00:55 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: To: gala.baluvana.bukovina@gmail.com
+    Files:
+      - export_ingredients_250902.xlsx
+
+[146] Date: Sat, 27 Dec 2025 09:36:01 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 27.12.2025
+    Files:
+      - export_ingredients_251227.xlsx
+
+[147] Date: Mon, 6 Oct 2025 08:47:21 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 06.10.2025
+    Files:
+      - export_ingredients_251006.xlsx
+
+[148] Date: Fri, 5 Dec 2025 10:23:24 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 05.12.2025
+    Files:
+      - export_ingredients_251205 (4).xlsx
+
+[149] Date: Mon, 5 Jan 2026 09:33:54 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 05.01.26
+    Files:
+      - export_ingredients_260105.xlsx
+
+[150] Date: Sat, 30 Aug 2025 09:04:38 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 30,08,25
+    Files:
+      - export_ingredients_250830.xlsx
+
+[151] Date: Sun, 7 Dec 2025 19:24:47 +0200
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 07/12/25
+    Files:
+      - export_ingredients_251207.xlsx
+
+[152] Date: Fri, 29 Aug 2025 13:33:54 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 111
+    Files:
+      - export_ingredients_250829 (1).xlsx
+
+[153] Date: Tue, 16 Dec 2025 07:58:21 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 16.12.25
+    Files:
+      - export_ingredients_251216.xlsx
+
+[154] Date: Sun, 18 Jan 2026 08:34:21 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 18.01.25
+    Files:
+      - export_ingredients_260118.xlsx
+
+[155] Date: Fri, 6 Feb 2026 11:04:27 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 06.02.26
+    Files:
+      - export_ingredients_260206.xlsx
+
+[156] Date: Thu, 13 Nov 2025 09:07:00 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 13.11.25
+    Files:
+      - export_ingredients_251113.xlsx
+
+[157] Date: Sun, 7 Sep 2025 08:07:55 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 07.09.2025
+    Files:
+      - export_ingredients_250907.xlsx
+
+[158] Date: Sat, 31 Jan 2026 09:26:15 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 31.01.26
+    Files:
+      - export_ingredients_260131.xlsx
+
+[159] Date: Wed, 10 Sep 2025 06:46:02 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 10.09.25
+    Files:
+      - export_ingredients_250910.xlsx
+
+[160] Date: Thu, 18 Dec 2025 08:50:02 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 18.12.2025
+    Files:
+      - export_ingredients_251218 (1).xlsx
+
+[161] Date: Mon, 3 Nov 2025 08:26:14 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 03.11.25
+    Files:
+      - export_ingredients_251103.xlsx
+
+[162] Date: Mon, 1 Dec 2025 07:35:32 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 01.12.25
+    Files:
+      - export_ingredients_251201.xlsx
+
+[163] Date: Thu, 11 Sep 2025 07:27:26 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 11.09.25
+    Files:
+      - export_ingredients_250911.xlsx
+
+[164] Date: Tue, 16 Sep 2025 07:05:04 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 16.09..25
+    Files:
+      - export_ingredients_250916.xlsx
+
+[165] Date: Tue, 16 Dec 2025 07:53:28 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 16.12.25
+    Files:
+      - export_ingredients_251216.xlsx
+
+[166] Date: Wed, 29 Oct 2025 06:55:34 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 29.10.25
+    Files:
+      - export_ingredients_251029.xlsx
+
+[167] Date: Wed, 21 Jan 2026 09:03:13 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 21.01.26
+    Files:
+      - export_ingredients_260121.xlsx
+
+[168] Date: Tue, 9 Dec 2025 07:25:23 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 9.12.25
+    Files:
+      - export_ingredients_251209.xlsx
+
+[169] Date: Tue, 25 Nov 2025 11:39:38 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 25.11.25
+    Files:
+      - export_ingredients_251125.xlsx
+
+[170] Date: Fri, 26 Dec 2025 09:32:51 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 26.12.2025
+    Files:
+      - export_ingredients_251226.xlsx
+
+[171] Date: Tue, 28 Oct 2025 07:19:11 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 28.10.25
+    Files:
+      - export_ingredients_251028 (1).xlsx
+
+[172] Date: Sun, 28 Sep 2025 07:00:25 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 28.09.25
+    Files:
+      - export_ingredients_250928.xlsx
+
+[173] Date: Fri, 2 Jan 2026 10:29:05 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 02.01.2026
+    Files:
+      - export_ingredients_260102.xlsx
+
+[174] Date: Sat, 11 Oct 2025 06:16:18 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 11.10.25
+    Files:
+      - export_ingredients_251011.xlsx
+
+[175] Date: Wed, 28 Jan 2026 10:24:44 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 28.01.2026
+    Files:
+      - export_ingredients_260128 (1).xlsx
+
+[176] Date: Tue, 16 Dec 2025 10:00:18 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 16.12.25
+    Files:
+      - export_ingredients_251216 (1).xlsx
+
+[177] Date: Thu, 18 Sep 2025 07:39:31 +0300
+    From: pizza galabaluvana <pizza.galabaluvana.bukovina@gmail.com>
+    To: gala.baluvana.bukovina@gmail.com
+    Subject: 18.09.2025
+    Files:
+      - export_ingredients_250918.xlsx
+

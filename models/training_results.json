@@ -1,0 +1,136 @@
+[
+    {
+        "day_of_week": 0,
+        "wape": 0.1658175616347393,
+        "model_version": "v15_d0d1",
+        "features_used": [
+            "store_id",
+            "sku_id",
+            "month",
+            "is_weekend",
+            "is_holiday",
+            "lag7",
+            "ma3",
+            "ma7",
+            "temp_avg",
+            "precip",
+            "snow",
+            "temp_change",
+            "is_rainy",
+            "is_snowy",
+            "lag_sun",
+            "oos_sun"
+        ],
+        "test_range": "2026-02-23 to 2026-03-02"
+    },
+    {
+        "day_of_week": 1,
+        "wape": 0.19393578031284564,
+        "model_version": "v15_d0d1",
+        "features_used": [
+            "store_id",
+            "sku_id",
+            "month",
+            "is_weekend",
+            "is_holiday",
+            "lag7",
+            "ma3",
+            "ma7",
+            "temp_avg",
+            "precip",
+            "snow",
+            "temp_change",
+            "is_rainy",
+            "is_snowy"
+        ],
+        "test_range": "2026-02-24 to 2026-03-03"
+    },
+    {
+        "day_of_week": 2,
+        "wape": 0.17683825751235077,
+        "model_version": "v15_d0d1",
+        "features_used": [
+            "store_id",
+            "sku_id",
+            "month",
+            "is_weekend",
+            "is_holiday",
+            "lag7",
+            "ma3",
+            "ma7",
+            "temp_avg",
+            "precip",
+            "snow",
+            "temp_change",
+            "is_rainy",
+            "is_snowy"
+        ],
+        "test_range": "2026-02-25 to 2026-03-04"
+    },
+    {
+        "day_of_week": 3,
+        "wape": 0.17238282327690282,
+        "model_version": "v15_d0d1",
+        "features_used": [
+            "store_id",
+            "sku_id",
+            "month",
+            "is_weekend",
+            "is_holiday",
+            "lag7",
+            "ma3",
+            "ma7",
+            "temp_avg",
+            "precip",
+            "snow",
+            "temp_change",
+            "is_rainy",
+            "is_snowy"
+        ],
+        "test_range": "2026-02-26 to 2026-03-05"
+    },
+    {
+        "day_of_week": 4,
+        "wape": 0.16153913086889773,
+        "model_version": "v15_d0d1",
+        "features_used": [
+            "store_id",
+            "sku_id",
+            "month",
+            "is_weekend",
+            "is_holiday",
+            "lag7",
+            "ma3",
+            "ma7",
+            "temp_avg",
+            "precip",
+            "snow",
+            "temp_change",
+            "is_rainy",
+            "is_snowy"
+        ],
+        "test_range": "2026-02-27 to 2026-03-06"
+    },
+    {
+        "day_of_week": 5,
+        "wape": 0.1727501632521857,
+        "model_version": "v15_d0d1",
+        "features_used": [
+            "store_id",
+            "sku_id",
+            "month",
+            "is_weekend",
+            "is_holiday",
+            "lag7",
+            "ma3",
+            "ma7",
+            "temp_avg",
+            "precip",
+            "snow",
+            "temp_change",
+            "is_rainy",
+            "is_snowy"
+        ],
+        "test_range": "2026-02-28 to 2026-03-07"
+    }
+]

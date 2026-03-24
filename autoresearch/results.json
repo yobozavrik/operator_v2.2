@@ -1,0 +1,32 @@
+{
+  "wape": 0.3345,
+  "wape_all": 0.2987,
+  "bias": 0.036,
+  "bias_all": -0.285,
+  "rmse": 1.134,
+  "mae": 0.849,
+  "wape_by_dow": {
+    "Mon": 0.3457,
+    "Tue": 0.3285,
+    "Wed": 0.2876,
+    "Thu": 0.2716,
+    "Fri": 0.3393,
+    "Sat": 0.4722,
+    "Sun": 0.3443
+  },
+  "n_estimators": 374,
+  "top_features": {
+    "trend_7d": 1115,
+    "store_id": 827,
+    "sku_id": 740,
+    "precip": 613,
+    "temp_change": 592
+  },
+  "bottom_features": {
+    "day": 320,
+    "global_sku_dow_avg_2d": 254,
+    "sku_store_share": 239,
+    "lag_14d_2d": 213,
+    "is_saturday": 124
+  }
+}

@@ -1,0 +1,141 @@
+{
+  "whitelist": [
+    4,
+    13
+  ],
+  "blacklist": [
+    1,
+    3,
+    5,
+    12,
+    15,
+    17,
+    21
+  ],
+  "dec_top": [
+    {
+      "store_id": 3,
+      "sku_id": 768,
+      "product_name": "\"Хліб \"\"Француз\"\"\"",
+      "adj": -1,
+      "forecast": 7,
+      "wrRate3": 0.21,
+      "oosHits3": 0
+    },
+    {
+      "store_id": 3,
+      "sku_id": 839,
+      "product_name": "\"Хліб \"\"Житньо-Пшеничний\"\"\"",
+      "adj": -1,
+      "forecast": 4,
+      "wrRate3": 0.6,
+      "oosHits3": 3
+    },
+    {
+      "store_id": 3,
+      "sku_id": 778,
+      "product_name": "\"Хліб \"\"Гречаний\"\"\"",
+      "adj": -1,
+      "forecast": 3,
+      "wrRate3": 0.27,
+      "oosHits3": 1
+    },
+    {
+      "store_id": 5,
+      "sku_id": 776,
+      "product_name": "\"Хліб \"\"Жит-Пш з льоном\"\"\"",
+      "adj": -1,
+      "forecast": 4,
+      "wrRate3": 0.17,
+      "oosHits3": 3
+    },
+    {
+      "store_id": 5,
+      "sku_id": 778,
+      "product_name": "\"Хліб \"\"Гречаний\"\"\"",
+      "adj": -1,
+      "forecast": 4,
+      "wrRate3": 0.21,
+      "oosHits3": 1
+    },
+    {
+      "store_id": 5,
+      "sku_id": 832,
+      "product_name": "Багет Француз",
+      "adj": -1,
+      "forecast": 4,
+      "wrRate3": 0.4,
+      "oosHits3": 1
+    },
+    {
+      "store_id": 5,
+      "sku_id": 772,
+      "product_name": "\"Хліб \"\"Солодовий з журавлиною\"\"\"",
+      "adj": -1,
+      "forecast": 3,
+      "wrRate3": 0.22,
+      "oosHits3": 1
+    },
+    {
+      "store_id": 5,
+      "sku_id": 833,
+      "product_name": "Багет Гречаний",
+      "adj": -1,
+      "forecast": 3,
+      "wrRate3": 0.17,
+      "oosHits3": 3
+    },
+    {
+      "store_id": 12,
+      "sku_id": 832,
+      "product_name": "Багет Француз",
+      "adj": -1,
+      "forecast": 4,
+      "wrRate3": 0.42,
+      "oosHits3": 2
+    },
+    {
+      "store_id": 12,
+      "sku_id": 778,
+      "product_name": "\"Хліб \"\"Гречаний\"\"\"",
+      "adj": -1,
+      "forecast": 3,
+      "wrRate3": 0.38,
+      "oosHits3": 3
+    },
+    {
+      "store_id": 12,
+      "sku_id": 849,
+      "product_name": "\"Хліб \"\"Француз з цибулею\"\"\"",
+      "adj": -1,
+      "forecast": 3,
+      "wrRate3": 0.22,
+      "oosHits3": 2
+    },
+    {
+      "store_id": 15,
+      "sku_id": 768,
+      "product_name": "\"Хліб \"\"Француз\"\"\"",
+      "adj": -1,
+      "forecast": 5,
+      "wrRate3": 0.16,
+      "oosHits3": 1
+    },
+    {
+      "store_id": 21,
+      "sku_id": 768,
+      "product_name": "\"Хліб \"\"Француз\"\"\"",
+      "adj": -1,
+      "forecast": 3,
+      "wrRate3": 0.33,
+      "oosHits3": 1
+    }
+  ],
+  "inc_top": [],
+  "totals": {
+    "dec_candidates": 13,
+    "inc_candidates": 0,
+    "dec_applied": 13,
+    "inc_applied": 0
+  }
+}
