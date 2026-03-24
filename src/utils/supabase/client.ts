@@ -1,13 +1,17 @@
 import { createBrowserClient } from '@supabase/ssr';
 
-let client: ReturnType<typeof createBrowserClient> | null = null;
-
 export function createClient() {
-    if (!client) {
-        client = createBrowserClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key'
-        );
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    // Під час білду (prerendering) на сервері змінні можуть бути відсутні.
+    // Повертаємо заглушку, щоб не падав білд, але в браузері це НЕ спрацює.
+    if (typeof window === 'undefined' && (!supabaseUrl || !supabaseAnonKey)) {
+        return {} as any;
     }
-    return client;
+
+    return createBrowserClient(
+        supabaseUrl!,
+        supabaseAnonKey!
+    );
 }
