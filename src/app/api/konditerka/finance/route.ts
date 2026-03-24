@@ -67,7 +67,7 @@ export async function GET(request: Request) {
 
         const dateMap = new Map<string, { current: number, previous: number }>();
 
-        (currentData || []).forEach(d => {
+        (currentData || []).forEach((d: any) => {
             const rev = Number(d.total_revenue) || 0;
             const prof = Number(d.total_profit) || 0;
             const qty = Number(d.total_quantity) || 0;
@@ -90,7 +90,7 @@ export async function GET(request: Request) {
 
         // Previous KPIs & mapping previous trends to current dates
         let prevRev = 0, prevProfit = 0, prevQty = 0;
-        (prevData || []).forEach(d => {
+        (prevData || []).forEach((d: any) => {
             const rev = Number(d.total_revenue) || 0;
             const prof = Number(d.total_profit) || 0;
             const qty = Number(d.total_quantity) || 0;
@@ -114,7 +114,7 @@ export async function GET(request: Request) {
 
         // Top 5 Products
         const productMap = new Map<string, { revenue: number, qty: number }>();
-        (topProds || []).forEach(p => {
+        (topProds || []).forEach((p: any) => {
             const existing = productMap.get(p.product_name) || { revenue: 0, qty: 0 };
             productMap.set(p.product_name, {
                 revenue: existing.revenue + Number(p.revenue_generated),

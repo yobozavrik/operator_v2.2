@@ -2,20 +2,35 @@ import { createClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
 import type { User } from '@supabase/supabase-js';
 
+export type AuthResult =
+    | { user: User; error: null }
+    | { user: null; error: NextResponse };
+
+export type AuthRoleResult =
+    | { user: User; role: string; error: null }
+    | { user: User | null; role: string | null; error: NextResponse };
+
 /**
  * Перевіряє авторизацію користувача для API-маршрутів.
  * Повертає user або 401 відповідь.
- *
- * Використання:
- *   const auth = await requireAuth();
- *   if (auth.error) return auth.error;
- *   const user = auth.user;
  */
-export async function requireAuth() {
+export async function requireAuth(): Promise<AuthResult> {
     const supabase = await createClient();
 
-    let user = null;
+    let user: User | null = null;
     let cookieError = null;
+
+    // 0. Try Bypass (Development only)
+    if (process.env.NODE_ENV === 'development') {
+        const { cookies } = await import('next/headers');
+        const cookieStore = await cookies();
+        if (cookieStore.get('bypass_auth')?.value === 'true') {
+            return {
+                user: { id: 'benchmark-user', email: 'benchmark@local' } as User,
+                error: null
+            };
+        }
+    }
 
     // 1. Try Cookie Auth
     try {
@@ -92,14 +107,18 @@ export function getUserRole(user: User): string {
     return 'restricted';
 }
 
-export async function requireRole(allowedRoles: string[]) {
+export async function requireRole(allowedRoles: string[]): Promise<AuthRoleResult> {
     const auth = await requireAuth();
-    if (auth.error || !auth.user) return auth;
+    if (auth.error) {
+        // Here TypeScript knows user is null and error is NextResponse
+        return { user: null, role: null, error: auth.error };
+    }
 
+    // Here TypeScript knows user is User and error is null
     const role = getUserRole(auth.user);
     const normalizedAllowed = allowedRoles.map((item) => item.toLowerCase());
     if (normalizedAllowed.includes(role)) {
-        return { ...auth, role, error: null };
+        return { user: auth.user, role, error: null };
     }
 
     return {
@@ -109,5 +128,5 @@ export async function requireRole(allowedRoles: string[]) {
             { error: 'Forbidden', code: 'AUTH_FORBIDDEN', role },
             { status: 403 }
         ),
-    };
+    } as AuthRoleResult;
 }

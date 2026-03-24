@@ -1,4 +1,4 @@
-﻿import { NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { requireAuth } from '@/lib/auth-guard';
 
@@ -14,26 +14,28 @@ export async function GET() {
     const { data: products, error: prodError } = await supabase
       .schema('categories')
       .from('products')
-      .select('id, name, weight_flag, category_id');
+      .select('id, name, weight_flag, category_id') as { data: any[] | null, error: any };
 
-    if (prodError) {
+    if (prodError || !products) {
       console.error('Supabase products error:', prodError);
-      return NextResponse.json({ error: prodError.message }, { status: 500 });
+      return NextResponse.json({ error: prodError?.message || 'No products found' }, { status: 500 });
     }
 
     const { data: categories, error: catError } = await supabase
       .schema('categories')
       .from('categories')
-      .select('category_id, category_name');
+      .select('category_id, category_name') as { data: any[] | null, error: any };
 
-    if (catError) {
+    if (catError || !categories) {
       console.error('Supabase categories error:', catError);
-      return NextResponse.json({ error: catError.message }, { status: 500 });
+      return NextResponse.json({ error: catError?.message || 'No categories found' }, { status: 500 });
     }
 
-    const catMap = new Map(categories.map((c) => [c.category_id, c.category_name]));
+    const catMap = new Map<string, string>(
+      categories.map((c: { category_id: string; category_name: string }) => [c.category_id, c.category_name])
+    );
 
-    const mappedData = products.map((row) => ({
+    const mappedData = products.map((row: { id: string; name: string; weight_flag: boolean; category_id: string }) => ({
       sku_id: row.id,
       product_name: row.name,
       category_name: catMap.get(row.category_id) || 'Other',

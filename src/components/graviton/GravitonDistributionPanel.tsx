@@ -184,7 +184,7 @@ export const GravitonDistributionPanel = () => {
             }
 
             const stockMap: Record<string, number> = {};
-            (stockData || []).forEach(row => {
+            (stockData || []).forEach((row: any) => {
                 stockMap[`${row.spot_id}_${row.product_id}`] = row.stock_left;
             });
 

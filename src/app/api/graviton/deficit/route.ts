@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Нормалізація для фронтенду
-    const mappedData = (data || []).map(row => {
+    const mappedData = (data || []).map((row: any) => {
         const portion = portionMap.get(String(row.код_продукту));
         return {
             ...row,
