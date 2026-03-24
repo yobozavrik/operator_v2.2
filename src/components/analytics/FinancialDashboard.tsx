@@ -640,8 +640,8 @@ function TrendChart({ data }: { data: Array<{ day: string; fact: number; plan: n
         <LineChart data={data}>
           <CartesianGrid stroke="#e2e8f0" vertical={false} />
           <XAxis dataKey="day" tickLine={false} axisLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
-          <YAxis tickLine={false} axisLine={false} tick={{ fill: '#64748b', fontSize: 12 }} tickFormatter={(v) => `${v.toFixed(1)}M`} />
-          <Tooltip formatter={(v: number) => `${v.toFixed(2)}M грн`} contentStyle={{ borderRadius: 12, borderColor: '#e2e8f0' }} />
+          <YAxis tickLine={false} axisLine={false} tick={{ fill: '#64748b', fontSize: 12 }} tickFormatter={(v) => `${Number(v ?? 0).toFixed(1)}M`} />
+          <Tooltip formatter={(v) => `${Number(v ?? 0).toFixed(2)}M грн`} contentStyle={{ borderRadius: 12, borderColor: '#e2e8f0' }} />
           <Line type="monotone" dataKey="fact" stroke="#0f766e" strokeWidth={2.5} dot={false} name="Факт" />
           <Line type="monotone" dataKey="plan" stroke="#2563eb" strokeWidth={2.2} dot={false} name="План" />
           <Line type="monotone" dataKey="prev" stroke="#94a3b8" strokeWidth={2} dot={false} name="Минулий" />
