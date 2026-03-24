@@ -428,8 +428,8 @@ export default function OwnerPage() {
                     tickFormatter={(value) => formatCompactCurrency(Number(value))}
                   />
                   <Tooltip
-                    formatter={(value: number, name: string) => [
-                      formatCurrency(Number(value)),
+                    formatter={(value, name) => [
+                      formatCurrency(Number(value ?? 0)),
                       name === 'current_revenue' ? 'Поточний' : 'Попередній',
                     ]}
                     labelFormatter={(label) => `День: ${label}`}
@@ -558,8 +558,8 @@ export default function OwnerPage() {
                     tickFormatter={(value) => formatCompactCurrency(Number(value))}
                   />
                   <Tooltip
-                    formatter={(value: number, name: string) => [
-                      formatCurrency(Number(value)),
+                    formatter={(value, name) => [
+                      formatCurrency(Number(value ?? 0)),
                       name === 'current_profit' ? 'Поточний' : 'Попередній',
                     ]}
                     labelFormatter={(label) => `День: ${label}`}
