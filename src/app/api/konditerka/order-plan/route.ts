@@ -104,6 +104,7 @@ export async function GET(request: Request) {
                 minStock: normalized.min,
                 avgSalesDay: normalized.avg,
                 needNet: normalized.need,
+                bakedAtFactory: 0,
                 unit,
             };
         }).filter((row) => row.productId > 0 && row.storeId > 0 && row.productName && row.storeName);
