@@ -193,7 +193,7 @@ async function handleCreateOrder(request: Request) {
 
 async function handleUpdateStock() {
     const supabase = createServiceRoleClient();
-    const [stockSync, productionSync] = await Promise.all([
+    const [stockSync, _catalogSync, productionSync] = await Promise.all([
         syncBulvarStocksFromEdge(supabase).catch((error) => ({
             syncedRows: 0,
             syncedStorages: 0,
