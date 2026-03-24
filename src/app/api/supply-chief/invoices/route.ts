@@ -49,6 +49,9 @@ function confidenceThreshold(): number {
 export async function GET(request: Request) {
   const auth = await requireRole(ALLOWED_ROLES);
   if (auth.error) return auth.error;
+  if (!auth.user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
   const { searchParams } = new URL(request.url);
   const limit = toPositiveInt(searchParams.get('limit'), 20, 100);
@@ -80,7 +83,10 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   const auth = await requireRole(ALLOWED_ROLES);
-  if (auth.error || !auth.user) return auth.error;
+  if (auth.error) return auth.error;
+  if (!auth.user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
   let source: 'camera' | 'upload' = 'upload';
   let fileName = 'invoice';

@@ -69,6 +69,36 @@ const SignalCard = ({ label, value, note, tone = 'neutral' }: { label: string; v
     </div>
 );
 
+const Clock = () => {
+    const [currentTime, setCurrentTime] = React.useState(new Date());
+
+    React.useEffect(() => {
+        const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+        return () => clearInterval(timer);
+    }, []);
+
+    const formattedDate = React.useMemo(() => {
+        const options: Intl.DateTimeFormatOptions = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+        const parts = new Intl.DateTimeFormat('uk-UA', options).formatToParts(currentTime);
+        const weekday = parts.find(p => p.type === 'weekday')?.value || '';
+        const day = parts.find(p => p.type === 'day')?.value || '';
+        const month = parts.find(p => p.type === 'month')?.value || '';
+        const year = parts.find(p => p.type === 'year')?.value || '';
+        const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+        return `${capitalize(weekday)}, ${day} ${capitalize(month)} ${year}`;
+    }, [currentTime]);
+
+    const formattedTime = currentTime.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+    return (
+        <div className="min-w-[220px] rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-right">
+            <div className="text-xs text-slate-500 font-medium mb-1">{formattedDate}</div>
+            <div className="text-4xl font-bold text-slate-900 leading-none">{formattedTime}</div>
+        </div>
+    );
+};
+
+
 export const BIDashboard = () => {
     // Get store context
     const { selectedStore, setSelectedStore, currentCapacity } = useStore();
@@ -103,7 +133,7 @@ export const BIDashboard = () => {
                 'postgres_changes',
                 { event: '*', schema: 'public', table: 'dashboard_deficit' },
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                (payload) => {
+                (payload: any) => {
                     mutateDeficit();
                     mutateMetrics();
                     mutateAllProducts();
@@ -117,7 +147,14 @@ export const BIDashboard = () => {
     }, [mutateDeficit, mutateMetrics, mutateAllProducts]);
 
     const [isRefreshing, setIsRefreshing] = React.useState(false);
-    const [currentTime, setCurrentTime] = React.useState<Date | null>(null);
+    const [lastManualRefresh, setLastManualRefresh] = React.useState<number | null>(() => {
+        if (typeof window !== 'undefined') {
+            const saved = localStorage.getItem('lastManualRefresh');
+            return saved ? parseInt(saved, 10) : null;
+        }
+        return null;
+    });
+
     const [dynamicMetrics, setDynamicMetrics] = React.useState<{
         totalKg: number;
         criticalWeight: number;
@@ -127,7 +164,6 @@ export const BIDashboard = () => {
     } | null>(null);
 
     const [planningDays, setPlanningDays] = React.useState(1);
-    const [lastManualRefresh, setLastManualRefresh] = React.useState<number | null>(null);
     const [posterData, setPosterData] = React.useState<any[] | null>(null);
     const [posterManufactures, setPosterManufactures] = React.useState<any[] | null>(null);
     const [posterCatalog, setPosterCatalog] = React.useState<any[] | null>(null);
@@ -191,41 +227,9 @@ export const BIDashboard = () => {
     const totalProductionKg = productionSummary?.total_kg || 0;
 
 
-    React.useEffect(() => {
-        const saved = localStorage.getItem('lastManualRefresh');
-        if (saved) setLastManualRefresh(parseInt(saved, 10));
-    }, []);
 
-    const minutesSinceLastRefresh = useMemo(() => {
-        if (!currentTime || !lastManualRefresh) return 0;
-        return Math.floor((currentTime.getTime() - lastManualRefresh) / 60000);
-    }, [currentTime, lastManualRefresh]);
 
-    const refreshUrgency = useMemo(() => {
-        if (!lastManualRefresh || minutesSinceLastRefresh < 45) return 'normal';
-        if (minutesSinceLastRefresh < 60) return 'warning';
-        return 'critical';
-    }, [lastManualRefresh, minutesSinceLastRefresh]);
 
-    React.useEffect(() => {
-        setCurrentTime(new Date());
-        const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-        return () => clearInterval(timer);
-    }, []);
-
-    const formattedDate = useMemo(() => {
-        if (!currentTime) return '';
-        const options: Intl.DateTimeFormatOptions = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
-        const parts = new Intl.DateTimeFormat('uk-UA', options).formatToParts(currentTime);
-        const weekday = parts.find(p => p.type === 'weekday')?.value || '';
-        const day = parts.find(p => p.type === 'day')?.value || '';
-        const month = parts.find(p => p.type === 'month')?.value || '';
-        const year = parts.find(p => p.type === 'year')?.value || '';
-        const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1); // Saturday, 14 February 2026
-        return `${capitalize(weekday)}, ${day} ${capitalize(month)} ${year}`;
-    }, [currentTime]);
-
-    const formattedTime = currentTime?.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) || '00:00:00';
 
     const handleRefresh = async () => {
         if (isRefreshing) return;
@@ -681,10 +685,8 @@ export const BIDashboard = () => {
                                     </div>
                                 </div>
 
-                                <div className="min-w-[220px] rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-right">
-                                    <div className="text-xs text-slate-500 font-medium mb-1">{formattedDate}</div>
-                                    <div className="text-4xl font-bold text-slate-900 leading-none">{formattedTime}</div>
-                                </div>
+                                <Clock />
+
                             </div>
                         </div>
 
@@ -797,7 +799,8 @@ export const BIDashboard = () => {
                                     <BIPowerMatrix
                                         deficitQueue={deficitQueue}
                                         allProductsQueue={allProductsQueue}
-                                        refreshUrgency={refreshUrgency}
+                                        refreshUrgency="normal"
+
                                         onMetricsUpdate={setDynamicMetrics}
                                         onManualRefresh={handleRefresh}
                                         planningDays={planningDays}

@@ -40,7 +40,7 @@ export async function GET() {
         }
 
         // Приводимо типи та нормалізуємо дані для фронтенду
-        const mappedData = (data || []).map((row) => {
+        const mappedData = (data || []).map((row: any) => {
             const portion = portionMap.get(String(row.код_продукту));
             return {
                 ...row,

@@ -33,7 +33,10 @@ export async function PATCH(
   context: { params: Promise<{ id: string }> }
 ) {
   const auth = await requireRole(ALLOWED_ROLES);
-  if (auth.error || !auth.user) return auth.error;
+  if (auth.error) return auth.error;
+  if (!auth.user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
   const { id } = await context.params;
   if (!id) {
