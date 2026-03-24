@@ -3,10 +3,6 @@ import { createClient } from '@supabase/supabase-js';
 
 export const dynamic = 'force-dynamic';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey);
-
 const PROMO_TYPES = new Set(['promotion', 'акція', 'promo']);
 const NEW_SKU_TYPES = new Set(['new_sku', 'новий_sku', 'новинка']);
 const PRICE_TYPES = new Set(['price_change', 'зміна_ціни', 'price']);
@@ -18,6 +14,31 @@ export async function GET(request: Request) {
     new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
   const to = searchParams.get('to') || new Date().toISOString().split('T')[0];
   const useLegacy = searchParams.get('legacy') === '1';
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
+    if (!useLegacy) {
+      return NextResponse.json(
+        {
+          summary: {
+            promo_count: 0,
+            new_sku_count: 0,
+            avg_discount: 0,
+            top_active_competitor: '—',
+            price_changes_count: 0,
+          },
+          period: { from, to },
+          source: 'market_intel',
+          error: 'Supabase env vars are not configured',
+        },
+        { status: 200 }
+      );
+    }
+    return NextResponse.json({ error: 'Supabase env vars are not configured' }, { status: 500 });
+  }
+
+  const supabase = createClient(supabaseUrl, supabaseKey);
 
   try {
     const { data: events, error: eventErr } = await supabase
