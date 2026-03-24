@@ -85,13 +85,13 @@ type BulvarProductionRow = {
 };
 
 type BulvarStatRow = {
-    product_id: unknown;
-    spot_id: unknown;
-    spot_name: unknown;
-    unit: unknown;
-    avg_sales_day: unknown;
-    min_stock: unknown;
-    stock_now: unknown;
+    product_id?: number | string | null;
+    spot_id?: number | string | null;
+    spot_name?: string | null;
+    unit?: string | null;
+    avg_sales_day?: number | string | null;
+    min_stock?: number | string | null;
+    stock_now?: number | string | null;
 };
 
 async function fetchBulvarStatRowsWithFallback(
