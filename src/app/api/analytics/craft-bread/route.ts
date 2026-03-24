@@ -3,13 +3,15 @@ import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-// Мы используем anon/service key в зависимости от настройки в проекте
-const supabase = createClient(supabaseUrl, supabaseKey);
-
 export async function GET(request: Request) {
     try {
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+        if (!supabaseUrl || !supabaseKey) {
+            return NextResponse.json({ error: 'Supabase env vars are not configured' }, { status: 500 });
+        }
+        const supabase = createClient(supabaseUrl, supabaseKey);
+
         const { searchParams } = new URL(request.url);
         const action = searchParams.get('action') || 'network';
         const startDate = searchParams.get('startDate');
