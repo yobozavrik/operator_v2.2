@@ -4,6 +4,8 @@ import { createServiceRoleClient } from '@/lib/branch-api';
 import { syncPizzaLiveDataFromPoster } from '@/lib/pizza-live-sync';
 import { Logger } from '@/lib/logger';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/pizza/distribution-stats
  * Fetches distribution statistics from v_pizza_distribution_stats view

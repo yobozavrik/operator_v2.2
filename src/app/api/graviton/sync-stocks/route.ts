@@ -3,6 +3,8 @@ import { createClient } from '@supabase/supabase-js';
 import { requireAuth } from '@/lib/auth-guard';
 import { normalizeGravitonName, syncGravitonCatalogFromManufactures } from '@/lib/graviton-catalog';
 
+export const dynamic = 'force-dynamic';
+
 const POSTER_TOKEN = process.env.POSTER_TOKEN || '';
 const POSTER_ACCOUNT = 'galia-baluvana34';
 

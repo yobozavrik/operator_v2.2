@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { requireAuth } from '@/lib/auth-guard';
 
+export const dynamic = 'force-dynamic';
+
 function hasInternalApiAccess(request: Request): boolean {
     const secret = process.env.INTERNAL_API_SECRET;
     if (!secret) return false;

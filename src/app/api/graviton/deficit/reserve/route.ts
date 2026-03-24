@@ -3,6 +3,8 @@ import { serverAuditLog } from '@/lib/logger.server';
 import { createClient } from '@/utils/supabase/server';
 import { requireAuth } from '@/lib/auth-guard';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
     const auth = await requireAuth();
     if (auth.error) return auth.error;

@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { requireAuth } from '@/lib/auth-guard';
 
+export const dynamic = 'force-dynamic';
+
 type ShopRow = { spot_id: number; storage_id: number; is_active: boolean };
 type SpotRow = { spot_id: number; name: string };
 

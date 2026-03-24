@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth-guard';
 import { createServiceRoleClient } from '@/lib/branch-api';
 
+export const dynamic = 'force-dynamic';
+
 function clampInt(value: string | null, fallback: number, min: number, max: number): number {
     const parsed = Number.parseInt(value || '', 10);
     if (!Number.isFinite(parsed)) return fallback;

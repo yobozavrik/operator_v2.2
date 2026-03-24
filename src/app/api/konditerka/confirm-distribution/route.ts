@@ -2,6 +2,8 @@
 import { supabase } from '@/lib/supabase';
 import { requireAuth } from '@/lib/auth-guard';
 
+export const dynamic = 'force-dynamic';
+
 interface DistributionConfirmation {
     distributions: Array<{
         storeId: number;

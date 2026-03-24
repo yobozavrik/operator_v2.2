@@ -2,6 +2,8 @@
 import { createClient } from '@/utils/supabase/server';
 import { requireAuth } from '@/lib/auth-guard';
 
+export const dynamic = 'force-dynamic';
+
 function defaultPredictionDate(): string {
   const d = new Date();
   d.setDate(d.getDate() + 1);

@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { requireRole } from '@/lib/auth-guard';
 import { createServiceRoleClient } from '@/lib/branch-api';
 
+export const dynamic = 'force-dynamic';
+
 const ALLOWED_ROLES = ['owner', 'cfo', 'coo', 'finance_analyst'];
 const ALLOWED_STATUSES = ['draft', 'needs_review', 'posted', 'failed'] as const;
 

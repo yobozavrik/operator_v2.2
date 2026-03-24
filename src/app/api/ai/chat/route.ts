@@ -3,6 +3,8 @@ import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { getUserRole, requireAuth } from '@/lib/auth-guard';
 
+export const dynamic = 'force-dynamic';
+
 type ChatMessage = {
   role: 'user' | 'assistant';
   content: string;
