@@ -22,7 +22,7 @@ const nextConfig: NextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob:",
               "font-src 'self'",
-              "connect-src 'self' https://*.supabase.co https://api.resend.com https://openrouter.ai https://api.openrouter.ai",
+              "connect-src 'self' https://*.supabase.co https://supabase.dmytrotovstytskyi.online https://api.resend.com https://openrouter.ai https://api.openrouter.ai",
               "frame-ancestors 'none'",
             ].join('; '),
           },
