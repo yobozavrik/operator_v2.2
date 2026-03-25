@@ -36,6 +36,10 @@ function parseForce(request: NextRequest): boolean {
     return String(force || '').toLowerCase() === 'true';
 }
 
+function parseSkipEmail(request: NextRequest): boolean {
+    return request.nextUrl.searchParams.get('skip_email') === 'true';
+}
+
 function parseRequestedDate(request: NextRequest): string | null {
     const date = request.nextUrl.searchParams.get('date');
     if (!date) return null;
@@ -199,6 +203,22 @@ async function runScheduledDistribution(request: NextRequest) {
         }
 
         const rows = (resultsRes.data || []) as FloridaDistributionEmailRow[];
+
+        if (parseSkipEmail(request)) {
+            await supabaseAdmin
+                .schema('florida1')
+                .from('distribution_jobs')
+                .update({ status: 'email_skipped', finished_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+                .eq('id', jobId);
+            return NextResponse.json({
+                success: true,
+                skip_email: true,
+                business_date: businessDate,
+                rows,
+                production_rows_count: productionSync.itemsCount,
+            });
+        }
+
         const email = await sendFloridaDistributionEmail({
             businessDate,
             rows,
