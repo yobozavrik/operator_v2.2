@@ -1,5 +1,9 @@
+import { buildDistributionExcelBuffer, type ServerDistributionRow } from '@/lib/server-excel-export';
+import { getDistributionEmailEnv } from '@/lib/distribution-env';
+
 export type BranchName = 'bulvar' | 'konditerka' | 'florida';
 
+// Compatible with all three branch row types
 export interface DistributionEmailRow {
     product_name: string;
     spot_name: string;
@@ -8,6 +12,11 @@ export interface DistributionEmailRow {
     min_stock?: number | null;
     current_stock?: number | null;
     avg_sales?: number | null;
+    unit?: string;
+    packaging_enabled?: boolean;
+    quantity_to_ship_packs_est?: number;
+    calc_time?: string;
+    created_at?: string;
 }
 
 export interface BranchDigestResult {
@@ -44,26 +53,8 @@ function safeNum(value: unknown): number {
     return parsed;
 }
 
-function escapeCsv(value: unknown): string {
-    const raw = String(value ?? '');
-    if (/[",\n]/.test(raw)) return `"${raw.replace(/"/g, '""')}"`;
-    return raw;
-}
-
-function buildBranchCsv(rows: DistributionEmailRow[]): string {
-    const header = ['Товар', 'Магазин', 'Количество', 'Статус', 'Мин. остаток', 'Тек. остаток', 'Ср. продажи'];
-    const lines = rows.map((row) =>
-        [
-            escapeCsv(row.product_name),
-            escapeCsv(row.spot_name),
-            escapeCsv(safeNum(row.quantity_to_ship)),
-            escapeCsv(row.delivery_status || ''),
-            escapeCsv(row.min_stock ?? ''),
-            escapeCsv(row.current_stock ?? ''),
-            escapeCsv(row.avg_sales ?? ''),
-        ].join(',')
-    );
-    return '\uFEFF' + [header.join(','), ...lines].join('\n');
+function parseRecipients(value: string | undefined): string[] {
+    return String(value || '').split(/[;,]/g).map((v) => v.trim()).filter(Boolean);
 }
 
 function buildCombinedHtml(businessDate: string, branches: BranchDigestResult[]): string {
@@ -111,7 +102,7 @@ function buildCombinedHtml(businessDate: string, branches: BranchDigestResult[])
 </tr>
 ${rowsHtml}
 </table>
-<p style="margin:0 0 4px 0;color:#666;font-size:12px;">Показано перших 10 рядків. Повний CSV у вкладенні.</p>`;
+<p style="margin:0 0 4px 0;color:#666;font-size:12px;">Показано перших 10 рядків. Повний Excel у вкладенні.</p>`;
         })
         .join('');
 
@@ -128,31 +119,18 @@ ${rowsHtml}
 ${statusRows}
 </table>
 ${branchSections}
-<p style="margin-top:16px;color:#666;font-size:12px;">Автоматичний дайджест. Повні CSV файли по кожній гілці — у вкладеннях.</p>
+<p style="margin-top:16px;color:#666;font-size:12px;">Автоматичний дайджест. Excel-файли по кожній гілці — у вкладеннях.</p>
 </div>`;
-}
-
-function parseRecipients(value: string | undefined): string[] {
-    return String(value || '').split(/[;,]/g).map((v) => v.trim()).filter(Boolean);
 }
 
 export async function sendCombinedDistributionEmail(
     input: SendCombinedDistributionEmailInput
 ): Promise<SendCombinedDistributionEmailResult> {
-    const resendApiKey =
-        process.env.BULVAR_RESEND_API_KEY ||
-        process.env.KONDITERKA_RESEND_API_KEY ||
-        process.env.FLORIDA_RESEND_API_KEY ||
-        process.env.RESEND_API_KEY;
-    const from =
-        process.env.DISTRIBUTION_EMAIL_FROM ||
-        process.env.BULVAR_DISTRIBUTION_EMAIL_FROM ||
-        process.env.KONDITERKA_DISTRIBUTION_EMAIL_FROM;
-    const recipients = parseRecipients(
-        process.env.DISTRIBUTION_EMAIL_TO ||
-        process.env.BULVAR_DISTRIBUTION_EMAIL_TO ||
-        process.env.KONDITERKA_DISTRIBUTION_EMAIL_TO
-    );
+    // Use bulvar env as primary for the combined digest
+    const env = getDistributionEmailEnv('bulvar');
+    const resendApiKey = env.resendApiKey;
+    const from = env.emailFrom;
+    const recipients = parseRecipients(env.emailTo);
 
     const subject = `Distribution digest ${input.businessDate}`;
 
@@ -160,10 +138,20 @@ export async function sendCombinedDistributionEmail(
         return { sent: false, status: 'failed', subject, recipients, reason: 'Resend configuration is incomplete' };
     }
 
-    // Always include all 3 attachments — empty branches get a header-only CSV
-    const attachments = input.branches.map((b) => ({
-        filename: `${b.branch}-distribution-${input.businessDate}.csv`,
-        content: Buffer.from(buildBranchCsv(b.rows), 'utf8').toString('base64'),
+    // Build 3 xlsx buffers in parallel — always include all 3 even if rows are empty
+    const excelBuffers = await Promise.all(
+        input.branches.map((b) =>
+            buildDistributionExcelBuffer(
+                BRANCH_LABELS[b.branch],
+                input.businessDate,
+                b.rows as ServerDistributionRow[]
+            )
+        )
+    );
+
+    const attachments = input.branches.map((b, i) => ({
+        filename: `${b.branch}-distribution-${input.businessDate}.xlsx`,
+        content: excelBuffers[i].toString('base64'),
     }));
 
     const html = buildCombinedHtml(input.businessDate, input.branches);
