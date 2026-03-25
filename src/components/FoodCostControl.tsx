@@ -1151,86 +1151,31 @@ function CategoryRow({ cat }: { cat: CategoryMetrics }) {
 type MainTab = 'positions' | 'supply' | 'matrix' | 'heatmap' | 'forecast' | 'goals' | 'normative';
 
 async function exportToExcel(data: FoodCostData, tab: MainTab, historyData?: WeekData[]) {
-    const XLSX = await import('xlsx');
-
-    const wb = XLSX.utils.book_new();
-
-    if (tab === 'positions' || tab === 'matrix') {
-        // Positions sheet
-        const rows = data.categories.flatMap(cat =>
-            cat.products.map(p => ({
-                'Категорія': cat.category_name,
-                'Позиція': p.product_name,
-                'Виручка, грн': Math.round(p.revenue),
-                'Собівартість, грн': Math.round(p.cost),
-                'Маржа, грн': Math.round(p.margin),
-                'Фудкост %': parseFloat(p.foodcost_pct.toFixed(1)),
-                'ФК попер. %': parseFloat(p.foodcost_pct_prev.toFixed(1)),
-                'Дельта ФК': parseFloat(p.foodcost_delta.toFixed(2)),
-                'Зміна маржі %': parseFloat(p.margin_delta_pct.toFixed(1)),
-                'Продано': parseFloat(p.qty.toFixed(2)),
-                'Одиниця': p.unit,
-                'Ціна': p.price,
-            }))
-        );
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), 'Позиції');
-    }
-
-    if (tab === 'matrix') {
-        const FC_THRESHOLD = 40;
-        const MARGIN_THRESHOLD = 5000;
-        const quadrant = (fc: number, m: number) => {
-            if (fc <= FC_THRESHOLD && m >= MARGIN_THRESHOLD) return 'Зірки';
-            if (fc > FC_THRESHOLD && m >= MARGIN_THRESHOLD) return 'Дійні корови';
-            if (fc <= FC_THRESHOLD && m < MARGIN_THRESHOLD) return 'Питання';
-            return 'Баласт';
-        };
-        const rows = data.categories.flatMap(cat =>
-            cat.products.filter(p => p.revenue > 500).map(p => ({
-                'Квадрант': quadrant(p.foodcost_pct, p.margin),
-                'Категорія': cat.category_name,
-                'Позиція': p.product_name,
-                'Фудкост %': parseFloat(p.foodcost_pct.toFixed(1)),
-                'Маржа, грн': Math.round(p.margin),
-                'Виручка, грн': Math.round(p.revenue),
-            }))
-        );
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), 'Ефективність');
-    }
-
-    if (tab === 'heatmap' && historyData && historyData.length > 0) {
-        const catIds = Array.from(new Set(historyData.flatMap(w => w.categories.map(c => c.category_id))));
-        const rows = catIds.map(catId => {
-            const name = historyData.flatMap(w => w.categories).find(c => c.category_id === catId)?.category_name ?? catId;
-            const row: Record<string, string | number> = { 'Категорія': name };
-            historyData.forEach(w => {
-                const c = w.categories.find(c => c.category_id === catId);
-                row[w.label] = c ? parseFloat(c.foodcost_pct.toFixed(1)) : '';
-            });
-            return row;
+    try {
+        const response = await fetch('/api/foodcost/export', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ data, tab, historyData }),
         });
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), 'Теплова карта');
-    }
 
-    if (tab === 'goals') {
-        const allProducts = data.categories.flatMap(cat =>
-            cat.products.map(p => ({
-                'Категорія': cat.category_name,
-                'Позиція': p.product_name,
-                'ФК %': parseFloat(p.foodcost_pct.toFixed(1)),
-                'Маржа, грн': Math.round(p.margin),
-                'Виручка, грн': Math.round(p.revenue),
-                'Статус': p.foodcost_pct > 50 ? 'Критичний' : p.foodcost_pct > 40 ? 'Увага' : 'OK',
-            }))
-        );
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(allProducts), 'Цілі');
-    }
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to export');
+        }
 
-    if (wb.SheetNames.length === 0) {
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet([{ info: 'Немає даних для цієї вкладки' }]), 'Дані');
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `foodcost_${tab}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        a.remove();
+    } catch (err: any) {
+        console.error('Export error:', err);
+        alert('Помилка експорту: ' + err.message);
     }
-
-    XLSX.writeFile(wb, `foodcost_${tab}_${new Date().toISOString().slice(0, 10)}.xlsx`);
 }
 
 export default function FoodCostControl() {
