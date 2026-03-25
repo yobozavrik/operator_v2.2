@@ -254,9 +254,9 @@ async function persistEmailStatus(
     }
 }
 
-async function triggerDistributionRun(request: NextRequest): Promise<void> {
+async function triggerDistributionRun(): Promise<void> {
     const cronSecret = getBulvarCronSecret();
-    const origin = request.nextUrl.origin;
+    const origin = process.env.INTERNAL_BASE_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
     const response = await fetch(`${origin}/api/bulvar/distribution/run`, {
         method: 'POST',
         headers: {
@@ -336,7 +336,7 @@ async function runScheduledDistribution(request: NextRequest) {
 
     let rowsCount = await countDistributionRowsForDate(supabaseAdmin, businessDate);
     if (force || rowsCount === 0) {
-        await triggerDistributionRun(request);
+        await triggerDistributionRun();
         rowsCount = await countDistributionRowsForDate(supabaseAdmin, businessDate);
     }
 

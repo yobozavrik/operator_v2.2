@@ -36,12 +36,24 @@ export async function middleware(request: NextRequest) {
     })
 
     // Публічні шляхи — не потребують авторизації в middleware
-    // API routes захищені через requireAuth() в кожному handler
     const pathname = request.nextUrl.pathname
+
+    // Cron/webhook routes use their own secret-based auth (timingSafeEqual),
+    // not Supabase session cookies — they must stay public here.
+    const CRON_ROUTES = new Set([
+        '/api/bulvar/distribution/scheduled-run',
+        '/api/bulvar/distribution/run',
+        '/api/florida/distribution/scheduled-run',
+        '/api/konditerka/distribution/scheduled-run',
+        '/api/distribution/scheduled-run',
+        '/api/graviton/distribution/run',
+        '/api/sadova/distribution/run',
+    ]);
+
     const isPublic =
         pathname === '/login' ||
         pathname === '/favicon.ico' ||
-        pathname.startsWith('/api/') ||              // API захищені через requireAuth() в handlers
+        CRON_ROUTES.has(pathname) ||
         pathname.startsWith('/.well-known') ||
         pathname.startsWith('/_next');
 

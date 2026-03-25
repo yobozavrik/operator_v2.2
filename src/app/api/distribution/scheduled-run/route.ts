@@ -94,7 +94,7 @@ async function runCombinedDistribution(request: NextRequest) {
     }
 
     const businessDate = getKyivBusinessDate();
-    const origin = request.nextUrl.origin;
+    const origin = process.env.INTERNAL_BASE_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
     const [bulvarRes, konditerkaRes, floridaRes] = await Promise.allSettled([
         fetchBranch(
