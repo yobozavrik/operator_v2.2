@@ -142,6 +142,7 @@ export async function sendCombinedDistributionEmail(
     const resendApiKey =
         process.env.BULVAR_RESEND_API_KEY ||
         process.env.KONDITERKA_RESEND_API_KEY ||
+        process.env.FLORIDA_RESEND_API_KEY ||
         process.env.RESEND_API_KEY;
     const from =
         process.env.DISTRIBUTION_EMAIL_FROM ||
