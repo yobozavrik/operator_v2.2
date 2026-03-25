@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 interface Message {
   role: 'user' | 'assistant';
   content: string;
+  agents?: string[];
 }
 
 export const AIChatAssistant = () => {
@@ -54,7 +55,8 @@ export const AIChatAssistant = () => {
       }
 
       if (typeof data.content === 'string' && data.content.trim().length > 0) {
-        setMessages(prev => [...prev, { role: 'assistant', content: data.content }]);
+        const agents = Array.isArray(data.agents) ? data.agents as string[] : undefined;
+        setMessages(prev => [...prev, { role: 'assistant', content: data.content, agents }]);
       } else {
         setMessages(prev => [
           ...prev,
@@ -118,8 +120,13 @@ export const AIChatAssistant = () => {
                     </p>
                   </div>
                   <div className="flex flex-wrap justify-center gap-2 mt-4">
-                    {['Що таке Гравитон?', 'Де подивитися дефіцит?', 'Як працює прогноз?'].map(q => (
-                      <button 
+                    {[
+                      'Який план виробництва на сьогодні?',
+                      'Який foodcost цього тижня?',
+                      'Скільки людей на зміні?',
+                      'Прогноз продажів на завтра?',
+                    ].map(q => (
+                      <button
                         key={q}
                         onClick={() => setInput(q)}
                         className="text-[11px] bg-white border border-slate-200 px-3 py-1.5 rounded-full hover:border-blue-300 hover:text-blue-600 transition-all font-medium"
@@ -141,13 +148,24 @@ export const AIChatAssistant = () => {
                   )}>
                     {msg.role === 'user' ? <User size={16} /> : <Bot size={16} />}
                   </div>
-                  <div className={cn(
-                    "max-w-[80%] p-3 rounded-2xl text-sm leading-relaxed",
-                    msg.role === 'user' 
-                      ? "bg-blue-600 text-white rounded-tr-none" 
-                      : "bg-white border border-slate-200 text-slate-700 rounded-tl-none shadow-sm"
-                  )}>
-                    {msg.content}
+                  <div className="flex flex-col gap-1 max-w-[80%]">
+                    {msg.role === 'assistant' && msg.agents && msg.agents.length > 0 && (
+                      <div className="flex flex-wrap gap-1 px-1">
+                        {msg.agents.map((a) => (
+                          <span key={a} className="text-[9px] font-bold uppercase tracking-wider bg-blue-50 text-blue-500 border border-blue-100 px-2 py-0.5 rounded-full">
+                            {a}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    <div className={cn(
+                      "p-3 rounded-2xl text-sm leading-relaxed",
+                      msg.role === 'user'
+                        ? "bg-blue-600 text-white rounded-tr-none"
+                        : "bg-white border border-slate-200 text-slate-700 rounded-tl-none shadow-sm"
+                    )}>
+                      {msg.content}
+                    </div>
                   </div>
                 </div>
               ))}

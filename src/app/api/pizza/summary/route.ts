@@ -15,7 +15,12 @@ export async function GET() {
         let liveTotalBaked: number | null = null;
 
         try {
-            const syncResult = await syncPizzaLiveDataFromPoster(supabase);
+            const syncResult = await Promise.race([
+                syncPizzaLiveDataFromPoster(supabase),
+                new Promise<never>((_, reject) =>
+                    setTimeout(() => reject(new Error('sync timeout')), 2000)
+                ),
+            ]);
             liveTotalBaked = syncResult.totalProductionQty;
         } catch (error) {
             Logger.error('[Pizza Summary] live sync failed', { error: String(error) });
@@ -33,10 +38,13 @@ export async function GET() {
             return NextResponse.json({ total_baked: 0, total_norm: 0, total_need: 0 });
         }
 
-        return NextResponse.json({
-            ...(data || { total_baked: 0, total_norm: 0, total_need: 0 }),
-            total_baked: liveTotalBaked ?? Number(data?.total_baked || 0),
-        });
+        return NextResponse.json(
+            {
+                ...(data || { total_baked: 0, total_norm: 0, total_need: 0 }),
+                total_baked: liveTotalBaked ?? Number(data?.total_baked || 0),
+            },
+            { headers: { 'Cache-Control': 'private, max-age=30, stale-while-revalidate=60' } }
+        );
     } catch (error) {
         console.error('[Pizza Summary] Error:', error);
         return NextResponse.json({ error: String(error) }, { status: 500 });

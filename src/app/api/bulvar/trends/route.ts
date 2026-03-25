@@ -15,7 +15,8 @@ export async function GET() {
             .schema('bulvar1')
             .from('v_bulvar_trends_14d')
             .select('product_id, product_name, unit, qty_last_7, qty_prev_7')
-            .order('qty_last_7', { ascending: false });
+            .order('qty_last_7', { ascending: false })
+            .limit(500);
 
         if (error) {
             console.error('Error fetching bulvar trends:', error);

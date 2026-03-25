@@ -1,5 +1,10 @@
+import dynamic from 'next/dynamic';
 import { DashboardLayout } from '@/components/layout';
-import FoodCostControl from '@/components/FoodCostControl';
+
+const FoodCostControl = dynamic(
+    () => import('@/components/FoodCostControl'),
+    { ssr: false, loading: () => <div className="flex items-center justify-center h-64 text-slate-400">Завантаження...</div> }
+);
 
 export default function FoodCostPage() {
     return (

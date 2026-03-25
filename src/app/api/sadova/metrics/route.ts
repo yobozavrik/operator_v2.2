@@ -53,7 +53,8 @@ export async function GET(request: Request) {
             .schema('sadova1')
             .from('distribution_results')
             .select('product_id, quantity_to_ship')
-            .eq('business_date', todayKyiv);
+            .eq('business_date', todayKyiv)
+            .limit(1000);
 
         if (error) {
             return NextResponse.json({ error: error.message }, { status: 500 });
@@ -65,12 +66,10 @@ export async function GET(request: Request) {
         const totalKg = rows.reduce((sum, r) => sum + (Number(r.quantity_to_ship) || 0), 0);
         const skuCount = new Set(rows.map((r) => r.product_id).filter((id) => id !== null)).size;
 
-        return NextResponse.json({
-            shopLoad: totalKg,
-            criticalSKU: 0,
-            totalSKU: skuCount,
-            lastUpdate: new Date().toISOString(),
-        });
+        return NextResponse.json(
+            { shopLoad: totalKg, criticalSKU: 0, totalSKU: skuCount, lastUpdate: new Date().toISOString() },
+            { headers: { 'Cache-Control': 'private, max-age=30, stale-while-revalidate=60' } }
+        );
     } catch (err: unknown) {
         const message = err instanceof Error ? err.message : String(err);
         return NextResponse.json({ error: message }, { status: 500 });

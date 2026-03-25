@@ -60,7 +60,12 @@ export async function getPizzaSummary(): Promise<SummaryResponse> {
         let liveTotalBaked: number | null = null;
 
         try {
-            const syncResult = await syncPizzaLiveDataFromPoster(supabase);
+            const syncResult = await Promise.race([
+                syncPizzaLiveDataFromPoster(supabase),
+                new Promise<never>((_, reject) =>
+                    setTimeout(() => reject(new Error('Pizza sync timeout')), 2000)
+                ),
+            ]);
             liveTotalBaked = syncResult.totalProductionQty;
         } catch (e) {
             Logger.warn('Pizza live sync failed during RSC fetch');
@@ -124,8 +129,15 @@ export async function getBulvarSummary(): Promise<SummaryResponse> {
         let liveTotalBaked: number | null = null;
         try {
             const serviceClient = createServiceRoleClient();
-            await syncBulvarCatalogFromPoster(serviceClient);
-            const syncResult = await syncBranchProductionFromPoster(serviceClient, 'bulvar1', 22);
+            const syncResult = await Promise.race([
+                (async () => {
+                    await syncBulvarCatalogFromPoster(serviceClient);
+                    return syncBranchProductionFromPoster(serviceClient, 'bulvar1', 22);
+                })(),
+                new Promise<never>((_, reject) =>
+                    setTimeout(() => reject(new Error('Bulvar sync timeout')), 2500)
+                ),
+            ]);
             liveTotalBaked = syncResult.totalQty;
         } catch (e) {}
 
