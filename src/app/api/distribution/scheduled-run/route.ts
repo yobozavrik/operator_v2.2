@@ -42,15 +42,6 @@ interface BranchSkipEmailPayload {
     status?: string;
 }
 
-async function callBranchWithSkipEmail(
-    origin: string,
-    path: string,
-    secret: string,
-    businessDate: string
-): Promise<BranchDigestResult['status'] extends 'ok' ? { ok: true; rows: DistributionEmailRow[]; productionRowsCount: number } : never> {
-    throw new Error('not used'); // overloaded below
-}
-
 type BranchCallOk = { ok: true; rows: DistributionEmailRow[]; productionRowsCount: number };
 type BranchCallFail = { ok: false; reason: string };
 type BranchCallReturn = BranchCallOk | BranchCallFail;
