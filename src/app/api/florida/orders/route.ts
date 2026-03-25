@@ -3,6 +3,7 @@ import { requireAuth } from '@/lib/auth-guard';
 import { Logger } from '@/lib/logger';
 import { fetchFloridaProduction180dProductIds } from '@/lib/florida-production-180d';
 import { createServiceRoleClient } from '@/lib/branch-api';
+import { applyFloridaPackagingConfigToRows, fetchFloridaPackagingConfig } from '@/lib/florida-packaging';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 export const dynamic = 'force-dynamic';
@@ -46,7 +47,18 @@ export async function GET() {
             return NextResponse.json([]);
         }
 
-        return NextResponse.json(await fetchDistributionRows(supabase, workshopProductIds));
+        const distributionRows = await fetchDistributionRows(supabase, workshopProductIds);
+        const productIds = Array.from(
+            new Set(
+                distributionRows
+                    .map((row) => Number(row.product_id))
+                    .filter((id) => Number.isFinite(id) && id > 0)
+            )
+        );
+        const configMap = await fetchFloridaPackagingConfig(supabase, productIds).catch(() => new Map());
+        const enrichedRows = applyFloridaPackagingConfigToRows(distributionRows, configMap);
+
+        return NextResponse.json(enrichedRows);
     } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'Unknown error';
         Logger.error('Critical Florida API Error', { error: message });
