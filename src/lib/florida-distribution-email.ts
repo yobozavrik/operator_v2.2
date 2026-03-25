@@ -37,6 +37,15 @@ function safeNum(value: unknown): number {
     return parsed;
 }
 
+function escapeHtml(value: unknown): string {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#x27;');
+}
+
 function escapeCsv(value: unknown): string {
     const raw = String(value ?? '');
     if (/[",\n]/.test(raw)) {
@@ -83,8 +92,8 @@ function buildDistributionHtml(
         .map(
             (row) =>
                 `<tr>
-<td style="padding:6px 10px;border:1px solid #ddd;">${row.product_name || ''}</td>
-<td style="padding:6px 10px;border:1px solid #ddd;">${row.spot_name || ''}</td>
+<td style="padding:6px 10px;border:1px solid #ddd;">${escapeHtml(row.product_name)}</td>
+<td style="padding:6px 10px;border:1px solid #ddd;">${escapeHtml(row.spot_name)}</td>
 <td style="padding:6px 10px;border:1px solid #ddd;text-align:right;">${safeNum(row.quantity_to_ship)}</td>
 </tr>`
         )

@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { requireAuth } from '@/lib/auth-guard';
+import { timingSafeEqual } from 'crypto';
 import { normalizeSadovaName, syncSadovaCatalogFromManufactures } from '@/lib/sadova-catalog';
 
 export const dynamic = 'force-dynamic';
@@ -57,7 +58,16 @@ function hasInternalApiAccess(request: Request): boolean {
     const authHeader = request.headers.get('authorization');
     const headerSecret = request.headers.get('x-internal-api-secret');
 
-    return authHeader === `Bearer ${secret}` || headerSecret === secret;
+    const secretBuf = Buffer.from(secret);
+    const bearerValue = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
+
+    if (bearerValue && bearerValue.length === secret.length) {
+        if (timingSafeEqual(Buffer.from(bearerValue), secretBuf)) return true;
+    }
+    if (headerSecret && headerSecret.length === secret.length) {
+        if (timingSafeEqual(Buffer.from(headerSecret), secretBuf)) return true;
+    }
+    return false;
 }
 
 async function posterRequest(method: string, params: Record<string, string> = {}) {
