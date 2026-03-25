@@ -8,9 +8,6 @@ export const authedFetcher = async (url: string) => {
     const supabase = createClient();
     const { data, error } = await supabase.auth.getSession();
 
-    // 🔍 TEMP DEBUG LOG
-    console.log('[authedFetcher] url=', url, 'hasSession=', !!data.session, 'err=', error?.message);
-
     const token = data.session?.access_token;
 
     const headers: Record<string, string> = {

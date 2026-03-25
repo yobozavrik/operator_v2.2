@@ -1,10 +1,14 @@
 'use client';
 
 import React from 'react';
+import dynamic from 'next/dynamic';
 import { notFound, useParams } from 'next/navigation';
-import { BIDashboard } from '@/components/graviton/BIDashboard'; // Graviton Dashboard
 import { useStore } from '@/context/StoreContext';
-// Import other dashboards here if needed (e.g. Pizza)
+
+const BIDashboard = dynamic(
+    () => import('@/components/graviton/BIDashboard').then((m) => m.BIDashboard),
+    { ssr: false, loading: () => <div className="flex items-center justify-center h-64 text-slate-400">Завантаження...</div> }
+);
 
 export default function WorkshopProductionPage() {
     const params = useParams();

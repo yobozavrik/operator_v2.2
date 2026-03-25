@@ -25,8 +25,9 @@ export async function GET() {
 
         const summary = data || { total_baked: 0, total_norm: 0, total_need: 0 };
         const totalBaked = Number(summary.total_baked) || 0;
+        const cacheHeaders = { 'Cache-Control': 'private, max-age=30, stale-while-revalidate=60' };
         if (totalBaked > 0 || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-            return NextResponse.json(summary);
+            return NextResponse.json(summary, { headers: cacheHeaders });
         }
 
         const supabaseAdmin = createServiceRoleClient();
@@ -38,10 +39,10 @@ export async function GET() {
             console.warn('[Konditerka Summary] production fallback failed:', fallbackError);
         }
 
-        return NextResponse.json({
-            ...summary,
-            total_baked: Math.round(fallbackTotal),
-        });
+        return NextResponse.json(
+            { ...summary, total_baked: Math.round(fallbackTotal) },
+            { headers: cacheHeaders }
+        );
     } catch (error) {
         console.error('[Konditerka Summary] Error:', error);
         return NextResponse.json({ error: String(error) }, { status: 500 });

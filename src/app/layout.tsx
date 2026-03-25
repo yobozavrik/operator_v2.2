@@ -4,6 +4,7 @@ import { StoreProvider } from "@/context/StoreContext";
 import { ToastProvider } from "@/components/ui/Toast";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ClientProviders } from "@/components/providers/ClientProviders";
+import { SWRProvider } from "@/components/providers/SWRProvider";
 import { geistSans, jetbrains } from "@/lib/fonts";
 
 export const metadata: Metadata = {
@@ -29,13 +30,15 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <div className="bg-noise opacity-10 pointer-events-none fixed inset-0 z-50" />
-          <StoreProvider>
-            <ToastProvider>
-              <ClientProviders>
-                {children}
-              </ClientProviders>
-            </ToastProvider>
-          </StoreProvider>
+          <SWRProvider>
+            <StoreProvider>
+              <ToastProvider>
+                <ClientProviders>
+                  {children}
+                </ClientProviders>
+              </ToastProvider>
+            </StoreProvider>
+          </SWRProvider>
         </ThemeProvider>
       </body>
     </html>

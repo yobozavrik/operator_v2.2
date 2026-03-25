@@ -38,20 +38,38 @@ export async function GET() {
             auth: { persistSession: false },
         });
 
-        await syncBulvarCatalogFromPoster(supabase).catch((error) => {
-            Logger.warn('[bulvar Orders API] catalog sync failed', { meta: { error: String(error) } });
-        });
+        // Run independent syncs in parallel with a shared timeout
+        const SYNC_TIMEOUT_MS = 3000;
+        const withTimeout = <T>(p: Promise<T>, fallback: T): Promise<T> =>
+            Promise.race([
+                p,
+                new Promise<T>((resolve) => setTimeout(() => resolve(fallback), SYNC_TIMEOUT_MS)),
+            ]);
 
-        // Keep Bulvar product catalog self-updated from workshop production before reading cards.
+        const [productionSync] = await Promise.all([
+            withTimeout(
+                syncBranchProductionFromPoster(supabase, 'bulvar1', 22).catch((error) => {
+                    Logger.error('[bulvar Orders API] live production sync failed', { error: String(error) });
+                    return null;
+                }),
+                null
+            ),
+            withTimeout(
+                syncBulvarCatalogFromPoster(supabase).catch((error) => {
+                    Logger.warn('[bulvar Orders API] catalog sync failed', { meta: { error: String(error) } });
+                }),
+                undefined
+            ),
+            withTimeout(
+                syncBulvarStocksFromEdge(supabase).catch((error) => {
+                    Logger.warn('[bulvar Orders API] stock sync failed', { meta: { error: String(error) } });
+                }),
+                undefined
+            ),
+        ]);
+
+        // Refresh catalog view after syncs complete
         await refreshBulvarProductionCatalog(supabase);
-
-        const productionSync = await syncBranchProductionFromPoster(supabase, 'bulvar1', 22).catch((error) => {
-            Logger.error('[bulvar Orders API] live production sync failed', { error: String(error) });
-            return null;
-        });
-        await syncBulvarStocksFromEdge(supabase).catch((error) => {
-            Logger.warn('[bulvar Orders API] stock sync failed', { meta: { error: String(error) } });
-        });
 
         const liveTodayPosterProductIds = Array.from(
             new Set(
