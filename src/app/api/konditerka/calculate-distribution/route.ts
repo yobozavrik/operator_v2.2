@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { requireAuth } from '@/lib/auth-guard';
 
@@ -16,7 +16,6 @@ interface RuntimeStoreRow {
     norm_3_days: number;
     need_net: number;
     priority: number;
-    unit?: string;
 }
 
 function toNumber(value: unknown): number {
@@ -31,11 +30,6 @@ function toNumber(value: unknown): number {
 function toPositiveInt(value: unknown): number | null {
     const n = Math.trunc(toNumber(value));
     return n > 0 ? n : null;
-}
-
-function safeFraction(value: unknown): number {
-    const parsed = toNumber(value);
-    return Number.isFinite(parsed) ? Number(parsed.toFixed(3)) : 0;
 }
 
 async function buildFallbackStoresForNewProduct(productId: number): Promise<RuntimeStoreRow[]> {
@@ -92,7 +86,7 @@ async function buildFallbackStoresForNewProduct(productId: number): Promise<Runt
         for (const row of (leftoversRows || []) as Array<Record<string, unknown>>) {
             const storageId = toPositiveInt(row.storage_id);
             if (!storageId) continue;
-            stockByStorage.set(storageId, Math.max(0, safeFraction(row.count)));
+            stockByStorage.set(storageId, Math.max(0, toNumber(row.count)));
         }
     }
 
@@ -103,7 +97,6 @@ async function buildFallbackStoresForNewProduct(productId: number): Promise<Runt
         norm_3_days: 0,
         need_net: 0,
         priority: 999,
-        unit: 'шт', // fallback assumes pieces
     }));
 
     fallbackRows.sort((a, b) => a.stock_now - b.stock_now || a.spot_name.localeCompare(b.spot_name));
@@ -146,10 +139,9 @@ export async function POST(request: NextRequest) {
         const storesData = ((stores || []) as Array<Record<string, unknown>>).map((s) => ({
             spot_id: toPositiveInt(s.spot_id) || toPositiveInt(s.store_id) || 0,
             spot_name: String(s.spot_name || s.store_name || '').trim(),
-            unit: typeof s.unit === 'string' ? s.unit : undefined,
-            stock_now: Math.max(0, safeFraction(s.stock_now ?? s.current_stock ?? 0)),
-            norm_3_days: Math.max(0, safeFraction(s.norm_3_days ?? s.min_stock ?? 0)),
-            need_net: Math.max(0, safeFraction(s.need_net ?? s.net_need ?? 0)),
+            stock_now: Math.max(0, toNumber(s.stock_now ?? s.current_stock ?? 0)),
+            norm_3_days: Math.max(0, toNumber(s.norm_3_days ?? s.min_stock ?? 0)),
+            need_net: Math.max(0, toNumber(s.need_net ?? s.net_need ?? 0)),
             priority: Math.max(1, Math.trunc(toNumber(s.priority ?? s.surplus_priority ?? 999))),
         })) as RuntimeStoreRow[];
 
@@ -159,126 +151,76 @@ export async function POST(request: NextRequest) {
             runtimeStores = await buildFallbackStoresForNewProduct(productId);
         }
 
-        const isKg = runtimeStores.length > 0 && runtimeStores[0].unit === 'кг';
-        let remaining = isKg ? safeFraction(productionQuantity) : Math.floor(productionQuantity);
-
         const result: Record<number, number> = {};
+        let remaining = productionQuantity;
+
         runtimeStores.forEach((s) => {
             if (s.spot_id > 0) result[s.spot_id] = 0;
         });
 
-        if (isKg) {
-            // Continuous Distribution
-            const storeNeeds: { storeId: number; need: number; priority: number }[] = [];
+        const zeroStockStores = runtimeStores.filter((s) => s.stock_now === 0);
+        for (const store of zeroStockStores) {
+            if (remaining <= 0) break;
+            result[store.spot_id] += 1;
+            remaining -= 1;
+        }
+
+        if (remaining > 0) {
             let totalNetNeed = 0;
+            const storeNeeds: { storeId: number; need: number }[] = [];
 
             runtimeStores.forEach((s) => {
-                const need = Math.max(0, s.norm_3_days - s.stock_now);
+                const distributedSoFar = result[s.spot_id] || 0;
+                const effectiveStock = s.stock_now + distributedSoFar;
+                const need = Math.max(0, s.norm_3_days - effectiveStock);
+
                 if (need > 0) {
-                    storeNeeds.push({ storeId: s.spot_id, need, priority: s.priority });
+                    storeNeeds.push({ storeId: s.spot_id, need });
                     totalNetNeed += need;
                 }
             });
 
             if (totalNetNeed > 0) {
-                if (remaining <= totalNetNeed) {
+                if (remaining < totalNetNeed) {
+                    const K = remaining / totalNetNeed;
                     for (const item of storeNeeds) {
-                        const qty = safeFraction(item.need * (productionQuantity / totalNetNeed));
-                        result[item.storeId] += qty;
-                        remaining -= qty;
+                        const qty = Math.floor(item.need * K);
+                        if (qty > 0 && remaining >= qty) {
+                            result[item.storeId] += qty;
+                            remaining -= qty;
+                        }
                     }
                 } else {
                     for (const item of storeNeeds) {
-                        result[item.storeId] += item.need;
-                        remaining -= item.need;
-                    }
-                }
-            }
-
-            if (remaining > 0.001) {
-                const sortedByPriority = [...runtimeStores].sort((a, b) => {
-                    if (a.priority !== b.priority) return a.priority - b.priority;
-                    return a.spot_name.localeCompare(b.spot_name);
-                });
-                // Distribute equally among highest priority
-                const equalShare = safeFraction(remaining / sortedByPriority.length);
-                for (const store of sortedByPriority) {
-                    result[store.spot_id] += equalShare;
-                    remaining -= equalShare;
-                }
-            }
-        } else {
-            // Discrete Distribution
-            const zeroStockStores = runtimeStores.filter((s) => s.stock_now === 0);
-            for (const store of zeroStockStores) {
-                if (remaining <= 0) break;
-                result[store.spot_id] += 1;
-                remaining -= 1;
-            }
-
-            if (remaining > 0) {
-                let totalNetNeed = 0;
-                const storeNeeds: { storeId: number; need: number }[] = [];
-
-                runtimeStores.forEach((s) => {
-                    const distributedSoFar = result[s.spot_id] || 0;
-                    const effectiveStock = s.stock_now + distributedSoFar;
-                    const need = Math.max(0, s.norm_3_days - effectiveStock);
-
-                    if (need > 0) {
-                        storeNeeds.push({ storeId: s.spot_id, need });
-                        totalNetNeed += need;
-                    }
-                });
-
-                if (totalNetNeed > 0) {
-                    if (remaining < totalNetNeed) {
-                        const K = remaining / totalNetNeed;
-                        for (const item of storeNeeds) {
-                            const qty = Math.floor(item.need * K);
-                            if (qty > 0 && remaining >= qty) {
-                                result[item.storeId] += qty;
-                                remaining -= qty;
-                            }
-                        }
-                    } else {
-                        for (const item of storeNeeds) {
-                            if (remaining >= item.need) {
-                                result[item.storeId] += item.need;
-                                remaining -= item.need;
-                            } else {
-                                result[item.storeId] += remaining;
-                                remaining = 0;
-                                break;
-                            }
+                        if (remaining >= item.need) {
+                            result[item.storeId] += item.need;
+                            remaining -= item.need;
+                        } else {
+                            result[item.storeId] += remaining;
+                            remaining = 0;
+                            break;
                         }
                     }
-                }
-            }
-
-            if (remaining > 0) {
-                const sortedByPriority = [...runtimeStores].sort((a, b) => {
-                    if (a.priority !== b.priority) return a.priority - b.priority;
-                    return a.spot_name.localeCompare(b.spot_name);
-                });
-
-                while (remaining > 0) {
-                    let distributedInLoop = false;
-                    for (const store of sortedByPriority) {
-                        if (remaining <= 0) break;
-                        result[store.spot_id] += 1;
-                        remaining -= 1;
-                        distributedInLoop = true;
-                    }
-                    if (!distributedInLoop) break;
                 }
             }
         }
 
-        // Cleanup values
-        remaining = Math.max(0, safeFraction(remaining));
-        for (const key of Object.keys(result)) {
-            result[Number(key)] = safeFraction(result[Number(key)]);
+        if (remaining > 0) {
+            const sortedByPriority = [...runtimeStores].sort((a, b) => {
+                if (a.priority !== b.priority) return a.priority - b.priority;
+                return a.spot_name.localeCompare(b.spot_name);
+            });
+
+            while (remaining > 0) {
+                let distributedInLoop = false;
+                for (const store of sortedByPriority) {
+                    if (remaining <= 0) break;
+                    result[store.spot_id] += 1;
+                    remaining -= 1;
+                    distributedInLoop = true;
+                }
+                if (!distributedInLoop) break;
+            }
         }
 
         return NextResponse.json({

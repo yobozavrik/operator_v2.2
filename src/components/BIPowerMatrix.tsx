@@ -589,14 +589,7 @@ export const BIPowerMatrix = ({
       {/* refreshUrgency === 'critical' block temporarily removed as per user request */}
 
       {showShiftRestrictionModal && (
-        <div
-          role="button"
-          tabIndex={0}
-          aria-label="Закрити модальне вікно"
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-bg-primary/80 backdrop-blur-sm pl-72"
-          onClick={() => setShowShiftRestrictionModal(false)}
-          onKeyDown={(e) => e.key === 'Escape' && setShowShiftRestrictionModal(false)}
-        >
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-bg-primary/80 backdrop-blur-sm pl-72" onClick={() => setShowShiftRestrictionModal(false)}>
           <div className="bg-panel-bg border border-status-critical/50 p-6 rounded-2xl max-w-sm text-center shadow-2xl" onClick={e => e.stopPropagation()}>
             <AlertTriangle size={32} className="mx-auto text-status-critical mb-4" />
             <h3 className="text-lg font-bold text-text-primary uppercase mb-2">Зміна не обрана</h3>

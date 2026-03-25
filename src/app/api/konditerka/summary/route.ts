@@ -23,9 +23,9 @@ export async function GET() {
             return NextResponse.json({ total_baked: 0, total_norm: 0, total_need: 0 });
         }
 
-        const cacheHeaders = { 'Cache-Control': 'private, max-age=30, stale-while-revalidate=60' };
         const summary = data || { total_baked: 0, total_norm: 0, total_need: 0 };
         const totalBaked = Number(summary.total_baked) || 0;
+        const cacheHeaders = { 'Cache-Control': 'private, max-age=30, stale-while-revalidate=60' };
         if (totalBaked > 0 || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
             return NextResponse.json(summary, { headers: cacheHeaders });
         }

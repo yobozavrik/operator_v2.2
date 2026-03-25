@@ -29,7 +29,6 @@ type RawRow = Record<string, unknown>;
 export interface NormalizedDistributionRow {
     productId: number;
     productName: string;
-    unit?: string;
     storeId: number;
     storeName: string;
     stockNow: number;
@@ -50,13 +49,8 @@ function safeNumber(value: unknown): number {
 }
 
 function safeInteger(value: unknown): number {
-    const parsed = safeNumber(value);
-    return Number.isFinite(parsed) ? Math.trunc(parsed) : 0;
-}
-
-function safeFraction(value: unknown): number {
-    const parsed = safeNumber(value);
-    return Number.isFinite(parsed) ? Number(parsed.toFixed(3)) : 0;
+    const parsed = Math.trunc(safeNumber(value));
+    return Number.isFinite(parsed) ? parsed : 0;
 }
 
 function getStoreName(row: RawRow): string {
@@ -112,20 +106,17 @@ function normalizeDistributionRows(rows: RawRow[]): NormalizedDistributionRow[] 
             const storeId = storeIdByName.get(storeName) ?? 0;
             if (storeId <= 0) return null;
 
-            const unitVal = typeof row.unit === 'string' ? row.unit : undefined;
-            const res: NormalizedDistributionRow = {
+            return {
                 productId,
                 productName,
                 storeId,
                 storeName,
-                stockNow: Math.max(0, safeFraction(row.stock_now ?? row.current_stock)),
-                minStock: Math.max(0, safeFraction(row.min_stock ?? row.norm_3_days)),
-                avgSalesDay: Math.max(0, safeFraction(row.avg_sales_day ?? row.avg_sales)),
-                needNet: Math.max(0, safeFraction(row.need_net ?? row.net_need)),
-                bakedAtFactory: safeFraction(row.baked_at_factory),
-            };
-            if (unitVal !== undefined) res.unit = unitVal;
-            return res;
+                stockNow: Math.max(0, safeNumber(row.stock_now ?? row.current_stock)),
+                minStock: Math.max(0, safeNumber(row.min_stock ?? row.norm_3_days)),
+                avgSalesDay: Math.max(0, safeNumber(row.avg_sales_day ?? row.avg_sales)),
+                needNet: Math.max(0, safeNumber(row.need_net ?? row.net_need)),
+                bakedAtFactory: safeNumber(row.baked_at_factory),
+            } satisfies NormalizedDistributionRow;
         })
         .filter((row): row is NormalizedDistributionRow => row !== null);
 }
@@ -263,8 +254,7 @@ export function calculateBranchDistribution(
     productionQuantity: number
 ) {
     const productRows = rows.filter((row) => row.productId === productId);
-    const isKg = productRows.length > 0 && productRows[0].unit === 'кг';
-    const initialQuantity = isKg ? Math.max(0, safeFraction(productionQuantity)) : Math.max(0, Math.floor(productionQuantity));
+    const initialQuantity = Math.max(0, Math.floor(productionQuantity));
 
     if (productRows.length === 0 || initialQuantity <= 0) {
         return {
@@ -282,129 +272,77 @@ export function calculateBranchDistribution(
 
     let remaining = initialQuantity;
 
-    if (isKg) {
-        // Continuous Distribution for kg
+    // Step 1: each zero-stock store receives one unit first.
+    const zeroStockRows = productRows
+        .filter((row) => row.stockNow <= 0)
+        .sort((a, b) => b.needNet - a.needNet);
+
+    for (const row of zeroStockRows) {
+        if (remaining <= 0) break;
+        distribution[row.storeId] += 1;
+        remaining -= 1;
+    }
+
+    // Step 2: fill deficits proportionally based on remaining need.
+    if (remaining > 0) {
         const needs = productRows
             .map((row) => {
-                const need = Math.max(0, row.minStock - row.stockNow);
-                return { storeId: row.storeId, need, avgSalesDay: row.avgSalesDay };
+                const effectiveStock = row.stockNow + (distribution[row.storeId] || 0);
+                const need = Math.max(0, row.minStock - effectiveStock);
+                return { storeId: row.storeId, need };
             })
             .filter((item) => item.need > 0);
 
         const totalNeed = needs.reduce((sum, item) => sum + item.need, 0);
-        
         if (totalNeed > 0) {
-            if (remaining <= totalNeed) {
-                // Distribute proportionally to need
+            if (remaining >= totalNeed) {
                 for (const item of needs) {
-                    const qty = safeFraction(item.need * (initialQuantity / totalNeed));
+                    const qty = Math.floor(item.need);
                     distribution[item.storeId] += qty;
                     remaining -= qty;
                 }
             } else {
-                // Fulfill all needs
-                for (const item of needs) {
-                    distribution[item.storeId] += item.need;
-                    remaining -= item.need;
-                }
-            }
-        }
+                const allocations = needs.map((item) => {
+                    const raw = (item.need / totalNeed) * remaining;
+                    const base = Math.floor(raw);
+                    return {
+                        storeId: item.storeId,
+                        base,
+                        fraction: raw - base,
+                    };
+                });
 
-        // Distribute any leftover remaining proportionally to avgSalesDay
-        if (remaining > 0.001) {
-            const sumAvgSales = productRows.reduce((sum, r) => sum + r.avgSalesDay, 0);
-            const currentRemaining = remaining;
-            if (sumAvgSales > 0) {
-                for (const row of productRows) {
-                    if (row.avgSalesDay > 0) {
-                        const qty = safeFraction(currentRemaining * (row.avgSalesDay / sumAvgSales));
-                        distribution[row.storeId] += qty;
-                        remaining -= qty;
+                for (const allocation of allocations) {
+                    if (allocation.base > 0) {
+                        distribution[allocation.storeId] += allocation.base;
+                        remaining -= allocation.base;
                     }
                 }
-            } else {
-                // fallback if no avg sales: distribute equally
-                const eqQty = safeFraction(currentRemaining / productRows.length);
-                for (const row of productRows) {
-                    distribution[row.storeId] += eqQty;
-                    remaining -= eqQty;
-                }
-            }
-        }
-    } else {
-        // Discrete Distribution for pieces
-        const zeroStockRows = productRows
-            .filter((row) => row.stockNow <= 0)
-            .sort((a, b) => b.needNet - a.needNet);
 
-        for (const row of zeroStockRows) {
-            if (remaining <= 0) break;
-            distribution[row.storeId] += 1;
-            remaining -= 1;
-        }
-
-        if (remaining > 0) {
-            const needs = productRows
-                .map((row) => {
-                    const effectiveStock = row.stockNow + (distribution[row.storeId] || 0);
-                    const need = Math.max(0, row.minStock - effectiveStock);
-                    return { storeId: row.storeId, need };
-                })
-                .filter((item) => item.need > 0);
-
-            const totalNeed = needs.reduce((sum, item) => sum + item.need, 0);
-            if (totalNeed > 0) {
-                if (remaining >= totalNeed) {
-                    for (const item of needs) {
-                        const qty = Math.floor(item.need);
-                        distribution[item.storeId] += qty;
-                        remaining -= qty;
-                    }
-                } else {
-                    const allocations = needs.map((item) => {
-                        const raw = (item.need / totalNeed) * remaining;
-                        const base = Math.floor(raw);
-                        return { storeId: item.storeId, base, fraction: raw - base };
-                    });
-
-                    for (const allocation of allocations) {
-                        if (allocation.base > 0) {
-                            distribution[allocation.storeId] += allocation.base;
-                            remaining -= allocation.base;
-                        }
-                    }
-
-                    allocations.sort((a, b) => b.fraction - a.fraction);
-                    for (const allocation of allocations) {
-                        if (remaining <= 0) break;
-                        distribution[allocation.storeId] += 1;
-                        remaining -= 1;
-                    }
-                }
-            }
-        }
-
-        if (remaining > 0) {
-            const priority = [...productRows].sort((a, b) => {
-                if (b.avgSalesDay !== a.avgSalesDay) return b.avgSalesDay - a.avgSalesDay;
-                return b.needNet - a.needNet;
-            });
-
-            while (remaining > 0 && priority.length > 0) {
-                for (const row of priority) {
+                allocations.sort((a, b) => b.fraction - a.fraction);
+                for (const allocation of allocations) {
                     if (remaining <= 0) break;
-                    distribution[row.storeId] += 1;
+                    distribution[allocation.storeId] += 1;
                     remaining -= 1;
                 }
             }
         }
     }
 
-    // Cleanup rounding errors for remaining
-    remaining = Math.max(0, safeFraction(remaining));
-    // Cleanup negative zero or small rounding for distributed
-    for (const key of Object.keys(distribution)) {
-        distribution[Number(key)] = safeFraction(distribution[Number(key)]);
+    // Step 3: spread leftovers by demand priority.
+    if (remaining > 0) {
+        const priority = [...productRows].sort((a, b) => {
+            if (b.avgSalesDay !== a.avgSalesDay) return b.avgSalesDay - a.avgSalesDay;
+            return b.needNet - a.needNet;
+        });
+
+        while (remaining > 0 && priority.length > 0) {
+            for (const row of priority) {
+                if (remaining <= 0) break;
+                distribution[row.storeId] += 1;
+                remaining -= 1;
+            }
+        }
     }
 
     return {

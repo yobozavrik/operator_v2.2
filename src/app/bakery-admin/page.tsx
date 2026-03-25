@@ -21,7 +21,7 @@ export default function BakeryAdminOverview() {
     });
     const periodQuery = `start_date=${startDate}&end_date=${endDate}`;
 
-    const { data: apiData, isLoading, error } = useSWR(`/api/bakery/analytics?${periodQuery}`, fetcher);
+    const { data: apiData, isLoading } = useSWR(`/api/bakery/analytics?${periodQuery}`, fetcher);
 
     const network = apiData?.network || {};
     const ranking = apiData?.ranking || {};
@@ -35,16 +35,6 @@ export default function BakeryAdminOverview() {
 
     if (isLoading) {
         return <div className="p-8 flex items-center justify-center text-gray-500">Завантаження аналітики...</div>;
-    }
-
-    if (error) {
-        return (
-            <div className="p-8 flex flex-col items-center justify-center gap-3 text-center">
-                <AlertTriangle size={32} className="text-red-400" />
-                <p className="text-gray-600 font-medium">Не вдалось завантажити аналітику</p>
-                <p className="text-sm text-gray-400">{error.message || 'Спробуйте перезавантажити сторінку'}</p>
-            </div>
-        );
     }
 
     return (

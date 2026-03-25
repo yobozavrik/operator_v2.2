@@ -10,7 +10,7 @@ export interface KonditerkaCatalogItem {
     poster_weight_flag: boolean;
 }
 
-const KONDITERKA_CATEGORY_IDS = new Set(['12', '34', '35', '37', '38']);
+const KONDITERKA_CATEGORY_IDS = new Set(['34', '35']);
 
 function resolvePosterCatalogUnit(row: Record<string, unknown>): '\u0448\u0442' | '\u043a\u0433' {
     return String(row.weight_flag || '') === '1' ? '\u043a\u0433' : '\u0448\u0442';

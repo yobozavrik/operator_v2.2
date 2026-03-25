@@ -69,18 +69,18 @@ export const BulvarHistoricalProduction = () => {
             {/* Table Container */}
             <div className="flex-1 bg-white rounded-3xl border border-slate-200 overflow-hidden flex flex-col shadow-sm">
                 <div className="grid grid-cols-12 gap-4 px-6 py-4 bg-slate-50 text-[10px] font-black uppercase tracking-widest text-slate-500 border-b border-slate-200">
-                    <button type="button" className="col-span-5 flex items-center gap-2 cursor-pointer hover:text-slate-900 transition-colors text-left" onClick={() => toggleSort('product_name')}>
+                    <div className="col-span-5 flex items-center gap-2 cursor-pointer hover:text-slate-900 transition-colors" onClick={() => toggleSort('product_name')}>
                         Товар {sort === 'product_name' && <ArrowUpDown size={10} />}
-                    </button>
-                    <button type="button" className="col-span-2 text-center flex items-center justify-center gap-2 cursor-pointer hover:text-slate-900 transition-colors" onClick={() => toggleSort('total_qty_180d')}>
+                    </div>
+                    <div className="col-span-2 text-center flex items-center justify-center gap-2 cursor-pointer hover:text-slate-900 transition-colors" onClick={() => toggleSort('total_qty_180d')}>
                         Загальний об'єм {sort === 'total_qty_180d' && <ArrowUpDown size={10} />}
-                    </button>
-                    <button type="button" className="col-span-2 text-center flex items-center justify-center gap-2 cursor-pointer hover:text-slate-900 transition-colors" onClick={() => toggleSort('prod_days')}>
+                    </div>
+                    <div className="col-span-2 text-center flex items-center justify-center gap-2 cursor-pointer hover:text-slate-900 transition-colors" onClick={() => toggleSort('prod_days')}>
                         Днів вир-ва {sort === 'prod_days' && <ArrowUpDown size={10} />}
-                    </button>
-                    <button type="button" className="col-span-3 text-right flex items-center justify-end gap-2 cursor-pointer hover:text-slate-900 transition-colors" onClick={() => toggleSort('last_manufacture_at')}>
+                    </div>
+                    <div className="col-span-3 text-right flex items-center justify-end gap-2 cursor-pointer hover:text-slate-900 transition-colors" onClick={() => toggleSort('last_manufacture_at')}>
                         Остання дата {sort === 'last_manufacture_at' && <ArrowUpDown size={10} />}
-                    </button>
+                    </div>
                 </div>
 
                 <div className="flex-1 overflow-y-auto custom-scrollbar">

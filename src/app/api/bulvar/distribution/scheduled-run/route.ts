@@ -5,12 +5,11 @@ import {
     sendBulvarDistributionEmail,
     type BulvarDistributionEmailRow,
 } from '@/lib/bulvar-distribution-email';
-import { getDistributionCronSecret } from '@/lib/distribution-env';
 
 export const dynamic = 'force-dynamic';
 
 function getBulvarCronSecret(): string {
-    return getDistributionCronSecret('bulvar');
+    return process.env.BULVAR_CRON_SECRET || process.env.CRON_SECRET || '';
 }
 
 function getKyivBusinessDate(date = new Date()): string {
@@ -112,7 +111,6 @@ async function loadExistingEmailLog(
         .select('id, status, subject, recipient_email')
         .eq('business_date', businessDate)
         .eq('status', 'sent')
-        .gte('created_at', new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString())
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -256,9 +254,9 @@ async function persistEmailStatus(
     }
 }
 
-async function triggerDistributionRun(request: NextRequest): Promise<void> {
+async function triggerDistributionRun(): Promise<void> {
     const cronSecret = getBulvarCronSecret();
-    const origin = request.nextUrl.origin;
+    const origin = process.env.INTERNAL_BASE_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
     const response = await fetch(`${origin}/api/bulvar/distribution/run`, {
         method: 'POST',
         headers: {
@@ -338,7 +336,7 @@ async function runScheduledDistribution(request: NextRequest) {
 
     let rowsCount = await countDistributionRowsForDate(supabaseAdmin, businessDate);
     if (force || rowsCount === 0) {
-        await triggerDistributionRun(request);
+        await triggerDistributionRun();
         rowsCount = await countDistributionRowsForDate(supabaseAdmin, businessDate);
     }
 

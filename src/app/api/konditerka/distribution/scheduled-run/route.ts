@@ -12,12 +12,11 @@ import {
     sendKonditerkaDistributionEmail,
     type KonditerkaDistributionEmailRow,
 } from '@/lib/konditerka-distribution-email';
-import { getDistributionCronSecret } from '@/lib/distribution-env';
 
 export const dynamic = 'force-dynamic';
 
 function getKonditerkaCronSecret(): string {
-    return getDistributionCronSecret('konditerka');
+    return process.env.KONDITERKA_CRON_SECRET || process.env.CRON_SECRET || '';
 }
 
 function getKyivBusinessDate(date = new Date()): string {
@@ -80,12 +79,12 @@ function toPositiveInt(value: unknown): number {
     return Math.max(0, Math.floor(raw));
 }
 
-function safeFraction(value: unknown): number {
+function toSafeNumber(value: unknown): number {
     const raw = Number(value);
-    if (Number.isFinite(raw)) return Number(raw.toFixed(3));
+    if (Number.isFinite(raw)) return raw;
     if (typeof value === 'string') {
         const parsed = Number(value.replace(',', '.'));
-        if (Number.isFinite(parsed)) return Number(parsed.toFixed(3));
+        if (Number.isFinite(parsed)) return parsed;
     }
     return 0;
 }
@@ -122,20 +121,17 @@ async function loadKonditerkaDistributionRows(
             const storeId = toPositiveInt(row.spot_id);
             if (productId <= 0 || storeId <= 0) return null;
 
-            const unitVal = typeof row.unit === 'string' ? row.unit : undefined;
-            const res: NormalizedDistributionRow = {
+            return {
                 productId,
                 productName: String(row.product_name || '').trim() || `Product ${productId}`,
                 storeId,
                 storeName: String(row.spot_name || '').trim() || `Store ${storeId}`,
-                stockNow: Math.max(0, safeFraction(row.stock_now)),
-                minStock: Math.max(0, safeFraction(row.min_stock)),
-                avgSalesDay: Math.max(0, safeFraction(row.avg_sales_day)),
-                needNet: Math.max(0, safeFraction(row.need_net)),
-                bakedAtFactory: Math.max(0, safeFraction(row.baked_at_factory)),
-            };
-            if (unitVal !== undefined) res.unit = unitVal;
-            return res;
+                stockNow: Math.max(0, toSafeNumber(row.stock_now)),
+                minStock: Math.max(0, toSafeNumber(row.min_stock)),
+                avgSalesDay: Math.max(0, toSafeNumber(row.avg_sales_day)),
+                needNet: Math.max(0, toSafeNumber(row.need_net)),
+                bakedAtFactory: Math.max(0, toSafeNumber(row.baked_at_factory)),
+            } satisfies NormalizedDistributionRow;
         })
         .filter((row): row is NormalizedDistributionRow => row !== null);
 }
@@ -153,17 +149,11 @@ async function runLiveFallbackDistribution(
     const batchId = crypto.randomUUID();
     const productNameById = new Map<number, string>();
     const storeNameById = new Map<number, string>();
-    const unitById = new Map<number, string | undefined>();
 
-    const uniqueStores = new Map<number, string>();
     rows.forEach((row) => {
         productNameById.set(row.productId, row.productName);
         storeNameById.set(row.storeId, row.storeName);
-        uniqueStores.set(row.storeId, row.storeName);
-        if (row.unit) unitById.set(row.productId, row.unit);
     });
-
-    const knownProductsWithStores = new Set(rows.filter(r => r.storeId > 0).map(r => r.productId));
 
     const insertRows: Array<{
         product_name: string;
@@ -175,34 +165,14 @@ async function runLiveFallbackDistribution(
     }> = [];
 
     for (const item of liveProduction) {
-        const isKg = unitById.get(item.product_id) === 'кг';
-        const qty = isKg ? safeFraction(item.baked_at_factory) : toPositiveInt(item.baked_at_factory);
+        const qty = toPositiveInt(item.baked_at_factory);
         if (qty <= 0) continue;
 
-        let workingRows = rows;
-        if (!knownProductsWithStores.has(item.product_id) && uniqueStores.size > 0) {
-            workingRows = [...rows];
-            Array.from(uniqueStores.entries()).forEach(([storeId, storeName]) => {
-                workingRows.push({
-                    productId: item.product_id,
-                    productName: item.product_name || `Product ${item.product_id}`,
-                    unit: 'шт', // default assumption mapping
-                    storeId,
-                    storeName,
-                    stockNow: 0,
-                    minStock: 0,
-                    avgSalesDay: 0,
-                    needNet: 0,
-                    bakedAtFactory: 0,
-                });
-            });
-        }
-
-        const calc = calculateBranchDistribution(workingRows, item.product_id, qty);
+        const calc = calculateBranchDistribution(rows, item.product_id, qty);
         const productName = productNameById.get(item.product_id) || item.product_name || `Product ${item.product_id}`;
 
         Object.entries(calc.distributed).forEach(([storeIdRaw, shipQtyRaw]) => {
-            const shipQty = isKg ? safeFraction(shipQtyRaw) : toPositiveInt(shipQtyRaw);
+            const shipQty = toPositiveInt(shipQtyRaw);
             if (shipQty <= 0) return;
 
             const storeId = Number(storeIdRaw);
@@ -220,7 +190,7 @@ async function runLiveFallbackDistribution(
             insertRows.push({
                 product_name: productName,
                 spot_name: 'Остаток на складе',
-                quantity_to_ship: isKg ? safeFraction(calc.remaining) : toPositiveInt(calc.remaining),
+                quantity_to_ship: toPositiveInt(calc.remaining),
                 calculation_batch_id: batchId,
                 business_date: businessDate,
                 delivery_status: 'delivered',
@@ -298,9 +268,9 @@ async function loadEmailRows(
         const key = `${normalizeKey(row.product_name)}::${normalizeKey(row.spot_name)}`;
         if (!key || key === '::' || statsMap.has(key)) continue;
         statsMap.set(key, {
-            current_stock: Math.max(0, safeFraction(row.stock_now)),
-            min_stock: Math.max(0, safeFraction(row.min_stock)),
-            avg_sales: Math.max(0, safeFraction(row.avg_sales_day)),
+            current_stock: Math.max(0, toSafeNumber(row.stock_now)),
+            min_stock: Math.max(0, toSafeNumber(row.min_stock)),
+            avg_sales: Math.max(0, toSafeNumber(row.avg_sales_day)),
         });
     }
 
@@ -310,7 +280,7 @@ async function loadEmailRows(
         return {
             product_name: String(row.product_name || ''),
             spot_name: String(row.spot_name || ''),
-            quantity_to_ship: safeFraction(row.quantity_to_ship),
+            quantity_to_ship: toPositiveInt(row.quantity_to_ship),
             delivery_status: String(row.delivery_status || 'pending'),
             current_stock: stats?.current_stock ?? null,
             min_stock: stats?.min_stock ?? null,

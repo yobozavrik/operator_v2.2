@@ -2,21 +2,6 @@
 
 const POSTER_TOKEN = (process.env.POSTER_TOKEN || '').trim();
 const POSTER_ACCOUNT = 'galia-baluvana34';
-const activePosterTimerLabels = new Set<string>();
-
-function startPosterTimer(baseLabel: string): () => void {
-    const label = baseLabel;
-    if (!activePosterTimerLabels.has(label)) {
-        console.time(label);
-        activePosterTimerLabels.add(label);
-    }
-    return () => {
-        if (activePosterTimerLabels.has(label)) {
-            console.timeEnd(label);
-            activePosterTimerLabels.delete(label);
-        }
-    };
-}
 
 function getKyivDateString(date = new Date()): string {
     return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Kyiv' }).format(date);
@@ -80,16 +65,16 @@ export async function posterRequest(method: string, params: Record<string, strin
 }
 
 export async function getCategories() {
-    const stop = startPosterTimer('Poster API fetch categories');
-    const categoriesData = await posterRequest('menu.getCategories')
-        .finally(stop);
+    console.time('Poster API fetch categories');
+    const categoriesData = await posterRequest('menu.getCategories');
+    console.timeEnd('Poster API fetch categories');
     return categoriesData.response || [];
 }
 
 export async function getProducts() {
-    const stop = startPosterTimer('Poster API fetch products');
-    const productsData = await posterRequest('menu.getProducts')
-        .finally(stop);
+    console.time('Poster API fetch products');
+    const productsData = await posterRequest('menu.getProducts');
+    console.timeEnd('Poster API fetch products');
     return productsData.response || [];
 }
 
@@ -147,9 +132,8 @@ export async function getAllLeftovers(
             ? await resolveIngredientIdsByCategoryKeywords(categoryKeywords)
             : null;
 
-    const stopStorages = startPosterTimer('Poster API fetch storages');
-    const storagesData = await posterRequest('storage.getStorages')
-        .finally(stopStorages);
+    console.time('Poster API fetch storages');
+    const storagesData = await posterRequest('storage.getStorages');
     const allStorages: PosterStorage[] = storagesData.response || [];
 
     // EXCLUDE factory storage & Tseks from the retail stock calculations
@@ -160,7 +144,9 @@ export async function getAllLeftovers(
             !name.includes('переміщення') &&
             !name.includes('списання');
     });
-    const stopLeftovers = startPosterTimer('Poster API fetch leftovers parallel');
+    console.timeEnd('Poster API fetch storages');
+
+    console.time('Poster API fetch leftovers parallel');
     // Паралельно витягуємо залишки з усіх складів
     const promises = storages.map(async (storage) => {
         const data = await posterRequest('storage.getStorageLeftovers', {
@@ -180,8 +166,8 @@ export async function getAllLeftovers(
         };
     });
 
-    const results = await Promise.all(promises)
-        .finally(stopLeftovers);
+    const results = await Promise.all(promises);
+    console.timeEnd('Poster API fetch leftovers parallel');
 
     return results;
 }
@@ -201,11 +187,12 @@ export async function getTodayManufactures(
             : null;
 
     // Fetch manufactures for today
-    const stopManufactures = startPosterTimer('Poster API fetch manufactures');
+    console.time('Poster API fetch manufactures');
     const manufacturesData = await posterRequest('storage.getManufactures', {
         dateFrom: dateStr,
         dateTo: dateStr
-    }).finally(stopManufactures);
+    });
+    console.timeEnd('Poster API fetch manufactures');
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const manufactures = (manufacturesData.response || []) as any[];

@@ -200,7 +200,7 @@ async function callLLM(systemPrompt: string, userText: string): Promise<string> 
 async function routeQuery(userText: string): Promise<AgentKey[]> {
   try {
     const raw = await callLLM(ROUTER_SYSTEM, userText);
-    const match = raw.match(/\[[\s\S]*?\]/);
+    const match = raw.match(/\[.*?\]/s);
     if (!match) return ['production'];
     const parsed = JSON.parse(match[0]) as string[];
     const valid = parsed.filter((k): k is AgentKey => k in AGENTS);
