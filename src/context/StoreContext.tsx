@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useMemo, useCallback, ReactNode } from 'react';
 
 type StoreContextType = {
     selectedStore: string;
@@ -12,16 +12,19 @@ type StoreContextType = {
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
 export const StoreProvider = ({ children }: { children: ReactNode }) => {
-    const [selectedStore, setSelectedStore] = useState<string>('Усі');
-    const [currentCapacity, setCurrentCapacity] = useState<number | null>(null); // Default: null (must select shift)
+    const [selectedStore, setSelectedStoreState] = useState<string>('Усі');
+    const [currentCapacity, setCurrentCapacityState] = useState<number | null>(null);
+
+    const setSelectedStore = useCallback((store: string) => setSelectedStoreState(store), []);
+    const setCurrentCapacity = useCallback((capacity: number | null) => setCurrentCapacityState(capacity), []);
+
+    const value = useMemo(
+        () => ({ selectedStore, setSelectedStore, currentCapacity, setCurrentCapacity }),
+        [selectedStore, setSelectedStore, currentCapacity, setCurrentCapacity]
+    );
 
     return (
-        <StoreContext.Provider value={{
-            selectedStore,
-            setSelectedStore,
-            currentCapacity,
-            setCurrentCapacity
-        }}>
+        <StoreContext.Provider value={value}>
             {children}
         </StoreContext.Provider>
     );

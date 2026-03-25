@@ -1,9 +1,14 @@
 'use client';
 
-import { BIDashboard } from '@/components/graviton/BIDashboard';
+import dynamic from 'next/dynamic';
 import { useParams } from 'next/navigation';
 import { useStore } from '@/context/StoreContext';
 import React from 'react';
+
+const BIDashboard = dynamic(
+    () => import('@/components/graviton/BIDashboard').then((m) => m.BIDashboard),
+    { ssr: false, loading: () => <div className="flex items-center justify-center h-64 text-slate-400">Завантаження дашборду...</div> }
+);
 
 const SLUG_TO_LABEL: Record<string, string> = {
     'all': 'Усі',

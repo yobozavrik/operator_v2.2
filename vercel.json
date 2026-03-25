@@ -1,0 +1,16 @@
+{
+  "crons": [
+    {
+      "path": "/api/florida/distribution/scheduled-run",
+      "schedule": "10 5 * * *"
+    },
+    {
+      "path": "/api/konditerka/distribution/scheduled-run",
+      "schedule": "20 5 * * *"
+    },
+    {
+      "path": "/api/bulvar/distribution/scheduled-run",
+      "schedule": "0 * * * *"
+    }
+  ]
+}

@@ -1,4 +1,7 @@
-﻿export interface BulvarDistributionEmailRow {
+﻿import { buildDistributionExcelBuffer } from '@/lib/server-excel-export';
+import { getDistributionEmailEnv } from '@/lib/distribution-env';
+
+export interface BulvarDistributionEmailRow {
     product_name: string;
     spot_name: string;
     quantity_to_ship: number;
@@ -37,40 +40,6 @@ function safeNum(value: unknown): number {
     return parsed;
 }
 
-function escapeCsv(value: unknown): string {
-    const raw = String(value ?? '');
-    if (/[",\n]/.test(raw)) {
-        return `"${raw.replace(/"/g, '""')}"`;
-    }
-    return raw;
-}
-
-function buildDistributionCsv(rows: BulvarDistributionEmailRow[]): string {
-    const header = [
-        'Товар',
-        'Магазин',
-        'Количество',
-        'Статус',
-        'Мин. остаток',
-        'Тек. остаток',
-        'Ср. продажи',
-    ];
-
-    const lines = rows.map((row) =>
-        [
-            escapeCsv(row.product_name),
-            escapeCsv(row.spot_name),
-            escapeCsv(safeNum(row.quantity_to_ship)),
-            escapeCsv(row.delivery_status || ''),
-            escapeCsv(row.min_stock ?? ''),
-            escapeCsv(row.current_stock ?? ''),
-            escapeCsv(row.avg_sales ?? ''),
-        ].join(',')
-    );
-
-    return '\uFEFF' + [header.join(','), ...lines].join('\n');
-}
-
 function buildDistributionHtml(
     businessDate: string,
     rows: BulvarDistributionEmailRow[],
@@ -93,30 +62,31 @@ function buildDistributionHtml(
     return `<div style="font-family:Arial,sans-serif;padding:16px;">
 <h2 style="margin:0 0 12px 0;">Bulvar distribution ${businessDate}</h2>
 <table style="border-collapse:collapse;margin:0 0 12px 0;">
-<tr><td style="padding:6px 10px;border:1px solid #ddd;"><b>Выпуск (позиций)</b></td><td style="padding:6px 10px;border:1px solid #ddd;">${productionRowsCount}</td></tr>
-<tr><td style="padding:6px 10px;border:1px solid #ddd;"><b>Строк распределения</b></td><td style="padding:6px 10px;border:1px solid #ddd;">${rows.length}</td></tr>
-<tr><td style="padding:6px 10px;border:1px solid #ddd;"><b>Всего к отгрузке</b></td><td style="padding:6px 10px;border:1px solid #ddd;">${totalQty}</td></tr>
+<tr><td style="padding:6px 10px;border:1px solid #ddd;"><b>Р’С‹РїСѓСЃРє (РїРѕР·РёС†РёР№)</b></td><td style="padding:6px 10px;border:1px solid #ddd;">${productionRowsCount}</td></tr>
+<tr><td style="padding:6px 10px;border:1px solid #ddd;"><b>РЎС‚СЂРѕРє СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ</b></td><td style="padding:6px 10px;border:1px solid #ddd;">${rows.length}</td></tr>
+<tr><td style="padding:6px 10px;border:1px solid #ddd;"><b>Р’СЃРµРіРѕ Рє РѕС‚РіСЂСѓР·РєРµ</b></td><td style="padding:6px 10px;border:1px solid #ddd;">${totalQty}</td></tr>
 </table>
-<p style="margin:0 0 8px 0;"><b>Топ-15 строк:</b></p>
+<p style="margin:0 0 8px 0;"><b>РўРѕРї-15 СЃС‚СЂРѕРє:</b></p>
 <table style="border-collapse:collapse;">
 <tr>
-<th style="padding:6px 10px;border:1px solid #ddd;background:#f5f5f5;text-align:left;">Товар</th>
-<th style="padding:6px 10px;border:1px solid #ddd;background:#f5f5f5;text-align:left;">Магазин</th>
-<th style="padding:6px 10px;border:1px solid #ddd;background:#f5f5f5;text-align:right;">Количество</th>
+<th style="padding:6px 10px;border:1px solid #ddd;background:#f5f5f5;text-align:left;">РўРѕРІР°СЂ</th>
+<th style="padding:6px 10px;border:1px solid #ddd;background:#f5f5f5;text-align:left;">РњР°РіР°Р·РёРЅ</th>
+<th style="padding:6px 10px;border:1px solid #ddd;background:#f5f5f5;text-align:right;">РљРѕР»РёС‡РµСЃС‚РІРѕ</th>
 </tr>
 ${topTable}
 </table>
-<p style="margin-top:12px;color:#666;font-size:12px;">Полный CSV приложен к письму.</p>
+<p style="margin-top:12px;color:#666;font-size:12px;">РџРѕР»РЅС‹Р№ Excel РїСЂРёР»РѕР¶РµРЅ Рє РїРёСЃСЊРјСѓ.</p>
 </div>`;
 }
 
 export async function sendBulvarDistributionEmail(
     input: SendBulvarDistributionEmailInput
 ): Promise<SendBulvarDistributionEmailResult> {
-    const recipients = parseRecipients(process.env.BULVAR_DISTRIBUTION_EMAIL_TO);
+    const env = getDistributionEmailEnv('bulvar');
+    const recipients = parseRecipients(env.emailTo);
     const subject = `Bulvar distribution ${input.businessDate}`;
-    const resendApiKey = process.env.BULVAR_RESEND_API_KEY || process.env.RESEND_API_KEY;
-    const from = process.env.BULVAR_DISTRIBUTION_EMAIL_FROM;
+    const resendApiKey = env.resendApiKey;
+    const from = env.emailFrom;
 
     if (!resendApiKey || !from || recipients.length === 0) {
         return {
@@ -129,7 +99,7 @@ export async function sendBulvarDistributionEmail(
         };
     }
 
-    const csv = buildDistributionCsv(input.rows);
+    const excelBuffer = await buildDistributionExcelBuffer('Bulvar', input.businessDate, input.rows);
     const html = buildDistributionHtml(input.businessDate, input.rows, input.productionRowsCount);
 
     try {
@@ -146,8 +116,8 @@ export async function sendBulvarDistributionEmail(
                 html,
                 attachments: [
                     {
-                        filename: `bulvar-distribution-${input.businessDate}.csv`,
-                        content: Buffer.from(csv, 'utf8').toString('base64'),
+                        filename: `bulvar-distribution-${input.businessDate}.xlsx`,
+                        content: excelBuffer.toString('base64'),
                     },
                 ],
             }),
@@ -184,3 +154,4 @@ export async function sendBulvarDistributionEmail(
         };
     }
 }
+

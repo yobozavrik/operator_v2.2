@@ -1,4 +1,4 @@
-﻿import ExcelJS from 'exceljs';
+import ExcelJS from 'exceljs';
 import { OrderItem, ProductionOrder } from '@/types/order';
 
 export interface CategoryGroup {
@@ -15,7 +15,7 @@ export const groupItemsByCategory = (items: OrderItem[]) => {
     const groups: Record<string, CategoryGroup> = {};
 
     items.filter(item => item.kg > 0).forEach(item => {
-        const cat = item.category || 'Р вЂ Р Р…РЎв‚¬Р Вµ';
+        const cat = item.category || 'Інше';
         if (!groups[cat]) {
             groups[cat] = {
                 totalKg: 0,
@@ -50,12 +50,12 @@ export const groupItemsByCategory = (items: OrderItem[]) => {
 
 export const prepareWorkbook = async (orderData: ProductionOrder): Promise<ExcelJS.Workbook> => {
     const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('Р вЂ”Р В°Р СР С•Р Р†Р В»Р ВµР Р…Р Р…РЎРЏ');
+    const worksheet = workbook.addWorksheet('Замовлення');
 
-    // Р вЂ”Р В°Р С–Р С•Р В»Р С•Р Р†Р С•Р С” (Р Р€Р вЂ™Р вЂўР вЂєР ВР В§Р вЂўР СњР СњР С’Р Р‡ Р вЂ™Р В«Р РЋР С›Р СћР С’)
+    // Заголовок
     worksheet.mergeCells('A1:C1');
     const titleCell = worksheet.getCell('A1');
-    titleCell.value = 'Р вЂ™Р ВР В Р С›Р вЂР СњР ВР В§Р вЂў Р вЂ”Р С’Р СљР С›Р вЂ™Р вЂєР вЂўР СњР СњР Р‡';
+    titleCell.value = 'ВИРОБНИЧЕ ЗАМОВЛЕННЯ';
     titleCell.font = { bold: true, size: 18, color: { argb: 'FFFFFFFF' } };
     titleCell.fill = {
         type: 'pattern',
@@ -65,22 +65,22 @@ export const prepareWorkbook = async (orderData: ProductionOrder): Promise<Excel
     titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
     worksheet.getRow(1).height = 35;
 
-    // Р ВР Р…РЎвЂћР С•РЎР‚Р СР В°РЎвЂ Р С‘РЎРЏ
-    worksheet.getCell('A3').value = 'Р В¦Р ВµРЎвЂ¦:';
-    worksheet.getCell('B3').value = 'Р вЂњР С’Р вЂєР Р‡ Р вЂР С’Р вЂєР Р€Р вЂ™Р С’Р СњР С’';
-    worksheet.getCell('A4').value = 'Р вЂќР В°РЎвЂљР В°:';
+    // Інформація
+    worksheet.getCell('A3').value = 'Цех:';
+    worksheet.getCell('B3').value = 'ГАЛЯ БАЛУВАНА';
+    worksheet.getCell('A4').value = 'Дата:';
     worksheet.getCell('B4').value = orderData.date;
-    worksheet.getCell('A5').value = 'Р вЂ”Р В°Р С–Р В°Р В»РЎРЉР Р…Р В° Р Р†Р В°Р С–Р В°:';
-    worksheet.getCell('B5').value = `${orderData.totalKg} Р С”Р С–`;
+    worksheet.getCell('A5').value = 'Загальна вага:';
+    worksheet.getCell('B5').value = `${orderData.totalKg} кг`;
 
-    worksheet.getCell('D4').value = '* Р СџР вЂєР С’Р Сњ (Р вЂ™Р вЂ Р вЂќ): Р С”РЎР‚Р С‘РЎвЂљР С‘РЎвЂЎР Р…Р С‘Р в„– Р Т‘Р ВµРЎвЂћРЎвЂ“РЎвЂ Р С‘РЎвЂљ';
+    worksheet.getCell('D4').value = '* ПЛАН (ВІД): критичний дефіцит';
     worksheet.getCell('D4').font = { italic: true, size: 9, color: { argb: 'FF808080' } };
-    worksheet.getCell('D5').value = '* Р СџР вЂєР С’Р Сњ (Р вЂќР С›): РЎР‚Р ВµР С”Р С•Р СР ВµР Р…Р Т‘Р С•Р Р†Р В°Р Р…Р В° Р Р…Р С•РЎР‚Р СР В°';
+    worksheet.getCell('D5').value = '* ПЛАН (ДО): рекомендована норма';
     worksheet.getCell('D5').font = { italic: true, size: 9, color: { argb: 'FF808080' } };
 
-    // Р вЂ”Р В°Р С–Р С•Р В»Р С•Р Р†Р С•Р С” РЎвЂљР В°Р В±Р В»Р С‘РЎвЂ РЎвЂ№
+    // Заголовок таблиці
     const headerRow = worksheet.getRow(7);
-    headerRow.values = ['Р С™Р С’Р СћР вЂўР вЂњР С›Р В Р вЂ Р Р‡', 'Р СћР С›Р вЂ™Р С’Р В ', 'Р вЂ”Р С’Р СљР С›Р вЂ™Р вЂєР вЂўР СњР С›', 'Р вЂќР вЂ Р С’Р СџР С’Р вЂ”Р С›Р Сњ (Р вЂ™Р вЂ Р вЂќ - Р вЂќР С›)'];
+    headerRow.values = ['КАТЕГОРІЯ', 'ТОВАР', 'ЗАМОВЛЕНО', 'ДІАПАЗОН (ВІД - ДО)'];
     headerRow.height = 25;
 
     const headerFill = {
@@ -98,17 +98,17 @@ export const prepareWorkbook = async (orderData: ProductionOrder): Promise<Excel
         cell.alignment = headerAlign;
     });
 
-    // Р вЂќР В°Р Р…Р Р…РЎвЂ№Р Вµ
+    // Дані
     let rowIndex = 8;
     const groupedByCategory = groupItemsByCategory(orderData.items);
     const categoryColors: Record<string, string> = {
-        'Р СџР вЂўР вЂєР В¬Р СљР вЂўР СњР вЂ ': 'FFFFE699',
-        'Р вЂ™Р С’Р В Р вЂўР СњР ВР С™Р В': 'FFFFC7CE',
-        'Р СљР вЂєР вЂ Р СњР В¦Р вЂ ': 'FFC6E0B4',
-        'Р РЋР ВР В Р СњР ВР С™Р В': 'FFB4C7E7',
-        'Р В§Р вЂўР вЂР Р€Р В Р вЂўР С™Р В': 'FFD9D9D9',
-        'Р С™Р С›Р СћР вЂєР вЂўР СћР В': 'FFFFD966',
-        'Р вЂњР С›Р вЂєР Р€Р вЂР В¦Р вЂ ': 'FFB7DEE8'
+        'ПЕЛЬМЕНІ': 'FFFFE699',
+        'ВАРЕНИКИ': 'FFFFC7CE',
+        'МЛИНЦІ': 'FFC6E0B4',
+        'СИРНИКИ': 'FFB4C7E7',
+        'ЧЕБУРЕКИ': 'FFD9D9D9',
+        'КОТЛЕТИ': 'FFFFD966',
+        'ГОЛУБЦІ': 'FFB7DEE8'
     };
 
     Object.entries(groupedByCategory).forEach(([category, data]: [string, CategoryGroup]) => {
@@ -132,20 +132,20 @@ export const prepareWorkbook = async (orderData: ProductionOrder): Promise<Excel
 
         data.items.forEach((item) => {
             const itemRow = worksheet.getRow(rowIndex);
-            const range = `${Math.round(item.minRequired)} - ${Math.round(item.maxRecommended)} Р С”Р С–`;
-            itemRow.values = ['', item.productName, `${item.kg} Р С”Р С–`, range];
+            const range = `${Math.round(item.minRequired)} - ${Math.round(item.maxRecommended)} кг`;
+            itemRow.values = ['', item.productName, `${item.kg} кг`, range];
             itemRow.getCell(3).alignment = { horizontal: 'right', vertical: 'middle' };
             itemRow.getCell(4).alignment = { horizontal: 'center', vertical: 'middle' };
             itemRow.getCell(4).font = { italic: true, color: { argb: 'FF595959' } };
             rowIndex++;
         });
 
-        rowIndex++; // Р СџРЎС“РЎРѓРЎвЂљР В°РЎРЏ РЎРѓРЎвЂљРЎР‚Р С•Р С”Р В°
+        rowIndex++; // Пустий рядок
     });
 
-    // Р ВР СћР С›Р вЂњР С›Р вЂ™Р С’Р Р‡ Р РЋР СћР В Р С›Р С™Р С’
+    // Підсумки
     const totalRow = worksheet.getRow(rowIndex);
-    totalRow.values = ['Р вЂ™Р РЋР В¬Р С›Р вЂњР С›:', '', `${orderData.totalKg} Р С”Р С–`, ''];
+    totalRow.values = ['ВСЬОГО:', '', `${orderData.totalKg} кг`, ''];
     totalRow.font = { bold: true, size: 14, color: { argb: 'FFFFFFFF' } };
     const totalFillColor = {
         type: 'pattern',
@@ -161,7 +161,7 @@ export const prepareWorkbook = async (orderData: ProductionOrder): Promise<Excel
     totalRow.getCell(3).alignment = { horizontal: 'right', vertical: 'middle' };
     totalRow.height = 25;
 
-    // Р С’Р Р†РЎвЂљР С•РЎв‚¬Р С‘РЎР‚Р С‘Р Р…Р В°
+    // Автоширина
     worksheet.columns = [
         { width: 25 },
         { width: 45 },
@@ -169,7 +169,7 @@ export const prepareWorkbook = async (orderData: ProductionOrder): Promise<Excel
         { width: 25 }
     ];
 
-    // Р вЂњРЎР‚Р В°Р Р…Р С‘РЎвЂ РЎвЂ№
+    // Межі (Borders)
     worksheet.eachRow({ includeEmpty: false }, (row: ExcelJS.Row) => {
         if (row.getCell(1).value || row.getCell(2).value || row.getCell(3).value || row.getCell(4).value) {
             row.eachCell((cell: ExcelJS.Cell) => {
@@ -377,12 +377,12 @@ export interface PlanItem {
 
 export const generateProductionPlanExcel = async (planData: PlanItem[], daysCount: number) => {
     const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('Р СџР В»Р В°Р Р… Р вЂ™Р С‘РЎР‚Р С•Р В±Р Р…Р С‘РЎвЂ РЎвЂљР Р†Р В°');
+    const worksheet = workbook.addWorksheet('План Виробництва');
 
     // 1. MAIN HEADER
     worksheet.mergeCells('A1:G1');
     const titleCell = worksheet.getCell('A1');
-    titleCell.value = `Р СџР вЂєР С’Р Сњ Р вЂ™Р ВР В Р С›Р вЂР СњР ВР В¦Р СћР вЂ™Р С’ Р СњР С’ ${daysCount} Р вЂќР Сњ(Р вЂ Р вЂ™)`;
+    titleCell.value = `ПЛАН ВИРОБНИЦТВА НА ${daysCount} ДН(ІВ)`;
     titleCell.font = { bold: true, size: 16, color: { argb: 'FFFFFFFF' } };
     titleCell.fill = {
         type: 'pattern',
@@ -395,7 +395,7 @@ export const generateProductionPlanExcel = async (planData: PlanItem[], daysCoun
     // 2. METADATA
     worksheet.mergeCells('A2:G2');
     const dateCell = worksheet.getCell('A2');
-    dateCell.value = `Р вЂ”Р С–Р ВµР Р…Р ВµРЎР‚Р С•Р Р†Р В°Р Р…Р С•: ${new Date().toLocaleString('uk-UA')}`;
+    dateCell.value = `Згенеровано: ${new Date().toLocaleString('uk-UA')}`;
     dateCell.font = { italic: true, size: 10, color: { argb: 'FF595959' } };
     dateCell.alignment = { horizontal: 'right', vertical: 'middle' };
 
@@ -421,7 +421,7 @@ export const generateProductionPlanExcel = async (planData: PlanItem[], daysCoun
         // DAY HEADER
         worksheet.mergeCells(`A${rowIndex}:G${rowIndex}`);
         const dayHeader = worksheet.getCell(`A${rowIndex}`);
-        dayHeader.value = `Р вЂќР вЂўР СњР В¬ ${day} (${items.length} Р СџР С›Р вЂ”Р ВР В¦Р вЂ Р в„ў)`;
+        dayHeader.value = `ДЕНЬ ${day} (${items.length} ПОЗИЦІЙ)`;
         dayHeader.font = { bold: true, size: 12, color: { argb: 'FF000000' } }; // Black text
 
         let headerColor = 'FF92D050'; // Green (default / Day 3+)
@@ -440,7 +440,7 @@ export const generateProductionPlanExcel = async (planData: PlanItem[], daysCoun
 
         // TABLE HEADERS
         const headerRow = worksheet.getRow(rowIndex);
-        headerRow.values = ['Р СћР С›Р вЂ™Р С’Р В ', 'Р РЋР вЂўР В . Р СџР В Р С›Р вЂќР С’Р вЂ“Р вЂ ', 'Р СљР вЂ Р Сњ. Р вЂ”Р С’Р вЂєР ВР РЃР С›Р С™', 'Р В¤Р С’Р С™Р Сћ', 'Р вЂ”Р С’Р СљР С›Р вЂ™Р вЂєР вЂўР СњР СњР Р‡', 'Р В Р С’Р вЂ”Р С›Р Сљ', 'Р РЋР СћР С’Р СћР Р€Р РЋ'];
+        headerRow.values = ['ТОВАР', 'СЕР. ПРОДАЖІ', 'МІН. ЗАЛИШОК', 'ФАКТ', 'ЗАМОВЛЕННЯ', 'РАЗОМ', 'СТАТУС'];
 
         const headerStyle = {
             font: { bold: true, color: { argb: 'FFFFFFFF' } },
@@ -468,8 +468,8 @@ export const generateProductionPlanExcel = async (planData: PlanItem[], daysCoun
 
             // Status Logic
             let status = 'OK';
-            if (total < min) status = 'Р вЂќР вЂўР В¤Р вЂ Р В¦Р ВР Сћ';
-            else if (total < min * 1.1) status = 'Р В Р ВР вЂ”Р ВР С™';
+            if (total < min) status = 'ДЕФІЦИТ';
+            else if (total < min * 1.1) status = 'РИЗИК';
 
             row.values = [
                 item.p_name,
@@ -490,9 +490,9 @@ export const generateProductionPlanExcel = async (planData: PlanItem[], daysCoun
 
             // Status Coloring
             const statusCell = row.getCell(7);
-            if (status === 'Р вЂќР вЂўР В¤Р вЂ Р В¦Р ВР Сћ') {
+            if (status === 'ДЕФІЦИТ') {
                 statusCell.font = { bold: true, color: { argb: 'FFFF0000' } };
-            } else if (status === 'Р В Р ВР вЂ”Р ВР С™') {
+            } else if (status === 'РИЗИК') {
                 statusCell.font = { bold: true, color: { argb: 'FFED7D31' } }; // Orange
             } else {
                 statusCell.font = { color: { argb: 'FF00B050' } }; // Green

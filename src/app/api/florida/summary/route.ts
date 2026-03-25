@@ -14,7 +14,12 @@ export async function GET() {
         let liveTotalBaked: number | null = null;
         try {
             const serviceClient = createServiceRoleClient();
-            const syncResult = await syncBranchProductionFromPoster(serviceClient, 'florida1', 41);
+            const syncResult = await Promise.race([
+                syncBranchProductionFromPoster(serviceClient, 'florida1', 41),
+                new Promise<never>((_, reject) =>
+                    setTimeout(() => reject(new Error('sync timeout')), 2000)
+                ),
+            ]);
             liveTotalBaked = syncResult.totalQty;
         } catch {
             // Keep summary endpoint resilient: fallback to DB view result.
@@ -32,10 +37,13 @@ export async function GET() {
             return NextResponse.json({ total_baked: 0, total_norm: 0, total_need: 0 });
         }
 
-        return NextResponse.json({
-            ...(data || { total_baked: 0, total_norm: 0, total_need: 0 }),
-            total_baked: liveTotalBaked ?? Number(data?.total_baked || 0),
-        });
+        return NextResponse.json(
+            {
+                ...(data || { total_baked: 0, total_norm: 0, total_need: 0 }),
+                total_baked: liveTotalBaked ?? Number(data?.total_baked || 0),
+            },
+            { headers: { 'Cache-Control': 'private, max-age=30, stale-while-revalidate=60' } }
+        );
     } catch (error) {
         console.error('[Florida Summary] Error:', error);
         return NextResponse.json({ error: String(error) }, { status: 500 });

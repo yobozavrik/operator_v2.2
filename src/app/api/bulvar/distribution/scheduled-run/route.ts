@@ -5,11 +5,12 @@ import {
     sendBulvarDistributionEmail,
     type BulvarDistributionEmailRow,
 } from '@/lib/bulvar-distribution-email';
+import { getDistributionCronSecret } from '@/lib/distribution-env';
 
 export const dynamic = 'force-dynamic';
 
 function getBulvarCronSecret(): string {
-    return process.env.BULVAR_CRON_SECRET || process.env.CRON_SECRET || '';
+    return getDistributionCronSecret('bulvar');
 }
 
 function getKyivBusinessDate(date = new Date()): string {
@@ -107,6 +108,7 @@ async function loadExistingEmailLog(
         .select('id, status, subject, recipient_email')
         .eq('business_date', businessDate)
         .eq('status', 'sent')
+        .gte('created_at', new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString())
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle();

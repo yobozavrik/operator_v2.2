@@ -28,7 +28,7 @@ function inferRole(user: { id?: string; email?: string | null; app_metadata?: Re
     return 'restricted'
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
     const response = NextResponse.next({
         request: {
             headers: request.headers,

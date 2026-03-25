@@ -8,6 +8,7 @@ import {
 } from '@/lib/florida-distribution-email';
 import { syncFloridaCatalogFromPoster } from '@/lib/florida-catalog';
 import { syncFloridaStocksFromEdge } from '@/lib/florida-stock-sync';
+import { getDistributionCronSecret } from '@/lib/distribution-env';
 
 export const dynamic = 'force-dynamic';
 
@@ -64,7 +65,7 @@ function parseRecipients(value: string | undefined): string {
 type JobStatus = 'running' | 'email_sent' | 'email_skipped' | 'email_failed' | 'failed';
 
 async function runScheduledDistribution(request: NextRequest) {
-    const cronSecret = process.env.CRON_SECRET;
+    const cronSecret = getDistributionCronSecret('florida');
     const requestSecret = getCronSecretFromRequest(request);
 
     if (!cronSecret || !secretsEqual(cronSecret, requestSecret)) {
