@@ -42,7 +42,7 @@ function buildDistributionWorkbook(
     dateCell.alignment = { horizontal: 'right', vertical: 'middle' };
 
     const headerRow = worksheet.getRow(4);
-    headerRow.values = ['Time', 'Product', 'Current Stock', 'Min Stock', 'Avg Sales', 'To Ship', 'Упак.'];
+    headerRow.values = ['Час', 'Продукт', 'Пот. залишок', 'Мін. залишок', 'Сер. продажі', 'До відванж.', 'Упак.'];
     headerRow.height = 20;
 
     const headerStyle = {
