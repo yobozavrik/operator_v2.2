@@ -160,12 +160,11 @@ export async function sendCombinedDistributionEmail(
         return { sent: false, status: 'failed', subject, recipients, reason: 'Resend configuration is incomplete' };
     }
 
-    const attachments = input.branches
-        .filter((b) => b.rows.length > 0)
-        .map((b) => ({
-            filename: `${b.branch}-distribution-${input.businessDate}.csv`,
-            content: Buffer.from(buildBranchCsv(b.rows), 'utf8').toString('base64'),
-        }));
+    // Always include all 3 attachments — empty branches get a header-only CSV
+    const attachments = input.branches.map((b) => ({
+        filename: `${b.branch}-distribution-${input.businessDate}.csv`,
+        content: Buffer.from(buildBranchCsv(b.rows), 'utf8').toString('base64'),
+    }));
 
     const html = buildCombinedHtml(input.businessDate, input.branches);
 
