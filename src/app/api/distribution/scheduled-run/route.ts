@@ -95,7 +95,7 @@ async function fetchBranch(
 }
 
 async function runCombinedDistribution(request: NextRequest) {
-    const cronSecret = process.env.CRON_SECRET || '';
+    const cronSecret = process.env.CRON_SECRET || process.env.BULVAR_CRON_SECRET || '';
     const requestSecret = getCronSecretFromRequest(request);
 
     if (!cronSecret || !secretsEqual(cronSecret, requestSecret)) {
