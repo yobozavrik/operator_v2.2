@@ -5,6 +5,7 @@ import { createServiceRoleClient } from '@/lib/branch-api';
 import { syncPizzaLiveDataFromPoster } from '@/lib/pizza-live-sync';
 
 export const dynamic = 'force-dynamic';
+const PIZZA_LIVE_SYNC_TIMEOUT_MS = 5000;
 
 export async function GET() {
     const auth = await requireAuth();
@@ -13,7 +14,12 @@ export async function GET() {
     try {
         const supabase = createServiceRoleClient();
 
-        await syncPizzaLiveDataFromPoster(supabase).catch((error) => {
+        await Promise.race([
+            syncPizzaLiveDataFromPoster(supabase),
+            new Promise<never>((_, reject) =>
+                setTimeout(() => reject(new Error('sync timeout')), PIZZA_LIVE_SYNC_TIMEOUT_MS)
+            ),
+        ]).catch((error) => {
             Logger.error('[pizza Orders API] live sync failed', { error: String(error) });
             return null;
         });

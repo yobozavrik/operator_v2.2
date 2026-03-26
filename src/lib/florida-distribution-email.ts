@@ -124,7 +124,7 @@ export async function sendFloridaDistributionEmail(
 ): Promise<SendFloridaDistributionEmailResult> {
     const recipients = parseRecipients(process.env.FLORIDA_DISTRIBUTION_EMAIL_TO);
     const subject = `Florida distribution ${input.businessDate}`;
-    const resendApiKey = process.env.RESEND_API_KEY;
+    const resendApiKey = process.env.FLORIDA_RESEND_API_KEY || process.env.RESEND_API_KEY;
     const from = process.env.FLORIDA_DISTRIBUTION_EMAIL_FROM;
 
     if (!resendApiKey || !from || recipients.length === 0) {

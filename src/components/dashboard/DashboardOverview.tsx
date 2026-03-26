@@ -106,11 +106,17 @@ export default function DashboardOverview({ initialData }: DashboardOverviewProp
       note: `Рівень покриття ${Math.round(bulvar?.fill_index || 0)}%`,
     },
     {
+      name: 'Флорида',
+      href: '/florida',
+      status: 'stable' as const,
+      note: 'Напівфабрикати й кулінарія',
+    },
+    {
       name: 'Садова',
       href: '/sadova',
       status: 'stable',
-      note: sadova?.totalSKU 
-        ? `${sadova.totalSKU} позицій розподілу` 
+      note: sadova?.totalSKU
+        ? `${sadova.totalSKU} позицій розподілу`
         : 'Виробничий контур',
     },
   ];

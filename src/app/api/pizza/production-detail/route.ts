@@ -5,6 +5,7 @@ import { syncPizzaLiveDataFromPoster } from '@/lib/pizza-live-sync';
 import { Logger } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
+const PIZZA_LIVE_SYNC_TIMEOUT_MS = 5000;
 
 export async function GET() {
     const auth = await requireAuth();
@@ -15,7 +16,12 @@ export async function GET() {
         let liveRows: Array<{ product_name: string; baked_at_factory: number }> = [];
 
         try {
-            const syncResult = await syncPizzaLiveDataFromPoster(supabase);
+            const syncResult = await Promise.race([
+                syncPizzaLiveDataFromPoster(supabase),
+                new Promise<never>((_, reject) =>
+                    setTimeout(() => reject(new Error('sync timeout')), PIZZA_LIVE_SYNC_TIMEOUT_MS)
+                ),
+            ]);
             liveRows = syncResult.productionItems.map((item) => ({
                 product_name: item.product_name,
                 baked_at_factory: item.quantity,
