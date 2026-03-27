@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
 import type { User } from '@supabase/supabase-js';
+import { logSecurityEvent } from './security-logger';
 
 export type AuthResult =
     | { user: User; error: null }
@@ -67,8 +68,15 @@ export async function requireAuth(): Promise<AuthResult> {
         }
     }
 
-    // 🔍 DEBUG LOG
-    console.log('[AUTH-GUARD] Auth failed. Cookie error:', cookieError?.message);
+    console.error('[AUTH-GUARD] Auth failed. Cookie error:', cookieError?.message);
+
+    logSecurityEvent({
+        event_type: 'AUTH_FAILURE',
+        severity: 'medium',
+        metadata: {
+            cookie_error: cookieError?.message ?? null,
+        },
+    });
 
     return {
         user: null,
@@ -120,6 +128,17 @@ export async function requireRole(allowedRoles: string[]): Promise<AuthRoleResul
     if (normalizedAllowed.includes(role)) {
         return { user: auth.user, role, error: null };
     }
+
+    logSecurityEvent({
+        event_type: 'FORBIDDEN',
+        severity: 'medium',
+        user_id: auth.user.id,
+        status_code: 403,
+        metadata: {
+            actual_role: role,
+            required_roles: allowedRoles,
+        },
+    });
 
     return {
         user: auth.user,

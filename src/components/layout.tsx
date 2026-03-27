@@ -230,8 +230,6 @@ export const Sidebar = () => {
                     <button
                         onClick={async () => {
                             await auditLog('LOGOUT', 'Sidebar', { timestamp: new Date().toISOString() });
-                            // Clear auth cookie and redirect to login
-                            document.cookie = 'auth-token=; Max-Age=0; path=/';
                             const { createClient } = await import('@/utils/supabase/client');
                             const supabase = createClient();
                             await supabase.auth.signOut();

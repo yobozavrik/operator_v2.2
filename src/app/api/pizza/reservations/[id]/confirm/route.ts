@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth-guard';
 import { createServiceRoleClient } from '@/lib/branch-api';
 
@@ -20,7 +20,7 @@ export async function POST(_request: NextRequest, context: Params) {
     const { data: reservation, error: reservationError } = await supabase
         .schema('pizza1')
         .from('customer_reservations')
-        .select('id, status')
+        .select('id, status, previous_reservation_id, created_by')
         .eq('id', id)
         .single();
 
@@ -36,6 +36,10 @@ export async function POST(_request: NextRequest, context: Params) {
         return NextResponse.json({ error: 'Only draft reservations can be confirmed' }, { status: 409 });
     }
 
+    if (reservation.created_by !== auth.user.id) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const { count, error: countError } = await supabase
         .schema('pizza1')
         .from('customer_reservation_items')
@@ -46,7 +50,9 @@ export async function POST(_request: NextRequest, context: Params) {
         return NextResponse.json({ error: countError.message }, { status: 500 });
     }
 
-    if (!count || count <= 0) {
+    const canConfirmEmptyVersion = (!count || count <= 0) && Boolean(reservation.previous_reservation_id);
+
+    if ((!count || count <= 0) && !canConfirmEmptyVersion) {
         return NextResponse.json({ error: 'Reservation must contain at least one item' }, { status: 400 });
     }
 
@@ -66,3 +72,4 @@ export async function POST(_request: NextRequest, context: Params) {
 
     return NextResponse.json({ success: true, id });
 }
+

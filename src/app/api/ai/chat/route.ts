@@ -273,8 +273,11 @@ export async function POST(req: Request) {
     if (!messages || !Array.isArray(messages)) {
       return NextResponse.json({ error: 'Invalid messages format' }, { status: 400 });
     }
+    if (messages.length > 50) {
+      return NextResponse.json({ error: 'Too many messages, maximum 50 allowed' }, { status: 400 });
+    }
 
-    const lastMessage = String(messages[messages.length - 1]?.content || '');
+    const lastMessage = String(messages[messages.length - 1]?.content || '').slice(0, 5000);
     const { content, agents } = await orchestrate(lastMessage, role);
 
     return NextResponse.json({ content, role, agents });

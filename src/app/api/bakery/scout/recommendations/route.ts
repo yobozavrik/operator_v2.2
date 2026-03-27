@@ -1,9 +1,12 @@
 ﻿import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { requireAuth } from '@/lib/auth-guard';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
+  const auth = await requireAuth();
+  if (auth.error) return auth.error;
   const useLegacy = false;
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;

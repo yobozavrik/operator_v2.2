@@ -20,7 +20,7 @@ export async function POST(_request: NextRequest, context: Params) {
     const { data: reservation, error: reservationError } = await supabase
         .schema('pizza1')
         .from('customer_reservations')
-        .select('id, reservation_date, customer_name, status')
+        .select('id, reservation_date, customer_name, status, created_by')
         .eq('id', id)
         .single();
 
@@ -34,6 +34,10 @@ export async function POST(_request: NextRequest, context: Params) {
 
     if (reservation.status !== 'confirmed') {
         return NextResponse.json({ error: 'Only confirmed reservation can be marked as used' }, { status: 409 });
+    }
+
+    if (reservation.created_by !== auth.user.id) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const { error: supersedeError } = await supabase

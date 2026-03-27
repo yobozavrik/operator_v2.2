@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { checkRateLimit } from '@/lib/rate-limit'
 
 function toList(value: string | undefined) {
     return String(value || '')
@@ -28,16 +29,116 @@ function inferRole(user: { id?: string; email?: string | null; app_metadata?: Re
     return 'restricted'
 }
 
+// ─── CORS helpers ─────────────────────────────────────────────────────────────
+
+function parseAllowedOrigins(): string[] {
+    return (process.env.ALLOWED_ORIGINS || '')
+        .split(',')
+        .map((o) => o.trim().toLowerCase())
+        .filter(Boolean)
+}
+
+function buildCorsHeaders(origin: string): Record<string, string> {
+    return {
+        'Access-Control-Allow-Origin': origin,
+        'Access-Control-Allow-Credentials': 'true',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        'Access-Control-Max-Age': '86400',
+    }
+}
+
+function handleCors(request: NextRequest): NextResponse | null {
+    const origin = request.headers.get('origin')
+    const pathname = request.nextUrl.pathname
+
+    // Only enforce CORS on API routes; no Origin header = server-to-server/cron → pass through
+    if (!pathname.startsWith('/api/') || !origin) return null
+
+    const allowedOrigins = parseAllowedOrigins()
+
+    if (allowedOrigins.length === 0) {
+        // Fail closed in production if ALLOWED_ORIGINS is not configured
+        if (process.env.NODE_ENV === 'production') {
+            console.error(JSON.stringify({
+                level: 'error', event: 'CORS_MISCONFIGURED',
+                message: 'CORS blocked: ALLOWED_ORIGINS not set in production',
+                origin, path: pathname, timestamp: new Date().toISOString(),
+            }))
+            return new NextResponse('Forbidden', { status: 403 })
+        }
+        // Development: allow, no CORS block
+        return null
+    }
+
+    if (!allowedOrigins.includes(origin.toLowerCase())) {
+        const ip = request.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'unknown'
+        console.error(JSON.stringify({
+            level: 'error', event: 'CORS_VIOLATION',
+            message: 'CORS blocked: origin not in allowlist',
+            origin, path: pathname, ip, timestamp: new Date().toISOString(),
+        }))
+        return new NextResponse('Forbidden', { status: 403 })
+    }
+
+    // Preflight
+    if (request.method === 'OPTIONS') {
+        return new NextResponse(null, { status: 204, headers: buildCorsHeaders(origin) })
+    }
+
+    // Allowed — return null so proxy() attaches CORS headers to the pass-through response
+    return null
+}
+
+// ─── Proxy ────────────────────────────────────────────────────────────────────
+
 export async function proxy(request: NextRequest) {
+    // CORS enforcement (API routes with Origin header only)
+    const corsResponse = handleCors(request)
+    if (corsResponse) return corsResponse
+
+    // Rate limiting (API routes, known IPs only)
+    const pathname = request.nextUrl.pathname
+    if (pathname.startsWith('/api/')) {
+        const ip = request.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'unknown'
+        if (ip !== 'unknown') {
+            const isAI = pathname.startsWith('/api/ai/')
+            const rl = await checkRateLimit(ip, isAI)
+            if (!rl.allowed) {
+                console.error(JSON.stringify({
+                    level: 'error', event: 'RATE_LIMITED',
+                    ip, path: pathname,
+                    retryAfter: rl.retryAfter,
+                    timestamp: new Date().toISOString(),
+                }))
+                return new NextResponse('Too Many Requests', {
+                    status: 429,
+                    headers: { 'Retry-After': String(rl.retryAfter) },
+                })
+            }
+        }
+    }
+
     const response = NextResponse.next({
         request: {
             headers: request.headers,
         },
     })
 
+    // Attach CORS headers to allowed cross-origin API responses
+    const origin = request.headers.get('origin')
+    if (origin && request.nextUrl.pathname.startsWith('/api/')) {
+        const allowedOrigins = parseAllowedOrigins()
+        if (allowedOrigins.length === 0 || allowedOrigins.includes(origin.toLowerCase())) {
+            const corsHeaders = buildCorsHeaders(origin)
+            for (const [key, value] of Object.entries(corsHeaders)) {
+                response.headers.set(key, value)
+            }
+        }
+    }
+
     // Публічні шляхи — не потребують авторизації в middleware
     // API routes захищені через requireAuth() в кожному handler
-    const pathname = request.nextUrl.pathname
     const isPublic =
         pathname === '/login' ||
         pathname === '/favicon.ico' ||

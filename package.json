@@ -17,12 +17,15 @@
     "openclaw:help": "npx openclaw --help"
   },
   "dependencies": {
+    "@21st-sdk/agent": "^0.0.14",
     "@anthropic-ai/sdk": "^0.80.0",
     "@google/generative-ai": "^0.24.1",
     "@openrouter/sdk": "^0.9.11",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.93.3",
     "@types/qrcode": "^1.5.6",
+    "@upstash/ratelimit": "^2.0.8",
+    "@upstash/redis": "^1.37.0",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "dotenv": "^17.3.1",
@@ -40,6 +43,7 @@
     "swr": "^2.4.0",
     "tailwind-merge": "^3.4.0",
     "xlsx": "^0.18.5",
+    "zod": "^4.3.6",
     "zustand": "^5.0.11"
   },
   "devDependencies": {
@@ -55,5 +59,22 @@
     "playwright": "^1.58.2",
     "tailwindcss": "^4",
     "typescript": "^5"
-  }
+  },
+  "description": "Система призначена для моніторингу залишків у реальному часі, планування виробництва та розподілу продукції між магазинами мережі \"Galia Baluvana\".",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yobozavrik/operator_v2.1.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/yobozavrik/operator_v2.1/issues"
+  },
+  "homepage": "https://github.com/yobozavrik/operator_v2.1#readme"
 }

@@ -27,6 +27,7 @@ export async function POST(_request: NextRequest, context: Params) {
             customer_name,
             status,
             version_no,
+            created_by,
             customer_reservation_items (
                 sku,
                 qty
@@ -46,6 +47,10 @@ export async function POST(_request: NextRequest, context: Params) {
 
     if (source.status === 'draft') {
         return NextResponse.json({ error: 'Draft does not require versioning' }, { status: 409 });
+    }
+
+    if (source.created_by !== auth.user.id) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const { data: existingDraft } = await supabase

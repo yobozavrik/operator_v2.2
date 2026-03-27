@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth-guard';
 import { Logger } from '@/lib/logger';
+import { coercePositiveInt } from '@/lib/branch-api';
+
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const SKU_ID_RE = /^\d{1,10}$/;
 
 export const dynamic = 'force-dynamic';
 
@@ -12,11 +16,20 @@ export async function GET(request: Request) {
         const { searchParams } = new URL(request.url);
         const startDateParam = searchParams.get('start_date');
         const endDateParam = searchParams.get('end_date');
-        const days = parseInt(searchParams.get('days') || '7', 10);
+        const days = coercePositiveInt(searchParams.get('days'), 7, 1, 365);
         const skuId = searchParams.get('sku_id');
 
         if (!skuId) {
             return NextResponse.json({ error: 'Missing sku_id parameter' }, { status: 400 });
+        }
+        if (!SKU_ID_RE.test(skuId)) {
+            return NextResponse.json({ error: 'Invalid sku_id, must be a positive integer' }, { status: 400 });
+        }
+        if (startDateParam && !DATE_RE.test(startDateParam)) {
+            return NextResponse.json({ error: 'Invalid start_date format, expected YYYY-MM-DD' }, { status: 400 });
+        }
+        if (endDateParam && !DATE_RE.test(endDateParam)) {
+            return NextResponse.json({ error: 'Invalid end_date format, expected YYYY-MM-DD' }, { status: 400 });
         }
 
         let p_start_date: string;

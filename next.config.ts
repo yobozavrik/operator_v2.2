@@ -10,19 +10,28 @@ const nextConfig: NextConfig = {
       {
         source: '/(.*)',
         headers: [
+          { key: 'X-Robots-Tag', value: 'noindex, nofollow' },
           { key: 'X-Frame-Options', value: 'DENY' },
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+          // HSTS: enforce HTTPS for 1 year, include subdomains
+          { key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains' },
           {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+              // 'unsafe-inline' required by Next.js App Router for inline hydration scripts;
+              // 'unsafe-eval' required by Next.js in development only.
+              // TODO: migrate to nonce-based CSP to remove 'unsafe-inline'.
+              process.env.NODE_ENV === 'development'
+                ? "script-src 'self' 'unsafe-inline' 'unsafe-eval'"
+                : "script-src 'self' 'unsafe-inline'",
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob:",
               "font-src 'self'",
-              "connect-src 'self' https://*.supabase.co https://supabase.dmytrotovstytskyi.online https://api.resend.com https://openrouter.ai https://api.openrouter.ai",
+              // Use env var so the URL isn't hardcoded
+              `connect-src 'self' https://*.supabase.co ${process.env.NEXT_PUBLIC_SUPABASE_URL || ''} https://api.resend.com https://openrouter.ai https://api.openrouter.ai`.trim(),
               "frame-ancestors 'none'",
             ].join('; '),
           },

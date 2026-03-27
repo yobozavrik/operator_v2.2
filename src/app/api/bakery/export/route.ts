@@ -3,6 +3,9 @@ import { createClient } from '@/utils/supabase/server';
 import { requireAuth } from '@/lib/auth-guard';
 import { Logger } from '@/lib/logger';
 import ExcelJS from 'exceljs';
+import { coercePositiveInt } from '@/lib/branch-api';
+
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 export const dynamic = 'force-dynamic';
 
@@ -14,7 +17,14 @@ export async function GET(request: Request) {
         const { searchParams } = new URL(request.url);
         const startDateParam = searchParams.get('start_date');
         const endDateParam = searchParams.get('end_date');
-        const days = parseInt(searchParams.get('days') || '14', 10);
+        const days = coercePositiveInt(searchParams.get('days'), 14, 1, 365);
+
+        if (startDateParam && !DATE_RE.test(startDateParam)) {
+            return NextResponse.json({ error: 'Invalid start_date format, expected YYYY-MM-DD' }, { status: 400 });
+        }
+        if (endDateParam && !DATE_RE.test(endDateParam)) {
+            return NextResponse.json({ error: 'Invalid end_date format, expected YYYY-MM-DD' }, { status: 400 });
+        }
 
         let p_start_date: string;
         let p_end_date: string;

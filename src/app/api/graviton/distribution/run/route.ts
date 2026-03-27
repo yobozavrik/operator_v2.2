@@ -124,7 +124,8 @@ export async function POST(request: Request) {
         let failed_storages: number[] = [];
 
         try {
-            const edgeResponse = await fetch('https://supabase.dmytrotovstytskyi.online/functions/v1/poster-live-stocks', {
+            const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+            const edgeResponse = await fetch(`${supabaseUrl}/functions/v1/poster-live-stocks`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ storage_ids: storageIds })

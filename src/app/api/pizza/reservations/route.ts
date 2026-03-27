@@ -34,6 +34,11 @@ export async function GET(request: NextRequest) {
     if (auth.error) return auth.error;
 
     const date = request.nextUrl.searchParams.get('date');
+
+    if (date && !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        return NextResponse.json({ error: 'Invalid date format, expected YYYY-MM-DD' }, { status: 400 });
+    }
+
     const supabase = createServiceRoleClient();
 
     let query = supabase
@@ -101,7 +106,7 @@ export async function POST(request: NextRequest) {
         const { data: existing, error: existingError } = await supabase
             .schema('pizza1')
             .from('customer_reservations')
-            .select('id, status')
+            .select('id, status, created_by')
             .eq('id', reservationId)
             .single();
 
@@ -115,6 +120,10 @@ export async function POST(request: NextRequest) {
 
         if (existing.status !== 'draft') {
             return NextResponse.json({ error: 'Only draft reservations can be edited' }, { status: 409 });
+        }
+
+        if (existing.created_by !== auth.user.id) {
+            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
         const { error: updateError } = await supabase
