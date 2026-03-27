@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth-guard';
 import { applyBulvarPackagingConfigToRows, fetchBulvarExactStocks, fetchBulvarPackagingConfig } from '@/lib/bulvar-packaging';
+import { normalizeDistributionSpotName } from '@/lib/distribution-spot-name';
 
 export const dynamic = 'force-dynamic';
 
@@ -64,7 +65,7 @@ export async function GET() {
 
         const todayRows = ((data || []) as TodayDistributionRow[]).map((row) => ({
             product_name: String(row.product_name || ''),
-            spot_name: String(row.spot_name || ''),
+            spot_name: normalizeDistributionSpotName(row.spot_name),
             quantity_to_ship: Math.max(0, safeNumber(row.quantity_to_ship)),
             calc_time: row.created_at || null,
         }));
@@ -86,7 +87,9 @@ export async function GET() {
 
         const statByNameAndSpot = new Map<string, DistributionStatRow>();
         for (const row of (statRows || []) as DistributionStatRow[]) {
-            const key = `${normalizeKeyPart(row.product_name)}|${normalizeKeyPart(row.spot_name)}`;
+            const key = `${normalizeKeyPart(row.product_name)}|${normalizeKeyPart(
+                normalizeDistributionSpotName(row.spot_name)
+            )}`;
             statByNameAndSpot.set(key, row);
         }
 
@@ -122,7 +125,7 @@ export async function GET() {
 
         const responseRows = enrichedRows.map((row) => ({
             product_name: String(row.product_name || ''),
-            spot_name: String(row.spot_name || ''),
+            spot_name: normalizeDistributionSpotName(row.spot_name),
             quantity_to_ship: Math.max(0, safeNumber(row.quantity_to_ship)),
             current_stock: Math.max(0, safeNumber(row.stock_now)),
             min_stock: Math.max(0, safeNumber(row.min_stock)),

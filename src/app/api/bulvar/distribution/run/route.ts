@@ -228,6 +228,32 @@ function allocateAllProduction(
         pool = distributeProportionally(spots, weights, pool, quantum);
     }
 
+    if (pool > 0 && spots.length > 0) {
+        const ranked = spots
+            .map((spot, index) => ({
+                index,
+                avgSales: spot.avgSales,
+                minGap: Math.max(0, spot.minStock - (spot.stockNow + spot.finalQty)),
+                spotName: spot.spotName,
+            }))
+            .sort((a, b) => (b.avgSales - a.avgSales) || (b.minGap - a.minGap) || a.spotName.localeCompare(b.spotName));
+
+        const step = quantum > 0 ? quantum : 1;
+        while (pool >= step && ranked.length > 0) {
+            for (const row of ranked) {
+                if (pool < step) break;
+                spots[row.index].finalQty = round3(spots[row.index].finalQty + step);
+                pool = round3(pool - step);
+            }
+        }
+
+        // Absorb a tiny post-rounding tail such as 0.007 kg instead of failing the whole batch.
+        if (pool > 0 && ranked.length > 0) {
+            spots[ranked[0].index].finalQty = round3(spots[ranked[0].index].finalQty + pool);
+            pool = 0;
+        }
+    }
+
     return { spots, warehouseLeft: round3(pool) };
 }
 
@@ -400,16 +426,11 @@ export async function POST(request: Request) {
             }
 
             if (warehouseLeft > 0) {
-                allInserts.push({
-                    product_id: productId,
-                    product_name: prod.productName,
-                    spot_id: null,
-                    spot_name: 'РћСЃС‚Р°С‚РѕРє РЅР° РЎРєР»Р°РґРµ',
-                    quantity_to_ship: round3(warehouseLeft),
-                    calculation_batch_id: batchId,
-                    business_date: businessDate,
-                    delivery_status: 'delivered',
-                });
+                return NextResponse.json({
+                    error: 'Bulvar distribution left undistributed stock',
+                    message: `product_id=${productId}, left=${warehouseLeft}`,
+                    code: 'UNDISTRIBUTED_STOCK',
+                }, { status: 500 });
             }
         }
 
@@ -459,7 +480,7 @@ export async function POST(request: Request) {
             mode: 'sql_only',
             products_processed: productsProcessed,
             total_qty: totalKg,
-            message: `Batch: ${String(batchId).slice(0, 8)} | РџРѕР·РёС†С–Р№: ${productsProcessed} | РћР±СЃСЏРі: ${totalKg}`
+            message: `Batch: ${String(batchId).slice(0, 8)} | Позиций: ${productsProcessed} | Объем: ${totalKg}`
         });
 
     } catch (err: unknown) {

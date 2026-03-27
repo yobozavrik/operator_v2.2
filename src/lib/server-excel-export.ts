@@ -1,5 +1,7 @@
 ﻿import ExcelJS from 'exceljs';
 
+import { isWarehouseSpotName, normalizeDistributionSpotName } from '@/lib/distribution-spot-name';
+
 export interface ServerDistributionRow {
     product_name: string;
     spot_name: string;
@@ -71,8 +73,12 @@ function buildDistributionWorkbook(
     let rowIndex = 5;
     const groupedByShop: Record<string, ServerDistributionRow[]> = {};
     data.forEach((item) => {
-        if (!groupedByShop[item.spot_name]) groupedByShop[item.spot_name] = [];
-        groupedByShop[item.spot_name].push(item);
+        const spotName = normalizeDistributionSpotName(item.spot_name);
+        if (!groupedByShop[spotName]) groupedByShop[spotName] = [];
+        groupedByShop[spotName].push({
+            ...item,
+            spot_name: spotName,
+        });
     });
     const sortedShops = Object.keys(groupedByShop).sort();
     sortedShops.forEach((shopName) => {
@@ -97,11 +103,7 @@ function buildDistributionWorkbook(
         rowIndex++;
         shopItems.forEach((item, idx) => {
             const excelRow = worksheet.getRow(rowIndex);
-            const spot = String(item.spot_name || '').toLowerCase();
-            const isWarehouse =
-                spot.includes('остаток на складе') ||
-                spot.includes('РѕСЃС‚Р°С‚РѕРє РЅР° СЃРєР»Р°РґРµ') ||
-                spot.includes('????');
+            const isWarehouse = isWarehouseSpotName(item.spot_name);
             const isPackaging = Boolean(item.packaging_enabled);
             const packsToShip = Number(item.quantity_to_ship_packs_est || 0);
             const qtyKg = isKgUnit(item.unit) || isPackaging ? formatKg(item.quantity_to_ship) : '-';

@@ -5,6 +5,7 @@ import {
     sendBulvarDistributionEmail,
     type BulvarDistributionEmailRow,
 } from '@/lib/bulvar-distribution-email';
+import { normalizeDistributionSpotName } from '@/lib/distribution-spot-name';
 
 export const dynamic = 'force-dynamic';
 
@@ -163,7 +164,9 @@ async function loadEmailRows(
     >();
 
     for (const row of (statsRes.data || []) as Array<Record<string, unknown>>) {
-        const key = `${normalizeKey(row.product_name)}::${normalizeKey(row.spot_name)}`;
+        const key = `${normalizeKey(row.product_name)}::${normalizeKey(
+            normalizeDistributionSpotName(row.spot_name)
+        )}`;
         if (!key || key === '::' || statsMap.has(key)) continue;
         statsMap.set(key, {
             current_stock: Math.max(0, toSafeNumber(row.stock_now)),
@@ -173,11 +176,12 @@ async function loadEmailRows(
     }
 
     return ((distributionRes.data || []) as Array<Record<string, unknown>>).map((row) => {
-        const key = `${normalizeKey(row.product_name)}::${normalizeKey(row.spot_name)}`;
+        const spotName = normalizeDistributionSpotName(row.spot_name);
+        const key = `${normalizeKey(row.product_name)}::${normalizeKey(spotName)}`;
         const stats = statsMap.get(key);
         return {
             product_name: String(row.product_name || ''),
-            spot_name: String(row.spot_name || ''),
+            spot_name: spotName,
             quantity_to_ship: toPositiveQuantity(row.quantity_to_ship),
             delivery_status: String(row.delivery_status || 'pending'),
             current_stock: stats?.current_stock ?? null,
