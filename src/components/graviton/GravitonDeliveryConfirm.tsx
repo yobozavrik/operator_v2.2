@@ -86,11 +86,10 @@ export function GravitonDeliveryConfirm({
             const fetchedShops: ShopItem[] = shopsJson.shops || [];
             setShops(fetchedShops);
             setState(confirmJson);
-            setDeliveredSpotIds(
-                Array.isArray(confirmJson.active_shop_ids) && confirmJson.active_shop_ids.length > 0
-                    ? confirmJson.active_shop_ids
-                    : fetchedShops.map((shop) => shop.spot_id)
-            );
+            // Delivery confirmation must reflect the factual route, not auto-select
+            // every active shop by default. Otherwise users can confirm "all
+            // delivered" without explicitly marking the real recipients.
+            setDeliveredSpotIds([]);
         } catch (error: any) {
             setMessage(error.message || 'Помилка завантаження доставки');
         } finally {
@@ -218,7 +217,7 @@ export function GravitonDeliveryConfirm({
                         </div>
 
                         <p className="mt-3 text-sm leading-6 text-slate-600">
-                            Познач магазини, які фізично отримали товар сьогодні. Решта накопить борг на наступний розподіл.
+                            Познач магазини, які фізично отримали товар сьогодні. Розподіл рахується по всій активній мережі, а цей чек-ліст впливає тільки на підтвердження доставки й накопичення боргу.
                         </p>
 
                         <div className="mt-4 flex flex-wrap items-center gap-2">
@@ -273,16 +272,16 @@ export function GravitonDeliveryConfirm({
                                     <button
                                         type="button"
                                         onClick={() => onRunDistribution?.(null)}
-                                        disabled={runDisabled || deliveredSpotIds.length === 0}
+                                        disabled={runDisabled}
                                         className={cn(
                                             'inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition-colors',
-                                            runDisabled || deliveredSpotIds.length === 0
+                                            runDisabled
                                                 ? 'cursor-not-allowed bg-slate-200 text-slate-500'
                                                 : 'bg-slate-900 text-white hover:bg-slate-800'
                                         )}
                                     >
                                         {runLoading ? <Loader2 size={16} className="animate-spin" /> : <Play size={16} className="fill-current" />}
-                                        Сформувати розподіл
+                                        Сформувати розподіл по мережі
                                     </button>
 
                                     <button
