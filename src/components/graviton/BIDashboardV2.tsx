@@ -148,7 +148,7 @@ export function BIDashboardV2() {
         async function loadCachedProduction() {
             try {
                 const headers = await getAuthHeaders();
-                const res = await fetch('/api/graviton/production-daily', { headers });
+                const res = await fetch('/api/graviton/production-daily', { headers, credentials: 'include' });
                 if (!res.ok) {
                     if (res.status === 401 || res.status === 403) {
                         if (!cancelled) setProductionError('auth');
@@ -208,6 +208,7 @@ export function BIDashboardV2() {
             const response = await fetch('/api/graviton/sync-stocks', {
                 method: 'POST',
                 headers,
+                credentials: 'include',
             });
             if (response.status === 401 || response.status === 403) {
                 setProductionError('auth');

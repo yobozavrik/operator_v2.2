@@ -31,7 +31,8 @@ const nextConfig: NextConfig = {
               "img-src 'self' data: blob:",
               "font-src 'self'",
               // Use env var so the URL isn't hardcoded
-              `connect-src 'self' https://*.supabase.co wss://*.supabase.co ${process.env.NEXT_PUBLIC_SUPABASE_URL || ''} ${(process.env.NEXT_PUBLIC_SUPABASE_URL || '').replace('https://', 'wss://')} https://api.resend.com https://openrouter.ai https://api.openrouter.ai`.trim(),
+              `connect-src 'self' https://*.supabase.co wss://*.supabase.co ${process.env.NEXT_PUBLIC_SUPABASE_URL || ''} ${(process.env.NEXT_PUBLIC_SUPABASE_URL || '').replace('https://', 'wss://')} https://api.resend.com https://openrouter.ai https://api.openrouter.ai https://vercel.live wss://ws-us3.pusher.com`.trim(),
+              "frame-src 'self' https://vercel.live",
               "frame-ancestors 'none'",
             ].join('; '),
           },
