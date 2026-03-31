@@ -8,6 +8,16 @@ import { transformDeficitData } from '@/lib/transformers';
 import { BI_Metrics, ProductionTask, SupabaseDeficitRow } from '@/types/bi';
 import { cn } from '@/lib/utils';
 import { authedFetcher } from '@/lib/authed-fetcher';
+import { createClient } from '@/utils/supabase/client';
+
+async function getAuthHeaders(): Promise<Record<string, string>> {
+    const supabase = createClient();
+    const { data } = await supabase.auth.getSession();
+    const token = data.session?.access_token;
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    return headers;
+}
 
 const fetcher = authedFetcher;
 
@@ -137,9 +147,10 @@ export function BIDashboardV2() {
         let cancelled = false;
         async function loadCachedProduction() {
             try {
-                const res = await fetch('/api/graviton/production-daily');
+                const headers = await getAuthHeaders();
+                const res = await fetch('/api/graviton/production-daily', { headers });
                 if (!res.ok) {
-                    if (res.status === 401) {
+                    if (res.status === 401 || res.status === 403) {
                         if (!cancelled) setProductionError('auth');
                     } else {
                         if (!cancelled) setProductionError('sync');
@@ -193,18 +204,21 @@ export function BIDashboardV2() {
         if (isRefreshing) return;
         setIsRefreshing(true);
         try {
+            const headers = await getAuthHeaders();
             const response = await fetch('/api/graviton/sync-stocks', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers,
             });
-            if (response.status === 401) {
+            if (response.status === 401 || response.status === 403) {
                 setProductionError('auth');
                 return;
             }
-            const result = await response.json();
+            const text = await response.text();
+            let result: any;
+            try { result = JSON.parse(text); } catch { result = {}; }
             if (!response.ok || !result.success) {
                 setProductionError('sync');
-                throw new Error(result.error || 'Sync failed');
+                throw new Error(result.error || `Sync failed: ${response.status}`);
             }
 
             const manufactures = Array.isArray(result.manufactures) ? result.manufactures : [];

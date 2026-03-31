@@ -5,7 +5,7 @@ import { ToastProvider } from "@/components/ui/Toast";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ClientProviders } from "@/components/providers/ClientProviders";
 import { SWRProvider } from "@/components/providers/SWRProvider";
-import { geistSans, jetbrains } from "@/lib/fonts";
+import { geistSans, jetbrains, chakra } from "@/lib/fonts";
 
 export const metadata: Metadata = {
   title: "Graviton | Аналітична система",
@@ -18,7 +18,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="uk" suppressHydrationWarning className={`${geistSans.variable} ${jetbrains.variable}`}>
+    <html lang="uk" suppressHydrationWarning className={`${geistSans.variable} ${jetbrains.variable} ${chakra.variable}`}>
       <body
         suppressHydrationWarning
         className="antialiased font-sans bg-bg-primary text-text-primary transition-colors duration-300"

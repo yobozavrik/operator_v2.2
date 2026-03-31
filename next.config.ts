@@ -25,8 +25,8 @@ const nextConfig: NextConfig = {
               // 'unsafe-eval' required by Next.js in development only.
               // TODO: migrate to nonce-based CSP to remove 'unsafe-inline'.
               process.env.NODE_ENV === 'development'
-                ? "script-src 'self' 'unsafe-inline' 'unsafe-eval'"
-                : "script-src 'self' 'unsafe-inline'",
+                ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live"
+                : "script-src 'self' 'unsafe-inline' https://vercel.live",
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob:",
               "font-src 'self'",
