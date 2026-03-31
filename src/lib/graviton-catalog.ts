@@ -10,11 +10,17 @@ interface ManufactureProductRow {
     product_id?: MaybeNumber;
     product_name?: string | null;
     ingredient_name?: string | null;
+    product_num?: MaybeNumber;
+    storage_id?: MaybeNumber;
 }
 
 interface ManufactureDocRow {
     storage_id?: MaybeNumber;
     products?: ManufactureProductRow[] | null;
+    product_id?: MaybeNumber;
+    product_name?: string | null;
+    ingredient_name?: string | null;
+    product_num?: MaybeNumber;
 }
 
 interface ProductCategoryRow {
@@ -42,7 +48,13 @@ export interface GravitonCatalogSyncStats {
 
 export function normalizeGravitonName(value: string): string {
     if (!value) return '';
-    return value.trim().toLowerCase().replace(/\s+/g, ' ');
+    return value
+        .normalize('NFKC')
+        .trim()
+        .toLowerCase()
+        .replace(/[`´ʼ’‘']/g, '')
+        .replace(/["«»]/g, '')
+        .replace(/\s+/g, ' ');
 }
 
 function parsePositiveInt(value: MaybeNumber): number | null {
@@ -54,6 +66,58 @@ function parsePositiveInt(value: MaybeNumber): number | null {
 function normalizeProductName(product: ManufactureProductRow): string {
     const raw = String(product.product_name || product.ingredient_name || '').trim();
     return raw;
+}
+
+export interface FlattenedGravitonManufactureRow {
+    storage_id: number | null;
+    product_id: number | null;
+    product_name: string;
+    product_num: number;
+}
+
+export function extractGravitonManufactureProducts(
+    rawManufactures: ManufactureDocRow[],
+    productionStorageId: number | null = null
+): FlattenedGravitonManufactureRow[] {
+    const rows: FlattenedGravitonManufactureRow[] = [];
+
+    for (const manufacture of rawManufactures || []) {
+        const parentStorageId = parsePositiveInt(manufacture.storage_id);
+
+        if (Array.isArray(manufacture.products) && manufacture.products.length > 0) {
+            for (const product of manufacture.products) {
+                const storageId = parsePositiveInt(product.storage_id) ?? parentStorageId;
+                if (productionStorageId !== null && storageId !== productionStorageId) continue;
+
+                const productName = normalizeProductName(product);
+                const quantity = Number.parseFloat(String(product.product_num ?? '0').replace(',', '.')) || 0;
+
+                rows.push({
+                    storage_id: storageId,
+                    product_id: parsePositiveInt(product.product_id),
+                    product_name: productName,
+                    product_num: quantity,
+                });
+            }
+            continue;
+        }
+
+        if (productionStorageId !== null && parentStorageId !== productionStorageId) continue;
+
+        const productName = normalizeProductName(manufacture);
+        const quantity = Number.parseFloat(String(manufacture.product_num ?? '0').replace(',', '.')) || 0;
+
+        if (!productName && quantity <= 0) continue;
+
+        rows.push({
+            storage_id: parentStorageId,
+            product_id: parsePositiveInt(manufacture.product_id),
+            product_name: productName,
+            product_num: quantity,
+        });
+    }
+
+    return rows;
 }
 
 async function loadCategoryMeta(categoriesDb: any, productIds: number[]): Promise<Map<number, { category_id: string; category_name: string }>> {
@@ -111,7 +175,7 @@ export async function syncGravitonCatalogFromManufactures(
     gravitonDb: any,
     categoriesDb: any,
     rawManufactures: ManufactureDocRow[],
-    productionStorageId = 2
+    productionStorageId: number | null = 2
 ): Promise<GravitonCatalogSyncStats> {
     const stats: GravitonCatalogSyncStats = {
         inserted: 0,
@@ -140,28 +204,22 @@ export async function syncGravitonCatalogFromManufactures(
     });
 
     const candidates = new Map<number, CandidateProduct>();
-    for (const manufacture of rawManufactures || []) {
-        const storageId = parsePositiveInt(manufacture.storage_id);
-        if (storageId !== productionStorageId) continue;
-        const products = Array.isArray(manufacture.products) ? manufacture.products : [];
+    for (const product of extractGravitonManufactureProducts(rawManufactures, productionStorageId)) {
+        const productName = product.product_name;
+        if (!productName) continue;
 
-        for (const product of products) {
-            const productName = normalizeProductName(product);
-            if (!productName) continue;
+        const productId = parsePositiveInt(product.product_id);
+        if (!productId) {
+            stats.skipped_without_id += 1;
+            continue;
+        }
 
-            const productId = parsePositiveInt(product.product_id);
-            if (!productId) {
-                stats.skipped_without_id += 1;
-                continue;
-            }
-
-            if (!candidates.has(productId)) {
-                candidates.set(productId, {
-                    product_id: productId,
-                    product_name: productName,
-                    normalized_name: normalizeGravitonName(productName),
-                });
-            }
+        if (!candidates.has(productId)) {
+            candidates.set(productId, {
+                product_id: productId,
+                product_name: productName,
+                normalized_name: normalizeGravitonName(productName),
+            });
         }
     }
 

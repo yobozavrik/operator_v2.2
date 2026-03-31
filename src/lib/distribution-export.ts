@@ -5,7 +5,7 @@ export const generateDistributionExcel = async (data: any[], unitName: string = 
     const worksheet = workbook.addWorksheet('Розподіл');
 
     // --- HEADER ---
-    worksheet.mergeCells('A1:E1'); // Merged A-E for 5 columns
+    worksheet.mergeCells('A1:F1'); // Merged A-F for 6 columns
     const titleCell = worksheet.getCell('A1');
     titleCell.value = `РОЗПОДІЛ ПРОДУКЦІЇ (${unitName.toUpperCase()})`;
     titleCell.font = { bold: true, size: 16, color: { argb: 'FFFFFFFF' } };
@@ -24,7 +24,7 @@ export const generateDistributionExcel = async (data: any[], unitName: string = 
 
     // --- TABLE HEADERS ---
     const headerRow = worksheet.getRow(5);
-    headerRow.values = ['НАЗВА ПРОДУКТУ', 'ФАКТ. ЗАЛИШОК', 'МІН. ЗАЛИШОК', 'СЕР. ПРОДАЖІ', 'КІЛЬКІСТЬ (кг/шт)'];
+    headerRow.values = ['НАЗВА ПРОДУКТУ', 'ФАКТ. ЗАЛИШОК', 'МІН. ЗАЛИШОК', 'СЕР. ПРОДАЖІ', 'БОРГ (кг)', 'КІЛЬКІСТЬ (кг/шт)'];
     headerRow.height = 20;
 
     const headerFill = {
@@ -35,7 +35,7 @@ export const generateDistributionExcel = async (data: any[], unitName: string = 
     const headerFont = { bold: true, color: { argb: 'FFFFFFFF' } };
     const headerAlign = { horizontal: 'center', vertical: 'middle' } as ExcelJS.Alignment;
 
-    [1, 2, 3, 4, 5].forEach(col => {
+    [1, 2, 3, 4, 5, 6].forEach(col => {
         const cell = headerRow.getCell(col);
         cell.fill = headerFill;
         cell.font = headerFont;
@@ -66,7 +66,7 @@ export const generateDistributionExcel = async (data: any[], unitName: string = 
             currentStore = item['Магазин'];
 
             const storeRow = worksheet.getRow(rowIndex);
-            worksheet.mergeCells(`A${rowIndex}:E${rowIndex}`);
+            worksheet.mergeCells(`A${rowIndex}:F${rowIndex}`);
             storeRow.getCell(1).value = currentStore;
 
             // Store Header Style
@@ -92,11 +92,13 @@ export const generateDistributionExcel = async (data: any[], unitName: string = 
 
         // Product Row
         const row = worksheet.getRow(rowIndex);
+        const debtVal = item['Борг'];
         row.values = [
             item['Название продукта'],
             item['Факт. залишок'] != null ? Number(item['Факт. залишок']).toFixed(2) : '',
             item['Мін. залишок'] != null ? Number(item['Мін. залишок']).toFixed(0) : '',
             item['Сер. продажі'] != null ? Number(item['Сер. продажі']).toFixed(2) : '',
+            debtVal != null && debtVal > 0 ? Number(debtVal).toFixed(2) : '',
             item['Количество']
         ];
 
@@ -106,10 +108,21 @@ export const generateDistributionExcel = async (data: any[], unitName: string = 
         row.getCell(3).alignment = { horizontal: 'center' };
         row.getCell(4).alignment = { horizontal: 'center' };
         row.getCell(5).alignment = { horizontal: 'center' };
-        row.getCell(5).font = { bold: true };
+        row.getCell(6).alignment = { horizontal: 'center' };
+        row.getCell(6).font = { bold: true };
+
+        // Борг — підсвічуємо помаранчевим якщо є
+        if (debtVal != null && debtVal > 0) {
+            row.getCell(5).font = { bold: true, color: { argb: 'FFB45309' } }; // amber-700
+            row.getCell(5).fill = {
+                type: 'pattern',
+                pattern: 'solid',
+                fgColor: { argb: 'FFFEF3C7' } // amber-100
+            };
+        }
 
         // Borders
-        [1, 2, 3, 4, 5].forEach(col => {
+        [1, 2, 3, 4, 5, 6].forEach(col => {
             row.getCell(col).border = {
                 top: { style: 'thin', color: { argb: 'FFEEEEEE' } },
                 left: { style: 'thin', color: { argb: 'FFEEEEEE' } },
@@ -125,14 +138,14 @@ export const generateDistributionExcel = async (data: any[], unitName: string = 
     rowIndex++; // Spacing
     const totalQty = data.reduce((sum, item) => sum + (Number(item['Количество']) || 0), 0);
     const totalRow = worksheet.getRow(rowIndex);
-    totalRow.values = ['ВСЬОГО:', '', '', '', totalQty];
+    totalRow.values = ['ВСЬОГО:', '', '', '', '', totalQty];
 
     totalRow.getCell(1).font = { bold: true };
     totalRow.getCell(1).alignment = { horizontal: 'right' };
 
-    totalRow.getCell(5).font = { bold: true, size: 12, color: { argb: 'FFFFFFFF' } };
-    totalRow.getCell(5).alignment = { horizontal: 'center' };
-    totalRow.getCell(5).fill = {
+    totalRow.getCell(6).font = { bold: true, size: 12, color: { argb: 'FFFFFFFF' } };
+    totalRow.getCell(6).alignment = { horizontal: 'center' };
+    totalRow.getCell(6).fill = {
         type: 'pattern',
         pattern: 'solid',
         fgColor: { argb: 'FF00D4FF' }
@@ -144,6 +157,7 @@ export const generateDistributionExcel = async (data: any[], unitName: string = 
         { width: 18 }, // Stock
         { width: 18 }, // Min Stock
         { width: 18 }, // Sales
+        { width: 16 }, // Борг
         { width: 20 }, // Quantity
     ];
 

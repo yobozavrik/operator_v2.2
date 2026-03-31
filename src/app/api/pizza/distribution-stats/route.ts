@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth-guard';
 import { createServiceRoleClient } from '@/lib/branch-api';
-import { syncPizzaLiveDataFromPoster } from '@/lib/pizza-live-sync';
-import { Logger } from '@/lib/logger';
+import { fetchActivePizzaProductIds, fetchPizzaDistributionRowsByProduct } from '@/lib/pizza-distribution-read';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,33 +15,20 @@ export async function GET(request: NextRequest) {
 
     try {
         const supabase = createServiceRoleClient();
-        await syncPizzaLiveDataFromPoster(supabase).catch((error) => {
-            Logger.error('[pizza distribution-stats] live sync failed', { error: String(error) });
-            return null;
-        });
-
         const { searchParams } = new URL(request.url);
-        const productId = searchParams.get('product_id');
+        const parsedProductId = Number(searchParams.get('product_id'));
+        const productIds = Number.isFinite(parsedProductId) && parsedProductId > 0
+            ? [parsedProductId]
+            : await fetchActivePizzaProductIds(supabase);
 
-        let query = supabase
-            .schema('pizza1')
-            .from('v_pizza_distribution_stats')
-            .select('*');
-
-        if (productId) {
-            query = query.eq('product_id', productId);
-        }
-
-        const { data, error } = await query;
-
-        if (error) {
-            console.error('[Distribution Stats] Supabase error:', error);
-            return NextResponse.json({ error: error.message }, { status: 500 });
-        }
+        const data = await fetchPizzaDistributionRowsByProduct(
+            supabase,
+            'product_id, product_name, spot_name, avg_sales_day, min_stock, stock_now, baked_at_factory, need_net',
+            { productIds },
+        );
 
         return NextResponse.json(data || []);
     } catch (error) {
-        console.error('[Distribution Stats] Error:', error);
         return NextResponse.json({ error: String(error) }, { status: 500 });
     }
 }

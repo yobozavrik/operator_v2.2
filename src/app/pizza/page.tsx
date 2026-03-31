@@ -5,8 +5,6 @@ import useSWR from 'swr';
 import { ProductionTabs } from '@/components/production/ProductionTabs';
 import { DashboardLayout } from '@/components/layout';
 import { transformPizzaData } from '@/lib/transformers';
-import { ChefHat } from 'lucide-react';
-
 import { authedFetcher } from '@/lib/authed-fetcher';
 
 const fetcher = authedFetcher;
@@ -30,30 +28,20 @@ export default function PizzaDashboard() {
 
     if (error) {
         return (
-            <div className="flex items-center justify-center min-h-screen bg-[var(--background)] text-[#E74856] font-bold uppercase tracking-widest">
+            <div className="flex min-h-screen items-center justify-center bg-[var(--background)] font-bold uppercase tracking-widest text-[#E74856]">
                 Помилка завантаження даних
             </div>
         );
     }
 
-    if (isLoading || !allProductsData) {
-        return (
-            <div className="flex items-center justify-center min-h-screen bg-[var(--background)]">
-                <div className="flex flex-col items-center gap-4">
-                    <ChefHat size={48} className="text-[#FFB800] animate-bounce" />
-                    <span className="text-white/40 font-bold uppercase tracking-widest animate-pulse">
-                        Завантаження піци...
-                    </span>
-                </div>
-            </div>
-        );
-    }
-
     return (
-        <DashboardLayout
-            fullHeight={true}
-        >
-            <ProductionTabs data={productQueue} onRefresh={handleRefresh} showTabs={true} />
+        <DashboardLayout fullHeight={true}>
+            <ProductionTabs
+                data={productQueue}
+                onRefresh={handleRefresh}
+                showTabs={true}
+                isLoading={isLoading && !allProductsData}
+            />
         </DashboardLayout>
     );
 }

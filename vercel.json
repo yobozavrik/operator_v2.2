@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/distribution/scheduled-run",
-      "schedule": "30 21 * * *"
+      "schedule": "30 20 * * *"
     }
   ],
   "headers": [

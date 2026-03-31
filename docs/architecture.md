@@ -1,4 +1,4 @@
-# Architecture & Data Flow
+﻿# Architecture & Data Flow
 
 ## 1. Overview
 The "Operator" system acts as a real-time data aggregator and specialized calculator for production and distribution logistics.
@@ -31,6 +31,27 @@ sequenceDiagram
   - `f_plan_konditerka_production_ndays`: Simulates production outcomes over $N$ days with specific capacity.
 
 ## 4. Business Logic Invariants
-- **Stock Filtering**: Storage locations with names containing "Склад Кондитерка" or "цех" are excluded from retail stock totals to prevent factory inventory from masking retail shortages.
+- **Stock Filtering**: Storage locations with names containing "РЎРєР»Р°Рґ РљРѕРЅРґРёС‚РµСЂРєР°" or "С†РµС…" are excluded from retail stock totals to prevent factory inventory from masking retail shortages.
 - **Unit Conversion**: The system automatically converts grams to kilograms (and vice-versa) based on the `KONDITERKA_UNITS_MAP` in `src/lib/konditerka-dictionary.ts`.
 - **Merge Fallback**: If the Poster API is unreachable or the token is missing, the system falls back to the `stock_now` value stored in the database view, providing a degraded but functional experience.
+
+
+## 5. Pizza runtime clean architecture
+
+The pizza domain now has a dedicated runtime architecture document that covers
+owner APIs, Mermaid request flow diagrams, OpenAPI-style contracts, and Clean
+Architecture boundaries.
+
+See [Pizza runtime clean architecture](./pizza-runtime-clean-architecture.md).
+
+## 6. Pizza owner-source split
+The pizza domain now uses a documented owner-source split:
+
+- operational pizza routes: Supabase owner data
+- pizza sales analytics: Poster owner data
+- runtime architecture, Mermaid flows, and OpenAPI contracts: [Pizza runtime clean architecture](./pizza-runtime-clean-architecture.md)
+- pizza OOS invariant: zero stock only, not below-minimum stock
+- pizza presentation invariant: Ukrainian-only user-facing strings
+- `/pizza` initial load invariant: render the shell first, then fill KPI and
+  matrix data from `/api/pizza/orders`
+

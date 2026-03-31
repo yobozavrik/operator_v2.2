@@ -91,32 +91,59 @@ export async function POST() {
                 Logger.info('[Pizza distribution run] customer reservation applied', {
                     meta: { businessDate, reservationId: latestConfirmed.id, result: reservationApplyResult },
                 });
+
+                // Persist the actual applied quantities so results/route.ts reports
+                // applied_qty (what was really subtracted) and not the originally confirmed qty.
+                const { error: saveResultError } = await supabaseAdmin
+                    .schema('pizza1')
+                    .from('customer_reservations')
+                    .update({ applied_result: reservationApplyResult })
+                    .eq('id', latestConfirmed.id);
+
+                if (saveResultError) {
+                    Logger.warn('[Pizza distribution run] failed to save applied_result', { error: saveResultError.message });
+                }
             }
 
+            // Supersede all older versions for this customer/date:
+            // - used_in_distribution: from a prior run that is now replaced
+            // - confirmed: stale versions that were never the latest when a run happened
             const { error: supersedeError } = await supabaseAdmin
                 .schema('pizza1')
                 .from('customer_reservations')
                 .update({ status: 'superseded' })
                 .eq('reservation_date', businessDate)
                 .eq('customer_name', latestConfirmed.customer_name)
-                .eq('status', 'used_in_distribution')
+                .in('status', ['used_in_distribution', 'confirmed'])
                 .neq('id', latestConfirmed.id);
 
             if (supersedeError) {
-                Logger.error('[Pizza distribution run] failed to supersede previous reservation', { error: supersedeError.message });
+                Logger.error('[Pizza distribution run] failed to supersede previous reservations', { error: supersedeError.message });
             }
 
             const { error: markUsedError } = await supabaseAdmin
                 .schema('pizza1')
                 .from('customer_reservations')
-                .update({
-                    status: 'used_in_distribution',
-                })
+                .update({ status: 'used_in_distribution' })
                 .eq('id', latestConfirmed.id)
                 .eq('status', 'confirmed');
 
             if (markUsedError) {
                 Logger.error('[Pizza distribution run] failed to mark reservation used', { error: markUsedError.message });
+            }
+        } else {
+            // No confirmed reservation for today → any previously applied reservation is now
+            // stale (fn_full_recalculate_all has rebuilt distribution_results without it).
+            // Supersede it so the results endpoint doesn't show ghost reservation rows.
+            const { error: voidStaleError } = await supabaseAdmin
+                .schema('pizza1')
+                .from('customer_reservations')
+                .update({ status: 'superseded' })
+                .eq('reservation_date', businessDate)
+                .eq('status', 'used_in_distribution');
+
+            if (voidStaleError) {
+                Logger.warn('[Pizza distribution run] failed to void stale used_in_distribution', { error: voidStaleError.message });
             }
         }
 

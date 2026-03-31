@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { requireAuth } from '@/lib/auth-guard';
 import crypto, { timingSafeEqual } from 'crypto';
 import { normalizeGravitonName, syncGravitonCatalogFromManufactures } from '@/lib/graviton-catalog';
+import { extractGravitonEdgeProduction } from '@/lib/graviton-live-edge';
 
 export const dynamic = 'force-dynamic';
 
@@ -122,6 +123,7 @@ export async function POST(request: Request) {
         // 3. Fetch live stocks for effective scope
         let liveStocks: any[] = [];
         let failed_storages: number[] = [];
+        let liveEdgePayload: any = null;
 
         try {
             const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -136,6 +138,7 @@ export async function POST(request: Request) {
             }
 
             const edgeResult = await edgeResponse.json();
+            liveEdgePayload = edgeResult;
 
             if (!edgeResult || !edgeResult.storages_status) {
                 throw new Error("Edge Function returned invalid payload.");
@@ -198,13 +201,16 @@ export async function POST(request: Request) {
         let catalogSync = { inserted: 0, renamed: 0, reactivated: 0, skipped_without_id: 0 };
 
         try {
-            const manufacturesData = await posterRequest('storage.getManufactures', {
-                dateFrom: dateStr,
-                dateTo: dateStr
-            });
+            const edgeManufactures = extractGravitonEdgeProduction(liveEdgePayload, 2);
+            if (edgeManufactures.length === 0) {
+                const manufacturesData = await posterRequest('storage.getManufactures', {
+                    dateFrom: dateStr,
+                    dateTo: dateStr
+                });
 
-            rawManufactures = (manufacturesData.response || []) as any[];
-            catalogSync = await syncGravitonCatalogFromManufactures(gravitonDb, categoriesDb, rawManufactures, 2);
+                rawManufactures = (manufacturesData.response || []) as any[];
+                catalogSync = await syncGravitonCatalogFromManufactures(gravitonDb, categoriesDb, rawManufactures, 2);
+            }
         } catch (err: any) {
             console.error("Error fetching manufactures for catalog sync:", err);
             throw new Error(`Critical dependency Live production sync failed: ${err.message}`);
@@ -230,33 +236,47 @@ export async function POST(request: Request) {
         let totalManufacturedKg = 0;
 
         try {
-            rawManufactures.forEach((m: any) => {
-                const storageId = parseInt(m.storage_id);
-                // Only Graviton Production Hub
-                if (storageId !== 2) return;
+            const edgeManufactures = extractGravitonEdgeProduction(liveEdgePayload, 2);
 
-                if (m.products && Array.isArray(m.products)) {
-                    m.products.forEach((p: any) => {
-                        const name = p.product_name || p.ingredient_name || '';
-                        const normalized = normalizeGravitonName(name);
-                        const quantity = parseFloat(p.product_num || '0');
-
-                        // Match catalog
-                        if (name && catalogNamesNormalized.has(normalized)) {
-                            // Prefer poster's product_id if available, else our catalog's id
-                            const catalogId = catalogData.get(normalized);
-                            manufactures.push({
-                                storage_id: storageId,
-                                product_id: catalogId || (p.product_id ? parseInt(p.product_id) : undefined),
-                                product_name: name,
-                                product_name_normalized: normalized,
-                                quantity: quantity
-                            });
-                            totalManufacturedKg += quantity;
-                        }
+            if (edgeManufactures.length > 0) {
+                edgeManufactures.forEach((item) => {
+                    if (!catalogNamesNormalized.has(item.product_name_normalized)) return;
+                    const catalogId = catalogData.get(item.product_name_normalized);
+                    manufactures.push({
+                        storage_id: item.storage_id ?? 2,
+                        product_id: catalogId || item.product_id || undefined,
+                        product_name: item.product_name,
+                        product_name_normalized: item.product_name_normalized,
+                        quantity: item.quantity,
                     });
-                }
-            });
+                    totalManufacturedKg += item.quantity;
+                });
+            } else {
+                rawManufactures.forEach((m: any) => {
+                    const storageId = parseInt(m.storage_id);
+                    if (storageId !== 2) return;
+
+                    if (m.products && Array.isArray(m.products)) {
+                        m.products.forEach((p: any) => {
+                            const name = p.product_name || p.ingredient_name || '';
+                            const normalized = normalizeGravitonName(name);
+                            const quantity = parseFloat(p.product_num || '0');
+
+                            if (name && catalogNamesNormalized.has(normalized)) {
+                                const catalogId = catalogData.get(normalized);
+                                manufactures.push({
+                                    storage_id: storageId,
+                                    product_id: catalogId || (p.product_id ? parseInt(p.product_id) : undefined),
+                                    product_name: name,
+                                    product_name_normalized: normalized,
+                                    quantity: quantity
+                                });
+                                totalManufacturedKg += quantity;
+                            }
+                        });
+                    }
+                });
+            }
         } catch (err: any) {
             console.error("Error fetching manufactures:", err);
             throw new Error(`Critical dependency Live production sync failed: ${err.message}`);

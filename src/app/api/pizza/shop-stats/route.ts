@@ -1,10 +1,18 @@
 import { NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth-guard';
 import { createServiceRoleClient } from '@/lib/branch-api';
-import { syncPizzaLiveDataFromPoster } from '@/lib/pizza-live-sync';
 import { Logger } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
+
+type ShopStatRow = {
+    product_id: number;
+    product_name: string | null;
+    spot_name: string | null;
+    stock_now: number | string | null;
+    min_stock: number | string | null;
+    avg_sales_day: number | string | null;
+};
 
 export async function GET(request: Request) {
     const auth = await requireAuth();
@@ -19,25 +27,25 @@ export async function GET(request: Request) {
 
     try {
         const supabase = createServiceRoleClient();
-        await syncPizzaLiveDataFromPoster(supabase).catch((error) => {
-            Logger.error('[pizza shop-stats] live sync failed', { error: String(error) });
-            return null;
-        });
 
         const { data, error } = await supabase
             .schema('pizza1')
             .from('v_pizza_distribution_stats')
-            .select('spot_name, stock_now, min_stock, avg_sales_day')
-            .eq('product_name', pizza);
+            .select('product_id, product_name, spot_name, stock_now, min_stock, avg_sales_day')
+            .eq('product_name', pizza.trim())
+            .order('spot_name', { ascending: true });
 
         if (error) {
-            console.error('Database Error:', error.message);
             return NextResponse.json({ error: error.message }, { status: 500 });
         }
 
-        return NextResponse.json(data);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-        return NextResponse.json({ error: err.message }, { status: 500 });
+        if (!data || data.length === 0) {
+            Logger.error('[pizza shop-stats] product not found in distribution rows', { error: pizza });
+        }
+
+        return NextResponse.json((data || []) as ShopStatRow[]);
+    } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        return NextResponse.json({ error: message }, { status: 500 });
     }
 }

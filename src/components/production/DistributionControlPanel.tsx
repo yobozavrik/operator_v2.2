@@ -69,11 +69,8 @@ type ReservationSaveOptions = {
 const fetcher = authedFetcher;
 const DEFAULT_CUSTOMER_NAME = "Замовник Галя Балувана";
 
-function getLocalIsoDate() {
-  const now = new Date();
-  const offset = now.getTimezoneOffset();
-  const localNow = new Date(now.getTime() - offset * 60_000);
-  return localNow.toISOString().slice(0, 10);
+function getKyivIsoDate(): string {
+  return new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Kyiv' });
 }
 
 function createEmptyDraft(): ReservationDraft {
@@ -94,7 +91,7 @@ function getStatusMeta(status: ReservationStatus) {
 }
 
 export const DistributionControlPanel = () => {
-  const [selectedDate, setSelectedDate] = useState(getLocalIsoDate);
+  const [selectedDate, setSelectedDate] = useState(getKyivIsoDate);
   const [isRunning, setIsRunning] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [isSavingReservation, setIsSavingReservation] = useState(false);
@@ -541,7 +538,7 @@ export const DistributionControlPanel = () => {
             ) : (
               <div className="space-y-1">
                 {resultsData.map((row, index) => (
-                  <motion.div key={`${row.product_name}-${row.spot_name}-${index}`} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: index * 0.03 }} className="grid grid-cols-12 items-center gap-4 rounded-lg border border-transparent p-3 transition-colors hover:border-panel-border hover:bg-bg-primary">
+                  <motion.div key={`${row.product_name}-${row.spot_name}-${index}`} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: Math.min(index * 0.03, 0.3) }} className="grid grid-cols-12 items-center gap-4 rounded-lg border border-transparent p-3 transition-colors hover:border-panel-border hover:bg-bg-primary">
                     <div className="col-span-1 text-center font-[family-name:var(--font-jetbrains)] text-[11px] text-slate-400">{index + 1}</div>
                     <div className="col-span-5 line-clamp-1 text-sm font-bold text-text-primary">{row.product_name}</div>
                     <div className="col-span-4 line-clamp-1 text-xs font-medium text-text-secondary">{row.spot_name}</div>

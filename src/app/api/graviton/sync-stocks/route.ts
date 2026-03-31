@@ -1,7 +1,12 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { requireAuth } from '@/lib/auth-guard';
-import { normalizeGravitonName, syncGravitonCatalogFromManufactures } from '@/lib/graviton-catalog';
+import {
+    extractGravitonManufactureProducts,
+    normalizeGravitonName,
+    syncGravitonCatalogFromManufactures,
+} from '@/lib/graviton-catalog';
+import { extractGravitonEdgeProduction } from '@/lib/graviton-live-edge';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,6 +14,11 @@ const POSTER_TOKEN = process.env.POSTER_TOKEN || '';
 const POSTER_ACCOUNT = 'galia-baluvana34';
 
 // Supabase client will be initialized inside the handler
+
+function isGravitonProductionStorageName(value: unknown): boolean {
+    const normalized = normalizeGravitonName(String(value || ''));
+    return normalized.includes('гравітон') || normalized.includes('гравитон');
+}
 
 async function posterRequest(method: string, params: Record<string, string> = {}) {
     if (!POSTER_TOKEN) {
@@ -100,17 +110,29 @@ export async function POST(request: Request) {
             (storagesResult.data || []).map((storage: any) => [Number(storage.storage_id), String(storage.storage_name || '')])
         );
 
-        const shopsRaw = shopRows.map((row: any) => ({
+        const baseShops = shopRows.map((row: any) => ({
             spot_id: Number(row.spot_id),
             storage_id: Number(row.storage_id),
             storage_name: storageNameById.get(Number(row.storage_id)) || `Storage ${row.storage_id}`,
             spot_name: spotNameById.get(Number(row.spot_id)) || `Spot ${row.spot_id}`,
-            is_production_hub: Number(row.storage_id) === 2,
+        }));
+
+        const productionStorageId =
+            baseShops.find((shop) => shop.storage_id === 2)?.storage_id
+            ?? baseShops.find((shop) => isGravitonProductionStorageName(shop.storage_name))?.storage_id
+            ?? 2;
+
+        const shopsRaw = baseShops.map((shop) => ({
+            ...shop,
+            is_production_hub:
+                shop.storage_id === productionStorageId ||
+                isGravitonProductionStorageName(shop.storage_name),
         }));
 
         // 5.4. Call Edge Function for live stocks
         let liveStocks: any[] = [];
         let failed_storages: number[] = [];
+        let liveEdgePayload: any = null;
         try {
             const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
             const edgeResponse = await fetch(`${supabaseUrl}/functions/v1/poster-live-stocks`, {
@@ -124,6 +146,7 @@ export async function POST(request: Request) {
             }
 
             const edgeResult = await edgeResponse.json();
+            liveEdgePayload = edgeResult;
 
             // 5.6. Check for partial failure or missing payload
             if (!edgeResult || !edgeResult.storages_status) {
@@ -201,19 +224,11 @@ export async function POST(request: Request) {
         }> = [];
         const production_summary = {
             total_kg: 0,
-            storage_id: 2,
+            storage_id: productionStorageId,
             items_count: 0
         };
 
         try {
-            const manufacturesData = await posterRequest('storage.getManufactures', {
-                dateFrom: dateStr,
-                dateTo: dateStr
-            });
-
-            rawManufactures = (manufacturesData.response || []) as any[];
-            catalog_sync = await syncGravitonCatalogFromManufactures(gravitonDb, categoriesDb, rawManufactures, 2);
-
             const { data: catalogRaw, error: catalogError } = await gravitonDb
                 .from('production_catalog')
                 .select('product_id, product_name, is_active')
@@ -229,37 +244,88 @@ export async function POST(request: Request) {
             }));
 
             const catalogNamesNormalized = new Set(catalog.map((c: any) => c.product_name_normalized));
+            const edgeManufactures = extractGravitonEdgeProduction(liveEdgePayload, productionStorageId);
 
-            rawManufactures.forEach((m: any) => {
-                const storageId = parseInt(m.storage_id);
-                // 1. Only Graviton Production Hub (Storage ID 2)
-                if (storageId !== 2) return;
+            if (edgeManufactures.length > 0) {
+                edgeManufactures.forEach((item) => {
+                    if (!catalogNamesNormalized.has(item.product_name_normalized)) return;
 
-                if (m.products && Array.isArray(m.products)) {
-                    m.products.forEach((p: any) => {
-                        const name = p.product_name || p.ingredient_name || '';
-                        const normalized = normalizeGravitonName(name);
-                        const quantity = parseFloat(p.product_num || '0');
-
-                        // 2. Only items in Graviton catalog
-                        if (name && catalogNamesNormalized.has(normalized)) {
-                            manufactures.push({
-                                storage_id: storageId,
-                                product_id: p.product_id ? parseInt(p.product_id) : undefined,
-                                product_name: name,
-                                product_name_normalized: normalized,
-                                quantity: quantity
-                            });
-
-                            production_summary.total_kg += quantity;
-                            production_summary.items_count++;
-                        }
+                    manufactures.push({
+                        storage_id: item.storage_id ?? productionStorageId,
+                        product_id: item.product_id ?? undefined,
+                        product_name: item.product_name,
+                        product_name_normalized: item.product_name_normalized,
+                        quantity: item.quantity,
                     });
-                }
-            });
+
+                    production_summary.total_kg += item.quantity;
+                    production_summary.items_count++;
+                });
+            } else {
+                const manufacturesData = await posterRequest('storage.getManufactures', {
+                    dateFrom: dateStr,
+                    dateTo: dateStr
+                });
+
+                rawManufactures = (manufacturesData.response || []) as any[];
+                catalog_sync = await syncGravitonCatalogFromManufactures(
+                    gravitonDb,
+                    categoriesDb,
+                    rawManufactures,
+                    productionStorageId
+                );
+
+                const flattenedManufactures = extractGravitonManufactureProducts(
+                    rawManufactures,
+                    productionStorageId
+                );
+
+                flattenedManufactures.forEach((item) => {
+                    const name = item.product_name || '';
+                    const normalized = normalizeGravitonName(name);
+                    const quantity = Number(item.product_num || 0);
+
+                    if (!name || quantity <= 0) return;
+
+                    // Only items in the active Graviton catalog
+                    if (!catalogNamesNormalized.has(normalized)) return;
+
+                    manufactures.push({
+                        storage_id: item.storage_id ?? productionStorageId,
+                        product_id: item.product_id ?? undefined,
+                        product_name: name,
+                        product_name_normalized: normalized,
+                        quantity,
+                    });
+
+                    production_summary.total_kg += quantity;
+                    production_summary.items_count++;
+                });
+            }
 
             // Clean up numbers
             production_summary.total_kg = parseFloat(production_summary.total_kg.toFixed(3));
+
+            // Зберегти виробництво в БД
+            if (manufactures.length > 0) {
+                const dbRows = manufactures.map((m: any) => ({
+                    business_date:           dateStr,
+                    storage_id:              m.storage_id,
+                    product_name_normalized: m.product_name_normalized,
+                    product_name:            m.product_name,
+                    quantity_kg:             m.quantity,
+                    synced_at:               new Date().toISOString(),
+                }));
+
+                const { error: upsertError } = await gravitonDb
+                    .from('production_daily')
+                    .upsert(dbRows, { onConflict: 'business_date,storage_id,product_name_normalized' });
+
+                if (upsertError) {
+                    console.error('Error saving production_daily:', upsertError);
+                    // Не кидаємо помилку — це некритично для основного синку
+                }
+            }
 
         } catch (err) {
             console.error("Error fetching manufactures:", err);

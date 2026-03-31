@@ -33,8 +33,13 @@ const storeGradients = [
 export const Sidebar = () => {
     const { selectedStore, setSelectedStore } = useStore();
     const [hoveredStore, setHoveredStore] = useState<number | null>(null);
+    const [isMounted, setIsMounted] = useState(false);
     const pathname = usePathname();
     const router = useRouter();
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     // Universal menu item renderer (light theme)
     const renderMenuItem = (item: { label: string; icon: React.ComponentType<{ size: number }>; path: string }, i: number, isActive: boolean, onClick: () => void) => {
@@ -88,6 +93,7 @@ export const Sidebar = () => {
 
     const PIZZA_MENU = [
         { label: 'Огляд', icon: LayoutDashboard, path: '/pizza' },
+        { label: 'Аналітика', icon: PieChart, path: '/pizza/analytics' },
         { label: 'Виробництво', icon: BarChart3, path: '/pizza/production' },
         { label: 'Персонал', icon: Users, path: '/pizza/personnel' },
         { label: 'Заявка', icon: ClipboardList, path: '/pizza/order-form' }
@@ -152,15 +158,15 @@ export const Sidebar = () => {
                     </p>
 
                     {isOwnerMode ? (
-                        OWNER_MENU.map((item, i) => renderMenuItem(item, i, pathname === item.path, () => item.path !== '#' && router.push(item.path)))
+                        OWNER_MENU.map((item, i) => renderMenuItem(item, i, isMounted && pathname === item.path, () => item.path !== '#' && router.push(item.path)))
                     ) : isPizzaMode ? (
-                        PIZZA_MENU.map((item, i) => renderMenuItem(item, i, pathname === item.path, () => router.push(item.path)))
+                        PIZZA_MENU.map((item, i) => renderMenuItem(item, i, isMounted && pathname === item.path, () => router.push(item.path)))
                     ) : isKonditerkaMode ? (
-                        KONDITERKA_MENU.map((item, i) => renderMenuItem(item, i, pathname === item.path, () => router.push(item.path)))
+                        KONDITERKA_MENU.map((item, i) => renderMenuItem(item, i, isMounted && pathname === item.path, () => router.push(item.path)))
                     ) : isFloridaMode ? (
-                        FLORIDA_MENU.map((item, i) => renderMenuItem(item, i, pathname === item.path, () => router.push(item.path)))
+                        FLORIDA_MENU.map((item, i) => renderMenuItem(item, i, isMounted && pathname === item.path, () => router.push(item.path)))
                     ) : isBulvarMode ? (
-                        BULVAR_MENU.map((item, i) => renderMenuItem(item, i, pathname === item.path, () => router.push(item.path)))
+                        BULVAR_MENU.map((item, i) => renderMenuItem(item, i, isMounted && pathname === item.path, () => router.push(item.path)))
                     ) : (
                         /* ---- STORE MENU ---- */
                         <div className="flex flex-col gap-1">

@@ -66,7 +66,7 @@ export const PizzaPowerMatrix = ({ data, initialViewMode = 'products' }: Props) 
                         minStock,
                         recommended,
                         urgentDeficit: urgent,
-                        isUrgent: urgent > 0
+                        isUrgent: stock <= 0
                     }
                 };
             });

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import useSWR from 'swr';
 import { cn } from '@/lib/utils';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -13,7 +13,6 @@ import { DistributionControlPanel } from './DistributionControlPanel';
 import ProductionSimulator from './ProductionSimulator';
 import { ThemeToggle } from '../theme-toggle';
 
-// --- SUPPORTING COMPONENTS ---
 interface ProductionItem {
     product_name: string;
     baked_at_factory: number;
@@ -34,7 +33,7 @@ const ProductionDetailView = () => {
                         <div className="w-8 h-8 rounded-lg bg-accent-primary/10 flex items-center justify-center">
                             <ChefHat size={16} className="text-accent-primary" />
                         </div>
-                        <h3 className="text-sm font-bold text-text-primary uppercase tracking-wider">Статистика Виробництва</h3>
+                        <h3 className="text-sm font-bold text-text-primary uppercase tracking-wider">Статистика виробництва</h3>
                     </div>
                     <div className="text-[10px] text-text-secondary uppercase font-black tracking-widest">Останні 24 год</div>
                 </div>
@@ -58,8 +57,8 @@ const ProductionDetailView = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-panel-border">
-                            {data.map((item, i) => (
-                                <tr key={i} className="group hover:bg-bg-primary transition-colors">
+                            {data.map((item, index) => (
+                                <tr key={`${item.product_name}-${index}`} className="group hover:bg-bg-primary transition-colors">
                                     <td className="p-4 text-sm font-medium text-text-primary group-hover:text-accent-primary">
                                         {item.product_name}
                                     </td>
@@ -87,10 +86,14 @@ interface Props {
     data: ProductionTask[];
     onRefresh: () => void;
     showTabs?: boolean;
+    isLoading?: boolean;
 }
 
-export const ProductionTabs = ({ data, onRefresh, showTabs = true }: Props) => {
-    // UPDATED TABS: 'matrix' replaces old 'distribution', 'logistics' is NEW
+const MetricSkeleton = ({ width = 'w-24' }: { width?: string }) => (
+    <div className={cn('h-9 rounded-lg bg-slate-100 animate-pulse', width)} />
+);
+
+export const ProductionTabs = ({ data, onRefresh, showTabs = true, isLoading = false }: Props) => {
     const [activeTab, setActiveTab] = useState<'orders' | 'matrix' | 'production' | 'logistics' | 'simulator'>('matrix');
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [isRefreshing, setIsRefreshing] = useState(false);
@@ -104,27 +107,23 @@ export const ProductionTabs = ({ data, onRefresh, showTabs = true }: Props) => {
         const checkStaleness = () => {
             const now = new Date();
             const diff = now.getTime() - lastUpdated.getTime();
-            setIsStale(diff > 30 * 60 * 1000); // 30 minutes in milliseconds
+            setIsStale(diff > 30 * 60 * 1000);
         };
-        checkStaleness(); // Initial check
-        const interval = setInterval(checkStaleness, 60000); // Re-check every minute
+
+        checkStaleness();
+        const interval = setInterval(checkStaleness, 60000);
         return () => clearInterval(interval);
     }, [lastUpdated]);
 
-    // 🏭 PRODUCTION SUMMARY
-    const { data: productionSummary } = useSWR('/api/pizza/summary', (url) => fetch(url, { credentials: 'include' }).then(r => r.json()), { refreshInterval: 30000 });
-
-    // 🔥 WEBHOOK: Update stock from n8n
     const handleUpdateStock = async () => {
         setIsUpdatingStock(true);
         try {
             const response = await fetch('/api/pizza/sync-stocks', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
             });
 
-            // Оновлюємо внутрішній таймер незалежно від статусу бекенду, 
-            // щоб кнопка ставала зеленою (якщо дані локально "оновилися")
             setLastUpdated(new Date());
 
             if (response.ok) {
@@ -149,40 +148,54 @@ export const ProductionTabs = ({ data, onRefresh, showTabs = true }: Props) => {
         setTimeout(() => setIsRefreshing(false), 500);
     };
 
-    // 📊 GLOBAL METRICS CALCULATION
     const globalMetrics = useMemo(() => {
-        const totalNetworkStock = data.reduce((sum, p) => {
-            const prodStock = p.stores?.reduce((sSum, s) => sSum + (Number(s.currentStock) || 0), 0) || 0;
-            return sum + prodStock;
-        }, 0);
-
-        const totalNetworkMinStock = productionSummary?.total_norm || 0;
-
+        const rawNetworkMinStock = data.reduce((sum, product) => sum + (Number(product.minStockThresholdKg) || 0), 0);
+        const totalNetworkStock = data.reduce((sum, product) => sum + (Number(product.totalStockKg) || 0), 0);
+        const totalNetworkMinStock = rawNetworkMinStock * 2;
+        const totalBaked = data.reduce((sum, product) => sum + (Number(product.todayProduction) || 0), 0);
         const fillIndex = totalNetworkMinStock > 0
             ? (totalNetworkStock / totalNetworkMinStock) * 100
             : 0;
 
         return {
+            totalBaked,
             totalNetworkStock,
             totalNetworkMinStock,
-            fillIndex
+            fillIndex,
         };
-    }, [data, productionSummary]);
+    }, [data]);
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const getIndexColor = (val: number) => {
-        if (val >= 96) return "text-emerald-400";
-        if (val >= 80) return "text-[#FFB800]";
-        return "text-[#E74856]";
+    const renderContent = () => {
+        if (isLoading && data.length === 0) {
+            return (
+                <div className="h-full p-6 bg-bg-primary">
+                    <div className="h-full rounded-2xl border border-panel-border bg-panel-bg p-6">
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
+                            {Array.from({ length: 12 }).map((_, index) => (
+                                <div key={index} className="h-36 rounded-xl border border-slate-200 bg-white p-3">
+                                    <div className="h-1 w-full rounded-full bg-slate-100 mb-3" />
+                                    <div className="h-4 w-3/4 rounded bg-slate-100 animate-pulse mb-6 mx-auto" />
+                                    <div className="h-10 w-20 rounded bg-slate-100 animate-pulse mx-auto mb-3" />
+                                    <div className="h-2 w-full rounded bg-slate-100 animate-pulse" />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        if (activeTab === 'matrix') return <PizzaPowerMatrix data={data} onRefresh={onRefresh} />;
+        if (activeTab === 'orders') return <ProductionOpsTable data={data} onRefresh={onRefresh} />;
+        if (activeTab === 'production') return <ProductionDetailView />;
+        if (activeTab === 'logistics') return <DistributionControlPanel />;
+        return <ProductionSimulator />;
     };
 
     return (
         <div className="flex flex-col h-full w-full font-sans">
-            {/* 1. HEADER & MONITORING BLOCK */}
             <header className="flex-shrink-0 p-3 lg:p-4 pb-1 lg:pb-2 z-20">
                 <div className="bg-panel-bg rounded-xl border border-panel-border shadow-[var(--panel-shadow)] p-3 flex flex-col gap-3">
-
-                    {/* Top Row: Navigation & Title */}
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <BackToHome />
@@ -199,23 +212,26 @@ export const ProductionTabs = ({ data, onRefresh, showTabs = true }: Props) => {
                                 </div>
                             </div>
 
-                            <div className="w-px h-8 bg-panel-border mx-2 hidden sm:block"></div>
+                            <div className="w-px h-8 bg-panel-border mx-2 hidden sm:block" />
 
                             <button
                                 onClick={handleUpdateStock}
                                 disabled={isUpdatingStock}
                                 className={cn(
-                                    "h-10 px-4 flex items-center justify-center gap-2 border rounded-lg transition-all group",
+                                    'h-10 px-4 flex items-center justify-center gap-2 border rounded-lg transition-all group',
                                     isUpdatingStock
-                                        ? "bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed"
+                                        ? 'bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed'
                                         : isStale
-                                            ? "bg-red-50 border-red-300 text-red-500 hover:bg-red-100 animate-pulse"
-                                            : "bg-emerald-50 border-emerald-300 text-emerald-600 hover:bg-emerald-100"
+                                            ? 'bg-red-50 border-red-300 text-red-500 hover:bg-red-100 animate-pulse'
+                                            : 'bg-emerald-50 border-emerald-300 text-emerald-600 hover:bg-emerald-100'
                                 )}
                             >
-                                <RefreshCw size={16} className={cn(
-                                    isUpdatingStock ? "animate-spin" : "group-hover:rotate-180 transition-transform duration-500"
-                                )} />
+                                <RefreshCw
+                                    size={16}
+                                    className={cn(
+                                        isUpdatingStock ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-500'
+                                    )}
+                                />
                                 <span className="hidden sm:inline text-sm font-semibold uppercase tracking-wide">
                                     Оновити залишки
                                 </span>
@@ -227,7 +243,6 @@ export const ProductionTabs = ({ data, onRefresh, showTabs = true }: Props) => {
                         </div>
                     </div>
 
-                    {/* Second Row: Monitoring Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 my-1">
                         <div
                             onClick={() => setActiveTab('production')}
@@ -238,13 +253,19 @@ export const ProductionTabs = ({ data, onRefresh, showTabs = true }: Props) => {
                             </div>
                             <div className="flex items-center gap-2 mb-1.5 relative z-10">
                                 <ChefHat size={14} className="text-blue-500" />
-                                <span className="text-[10px] uppercase font-bold tracking-[0.2em] text-blue-500">Виробництво (Піца)</span>
+                                <span className="text-[10px] uppercase font-bold tracking-[0.2em] text-blue-500">Виробництво (піца)</span>
                             </div>
                             <div className="flex items-baseline gap-2 relative z-10">
-                                <span className="text-3xl font-bold text-slate-900 tracking-tight">
-                                    {productionSummary?.total_baked?.toLocaleString() || 0}
-                                </span>
-                                <span className="text-[10px] text-slate-400 font-medium">шт.</span>
+                                {isLoading ? (
+                                    <MetricSkeleton />
+                                ) : (
+                                    <>
+                                        <span className="text-3xl font-bold text-slate-900 tracking-tight">
+                                            {globalMetrics.totalBaked.toLocaleString()}
+                                        </span>
+                                        <span className="text-[10px] text-slate-400 font-medium">шт.</span>
+                                    </>
+                                )}
                             </div>
                         </div>
 
@@ -254,14 +275,20 @@ export const ProductionTabs = ({ data, onRefresh, showTabs = true }: Props) => {
                                 <span className="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-500">Факт залишок</span>
                             </div>
                             <div className="flex items-baseline gap-2">
-                                <span className={cn(
-                                    "text-3xl font-bold tracking-tight",
-                                    globalMetrics.fillIndex >= 96 ? "text-emerald-500" :
-                                        globalMetrics.fillIndex >= 80 ? "text-amber-500" : "text-red-500"
-                                )}>
-                                    {globalMetrics.totalNetworkStock.toLocaleString()}
-                                </span>
-                                <span className="text-[10px] text-slate-400 font-medium">шт.</span>
+                                {isLoading ? (
+                                    <MetricSkeleton />
+                                ) : (
+                                    <>
+                                        <span className={cn(
+                                            'text-3xl font-bold tracking-tight',
+                                            globalMetrics.fillIndex >= 96 ? 'text-emerald-500' :
+                                                globalMetrics.fillIndex >= 80 ? 'text-amber-500' : 'text-red-500'
+                                        )}>
+                                            {globalMetrics.totalNetworkStock.toLocaleString()}
+                                        </span>
+                                        <span className="text-[10px] text-slate-400 font-medium">шт.</span>
+                                    </>
+                                )}
                             </div>
                         </div>
 
@@ -271,10 +298,16 @@ export const ProductionTabs = ({ data, onRefresh, showTabs = true }: Props) => {
                                 <span className="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-500">Норма</span>
                             </div>
                             <div className="flex items-baseline gap-2">
-                                <span className="text-3xl font-bold text-slate-900 tracking-tight">
-                                    {globalMetrics.totalNetworkMinStock.toLocaleString()}
-                                </span>
-                                <span className="text-[10px] text-slate-400 font-medium">шт.</span>
+                                {isLoading ? (
+                                    <MetricSkeleton />
+                                ) : (
+                                    <>
+                                        <span className="text-3xl font-bold text-slate-900 tracking-tight">
+                                            {globalMetrics.totalNetworkMinStock.toLocaleString()}
+                                        </span>
+                                        <span className="text-[10px] text-slate-400 font-medium">шт.</span>
+                                    </>
+                                )}
                             </div>
                         </div>
 
@@ -284,28 +317,31 @@ export const ProductionTabs = ({ data, onRefresh, showTabs = true }: Props) => {
                                 <span className="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-500">Індекс заповненостей</span>
                             </div>
                             <div className="flex items-baseline gap-2">
-                                <span className="text-3xl font-bold tracking-tight text-blue-500">
-                                    {globalMetrics.fillIndex.toFixed(0)}%
-                                </span>
+                                {isLoading ? (
+                                    <MetricSkeleton width="w-20" />
+                                ) : (
+                                    <span className="text-3xl font-bold tracking-tight text-blue-500">
+                                        {globalMetrics.fillIndex.toFixed(0)}%
+                                    </span>
+                                )}
                             </div>
                         </div>
                     </div>
 
-                    {/* Third Row: Tabs Container (CONDITIONAL) */}
                     {showTabs && (
                         <div className="flex items-center gap-1 p-1 bg-bg-primary rounded-xl border border-panel-border">
                             <button
                                 onClick={() => setActiveTab('matrix')}
                                 className={cn(
-                                    "flex-1 h-11 px-4 text-[13px] font-bold uppercase tracking-wider rounded-lg transition-all duration-300 flex items-center justify-center gap-2 relative overflow-hidden group/tab",
+                                    'flex-1 h-11 px-4 text-[13px] font-bold uppercase tracking-wider rounded-lg transition-all duration-300 flex items-center justify-center gap-2 relative overflow-hidden group/tab',
                                     activeTab === 'matrix'
-                                        ? "bg-panel-bg text-orange-500 shadow-sm border border-panel-border"
-                                        : "text-text-secondary hover:text-text-primary hover:bg-panel-bg/50"
+                                        ? 'bg-panel-bg text-orange-500 shadow-sm border border-panel-border'
+                                        : 'text-text-secondary hover:text-text-primary hover:bg-panel-bg/50'
                                 )}
                             >
                                 <div className={cn(
-                                    "p-1.5 rounded-md transition-colors",
-                                    activeTab === 'matrix' ? "bg-orange-500/10" : "bg-transparent"
+                                    'p-1.5 rounded-md transition-colors',
+                                    activeTab === 'matrix' ? 'bg-orange-500/10' : 'bg-transparent'
                                 )}>
                                     <Activity size={16} strokeWidth={2.5} />
                                 </div>
@@ -316,15 +352,15 @@ export const ProductionTabs = ({ data, onRefresh, showTabs = true }: Props) => {
                             <button
                                 onClick={() => setActiveTab('production')}
                                 className={cn(
-                                    "flex-1 h-11 px-4 text-[13px] font-bold uppercase tracking-wider rounded-lg transition-all duration-300 flex items-center justify-center gap-2 relative overflow-hidden group/tab",
+                                    'flex-1 h-11 px-4 text-[13px] font-bold uppercase tracking-wider rounded-lg transition-all duration-300 flex items-center justify-center gap-2 relative overflow-hidden group/tab',
                                     activeTab === 'production'
-                                        ? "bg-panel-bg text-accent-primary shadow-sm border border-panel-border"
-                                        : "text-text-secondary hover:text-text-primary hover:bg-panel-bg/50"
+                                        ? 'bg-panel-bg text-accent-primary shadow-sm border border-panel-border'
+                                        : 'text-text-secondary hover:text-text-primary hover:bg-panel-bg/50'
                                 )}
                             >
                                 <div className={cn(
-                                    "p-1.5 rounded-md transition-colors",
-                                    activeTab === 'production' ? "bg-accent-primary/10" : "bg-transparent"
+                                    'p-1.5 rounded-md transition-colors',
+                                    activeTab === 'production' ? 'bg-accent-primary/10' : 'bg-transparent'
                                 )}>
                                     <ChefHat size={16} strokeWidth={2.5} />
                                 </div>
@@ -335,15 +371,15 @@ export const ProductionTabs = ({ data, onRefresh, showTabs = true }: Props) => {
                             <button
                                 onClick={() => setActiveTab('logistics')}
                                 className={cn(
-                                    "flex-1 h-11 px-4 text-[13px] font-bold uppercase tracking-wider rounded-lg transition-all duration-300 flex items-center justify-center gap-2 relative overflow-hidden group/tab",
+                                    'flex-1 h-11 px-4 text-[13px] font-bold uppercase tracking-wider rounded-lg transition-all duration-300 flex items-center justify-center gap-2 relative overflow-hidden group/tab',
                                     activeTab === 'logistics'
-                                        ? "bg-panel-bg text-status-success shadow-sm border border-panel-border"
-                                        : "text-text-secondary hover:text-text-primary hover:bg-panel-bg/50"
+                                        ? 'bg-panel-bg text-status-success shadow-sm border border-panel-border'
+                                        : 'text-text-secondary hover:text-text-primary hover:bg-panel-bg/50'
                                 )}
                             >
                                 <div className={cn(
-                                    "p-1.5 rounded-md transition-colors",
-                                    activeTab === 'logistics' ? "bg-status-success/10 text-status-success" : "bg-transparent"
+                                    'p-1.5 rounded-md transition-colors',
+                                    activeTab === 'logistics' ? 'bg-status-success/10 text-status-success' : 'bg-transparent'
                                 )}>
                                     <Truck size={16} strokeWidth={2.5} />
                                 </div>
@@ -354,46 +390,30 @@ export const ProductionTabs = ({ data, onRefresh, showTabs = true }: Props) => {
                             <button
                                 onClick={() => setActiveTab('simulator')}
                                 className={cn(
-                                    "flex-1 h-11 px-4 text-[13px] font-bold uppercase tracking-wider rounded-lg transition-all duration-300 flex items-center justify-center gap-2 relative overflow-hidden group/tab",
+                                    'flex-1 h-11 px-4 text-[13px] font-bold uppercase tracking-wider rounded-lg transition-all duration-300 flex items-center justify-center gap-2 relative overflow-hidden group/tab',
                                     activeTab === 'simulator'
-                                        ? "bg-panel-bg text-rose-500 shadow-sm border border-panel-border"
-                                        : "text-text-secondary hover:text-text-primary hover:bg-panel-bg/50"
+                                        ? 'bg-panel-bg text-rose-500 shadow-sm border border-panel-border'
+                                        : 'text-text-secondary hover:text-text-primary hover:bg-panel-bg/50'
                                 )}
                             >
                                 <div className={cn(
-                                    "p-1.5 rounded-md transition-colors",
-                                    activeTab === 'simulator' ? "bg-rose-500/10 text-rose-500" : "bg-transparent"
+                                    'p-1.5 rounded-md transition-colors',
+                                    activeTab === 'simulator' ? 'bg-rose-500/10' : 'bg-transparent'
                                 )}>
                                     <Settings2 size={16} strokeWidth={2.5} />
                                 </div>
-                                <span className="hidden xl:inline">СИМУЛЯТОР</span>
-                                <span className="xl:hidden">СИМ</span>
+                                <span className="hidden xl:inline">ПЛАН ВИРОБНИЦТВА</span>
+                                <span className="xl:hidden">ПЛАН</span>
                             </button>
                         </div>
                     )}
                 </div>
             </header>
 
-            {/* 2. CONTENT BLOCK */}
-            <div className="flex-1 overflow-hidden relative">
-                {(!showTabs || activeTab === 'orders') && (
-                    <ProductionOpsTable data={data} onRefresh={onRefresh} />
-                )}
-                {(showTabs && activeTab === 'matrix') && (
-                    <PizzaPowerMatrix data={data} onRefresh={onRefresh} />
-                )}
-                {(showTabs && activeTab === 'production') && (
-                    <ProductionDetailView />
-                )}
-                {(showTabs && activeTab === 'logistics') && (
-                    <DistributionControlPanel />
-                )}
-                {(showTabs && activeTab === 'simulator') && (
-                    <ProductionSimulator />
-                )}
+            <div className="flex-1 min-h-0 overflow-hidden">
+                {renderContent()}
             </div>
 
-            {/* MODALS */}
             <DistributionModal
                 isOpen={showDistModal}
                 onClose={() => setShowDistModal(false)}

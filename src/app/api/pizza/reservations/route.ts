@@ -126,6 +126,44 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
+        // Safe order: INSERT new items first → DELETE old items not in new set → UPDATE header
+        // This prevents data loss if INSERT fails (old items remain intact until INSERT succeeds)
+        let newItemIds: string[] = [];
+
+        if (normalizedItems.length > 0) {
+            const { data: insertedItems, error: insertItemsError } = await supabase
+                .schema('pizza1')
+                .from('customer_reservation_items')
+                .insert(
+                    normalizedItems.map((item) => ({
+                        reservation_id: reservationId,
+                        sku: item.sku,
+                        qty: item.qty,
+                    }))
+                )
+                .select('id');
+
+            if (insertItemsError) {
+                return NextResponse.json({ error: insertItemsError.message }, { status: 500 });
+            }
+
+            newItemIds = (insertedItems || []).map((row: { id: string }) => row.id);
+        }
+
+        const deleteQuery = supabase
+            .schema('pizza1')
+            .from('customer_reservation_items')
+            .delete()
+            .eq('reservation_id', reservationId);
+
+        const { error: deleteError } = newItemIds.length > 0
+            ? await deleteQuery.not('id', 'in', `(${newItemIds.join(',')})`)
+            : await deleteQuery;
+
+        if (deleteError) {
+            return NextResponse.json({ error: deleteError.message }, { status: 500 });
+        }
+
         const { error: updateError } = await supabase
             .schema('pizza1')
             .from('customer_reservations')
@@ -137,33 +175,6 @@ export async function POST(request: NextRequest) {
 
         if (updateError) {
             return NextResponse.json({ error: updateError.message }, { status: 500 });
-        }
-
-        const { error: deleteError } = await supabase
-            .schema('pizza1')
-            .from('customer_reservation_items')
-            .delete()
-            .eq('reservation_id', reservationId);
-
-        if (deleteError) {
-            return NextResponse.json({ error: deleteError.message }, { status: 500 });
-        }
-
-        if (normalizedItems.length > 0) {
-            const { error: insertItemsError } = await supabase
-                .schema('pizza1')
-                .from('customer_reservation_items')
-                .insert(
-                    normalizedItems.map((item) => ({
-                        reservation_id: reservationId,
-                        sku: item.sku,
-                        qty: item.qty,
-                    }))
-                );
-
-            if (insertItemsError) {
-                return NextResponse.json({ error: insertItemsError.message }, { status: 500 });
-            }
         }
 
         return NextResponse.json({ success: true, id: reservationId });

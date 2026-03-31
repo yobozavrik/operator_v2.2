@@ -16,6 +16,18 @@ type ReservationItemRow = {
     qty?: number | string | null;
 };
 
+// Shape returned by fn_apply_customer_reservation and stored in applied_result column.
+type AppliedItem = {
+    sku: string;
+    requested_qty: number;
+    applied_qty: number;
+    missing_qty: number;
+};
+type AppliedResult = {
+    customer_name: string;
+    items: AppliedItem[];
+};
+
 export async function GET() {
     const auth = await requireAuth();
     if (auth.error) return auth.error;
@@ -48,6 +60,7 @@ export async function GET() {
             .select(`
                 customer_name,
                 confirmed_at,
+                applied_result,
                 customer_reservation_items (
                     sku,
                     qty
@@ -71,16 +84,36 @@ export async function GET() {
             calc_time: row.calc_time || null,
         }));
 
-        const reservationRows = usedReservation
-            ? (((usedReservation.customer_reservation_items || []) as ReservationItemRow[])
-                .filter((item) => Number(item.qty || 0) > 0)
-                .map((item) => ({
-                    product_name: String(item.sku || ''),
-                    spot_name: String(usedReservation.customer_name || 'Замовник'),
-                    quantity_to_ship: Math.max(0, Number(item.qty || 0)),
-                    calc_time: usedReservation.confirmed_at || null,
-                })))
-            : [];
+        let reservationRows: typeof baseRows = [];
+        if (usedReservation) {
+            const customerName = String(usedReservation.customer_name || 'Замовник');
+            const calcTime = usedReservation.confirmed_at || null;
+            const applied = usedReservation.applied_result as AppliedResult | null;
+
+            if (applied?.items?.length) {
+                // Use actual applied quantities — what was really subtracted from the network.
+                // Rows with applied_qty=0 are omitted (network had nothing to give for that SKU).
+                reservationRows = applied.items
+                    .filter((item) => item.applied_qty > 0)
+                    .map((item) => ({
+                        product_name: item.sku,
+                        spot_name: customerName,
+                        quantity_to_ship: item.applied_qty,
+                        calc_time: calcTime,
+                    }));
+            } else {
+                // Fallback: applied_result not yet saved (old reservation or apply failed).
+                // Show confirmed qty so the row is visible, but with a warning marker via spot_name.
+                reservationRows = (((usedReservation.customer_reservation_items || []) as ReservationItemRow[])
+                    .filter((item) => Number(item.qty || 0) > 0)
+                    .map((item) => ({
+                        product_name: String(item.sku || ''),
+                        spot_name: customerName,
+                        quantity_to_ship: Math.max(0, Number(item.qty || 0)),
+                        calc_time: calcTime,
+                    })));
+            }
+        }
 
         return NextResponse.json([...baseRows, ...reservationRows]);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

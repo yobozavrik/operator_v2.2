@@ -111,6 +111,7 @@ export function transformDeficitData(data: SupabaseDeficitRow[]): ProductionTask
             storeName: row.назва_магазину,
             priorityReason: `Store: ${row.назва_магазину}`,
             status: 'pending' as const,
+            todayProduction: Number(row.today_production || 0),
             deficitPercent: Number(row.deficit_percent)
         };
     });
@@ -155,6 +156,7 @@ export function transformPizzaData(
         const stock = safeNumber(row.current_stock ?? row.stock ?? row.stock_now ?? row.quantity);
         const min = safeNumber(row.min_stock ?? row.min ?? row.norm_3_days ?? row.min_qty);
         const netNeed = safeNumber(row.net_need ?? row.need ?? row.need_net ?? row.deficit);
+        const bakedAtFactory = safeNumber(row.baked_at_factory);
 
         // Keep explicit 0 from backend as 0. Fallback only when avg field is truly absent.
         const avgSource = row.avg_sales_day ?? row.avg_sales ?? row.avg;
@@ -213,6 +215,7 @@ export function transformPizzaData(
             existing.dailyForecastKg += avg;
             existing.minStockThresholdKg += min; // Sum up min stock thresholds
             existing.stores.push(storeObj);
+            existing.todayProduction = Math.max(Number(existing.todayProduction) || 0, bakedAtFactory);
 
             // Check trend or other aggregation logic if needed
             if (stock === 0) existing.outOfStockStores += 1;
@@ -237,6 +240,7 @@ export function transformPizzaData(
                 storeName: 'Multiple',
                 priorityReason: 'Pizza Distribution',
                 status: 'pending',
+                todayProduction: bakedAtFactory,
                 deficitPercent: 0
             });
         }

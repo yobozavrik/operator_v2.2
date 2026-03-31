@@ -1,7 +1,8 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Settings2, TrendingUp, AlertTriangle, Loader2 } from 'lucide-react';
+import { Settings2, TrendingUp, AlertTriangle, Loader2, Download } from 'lucide-react';
+import { generatePizzaSimulatorExcel } from '@/lib/pizza-simulator-export';
 import { createClient } from '@/utils/supabase/client';
 
 interface PlanItem {
@@ -22,9 +23,9 @@ export default function ProductionSimulator() {
     const [days, setDays] = useState<number>(3);
     const [planData, setPlanData] = useState<PlanItem[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [isExporting, setIsExporting] = useState(false);
     const [error, setError] = useState<string | null>(null);
-
-    const supabase = createClient();
+    const supabase = useMemo(() => createClient(), []);
 
     useEffect(() => {
         const fetchPlan = async () => {
@@ -71,6 +72,20 @@ export default function ProductionSimulator() {
         }, {} as Record<number, PlanItem[]>);
     }, [planData]);
 
+    const handleExportExcel = async () => {
+        if (!planData.length || isLoading || isExporting) return;
+
+        try {
+            setIsExporting(true);
+            await generatePizzaSimulatorExcel(planData, days, capacity);
+        } catch (err) {
+            console.error('Error exporting production plan excel:', err);
+            setError('Не вдалося сформувати Excel-файл');
+        } finally {
+            setIsExporting(false);
+        }
+    };
+
     return (
         <div className="h-full bg-bg-primary p-4 md:p-8 font-sans text-text-primary overflow-y-auto custom-scrollbar">
             <div className="max-w-6xl mx-auto space-y-6">
@@ -84,7 +99,7 @@ export default function ProductionSimulator() {
                                 Цільова потужність зміни (Capacity)
                             </h2>
                             <p className="text-sm text-text-secondary mt-1 font-[family-name:var(--font-jetbrains)]">
-                                Налаштуйте ліміт, щоб побачити перерахунок автозамовлення на 3 дні
+                                Налаштуйте ліміт, щоб побачити план виробництва на обраний горизонт
                             </p>
                         </div>
                         <div className="text-left md:text-right">
@@ -115,25 +130,39 @@ export default function ProductionSimulator() {
                     </div>
 
                     {/* Horizon Selector */}
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-4 pt-5 border-t border-panel-border mt-5">
-                        <span className="text-sm font-bold text-text-primary uppercase tracking-wider flex items-center gap-2 font-[family-name:var(--font-jetbrains)]">
-                            <TrendingUp size={16} className="text-[#00E0FF]" />
-                            Горизонт планування:
-                        </span>
-                        <div className="flex gap-2">
-                            {[1, 2, 3, 4, 5].map(d => (
-                                <button
-                                    key={d}
-                                    onClick={() => setDays(d)}
-                                    className={`px-4 py-1.5 text-xs font-black rounded-lg transition-all border tracking-widest font-[family-name:var(--font-jetbrains)] ${days === d
-                                        ? 'bg-[#00E0FF]/10 border-[#00E0FF]/50 text-[#00E0FF] shadow-[0_0_10px_rgba(0,224,255,0.2)]'
-                                        : 'bg-bg-primary border-panel-border text-text-secondary hover:text-text-primary hover:border-text-muted hover:bg-panel-border/30'
-                                        }`}
-                                >
-                                    {d} {d === 1 ? 'ДЕНЬ' : 'ДНІ'}
-                                </button>
-                            ))}
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pt-5 border-t border-panel-border mt-5">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                            <span className="text-sm font-bold text-text-primary uppercase tracking-wider flex items-center gap-2 font-[family-name:var(--font-jetbrains)]">
+                                <TrendingUp size={16} className="text-[#00E0FF]" />
+                                Горизонт планування:
+                            </span>
+                            <div className="flex gap-2">
+                                {[1, 2, 3, 4, 5, 6].map(d => (
+                                    <button
+                                        key={d}
+                                        onClick={() => setDays(d)}
+                                        className={`px-4 py-1.5 text-xs font-black rounded-lg transition-all border tracking-widest font-[family-name:var(--font-jetbrains)] ${days === d
+                                            ? 'bg-[#00E0FF]/10 border-[#00E0FF]/50 text-[#00E0FF] shadow-[0_0_10px_rgba(0,224,255,0.2)]'
+                                            : 'bg-bg-primary border-panel-border text-text-secondary hover:text-text-primary hover:border-text-muted hover:bg-panel-border/30'
+                                            }`}
+                                    >
+                                        {d} {d === 1 ? 'ДЕНЬ' : 'ДНІ'}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
+                        <button
+                            onClick={handleExportExcel}
+                            disabled={!planData.length || isLoading || isExporting}
+                            className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-emerald-400/30 bg-emerald-500/10 text-emerald-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-emerald-500/15 hover:border-emerald-300/40 transition-all font-[family-name:var(--font-jetbrains)] text-xs font-black uppercase tracking-widest"
+                        >
+                            {isExporting ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                                <Download className="w-4 h-4" />
+                            )}
+                            {isExporting ? 'Експорт...' : 'План виробництва'}
+                        </button>
                     </div>
                 </div>
 

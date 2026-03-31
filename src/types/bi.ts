@@ -22,6 +22,7 @@ export interface SupabaseDeficitRow {
     portion_size?: number;
     portion_unit?: string;
     is_live?: boolean;
+    today_production?: number;
 }
 
 export interface Store {
