@@ -211,6 +211,8 @@ export function BIDashboardV2() {
                 credentials: 'include',
             });
             if (response.status === 401 || response.status === 403) {
+                const body = await response.text().catch(() => '');
+                console.error(`[BIDashboard] sync-stocks blocked: ${response.status} — body: "${body.slice(0, 300)}"`);
                 setProductionError('auth');
                 return;
             }
