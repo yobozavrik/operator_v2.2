@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import useSWR from 'swr';
 import { useRouter } from 'next/navigation';
-import { AlertTriangle, Factory, MapPinned, RefreshCw, Truck } from 'lucide-react';
+import { AlertTriangle, Factory, MapPinned, RefreshCw, Truck, WifiOff, ShieldAlert, Database } from 'lucide-react';
 import { transformDeficitData } from '@/lib/transformers';
 import { BI_Metrics, ProductionTask, SupabaseDeficitRow } from '@/types/bi';
 import { cn } from '@/lib/utils';
@@ -126,9 +126,45 @@ export function BIDashboardV2() {
     const [isRefreshing, setIsRefreshing] = React.useState(false);
     const [lastLiveSyncAt, setLastLiveSyncAt] = React.useState<string | null>(null);
     const [posterManufactures, setPosterManufactures] = React.useState<PosterManufactureRow[]>([]);
+    const [productionSource, setProductionSource] = React.useState<'live' | 'cache' | 'empty' | null>(null);
+    const [productionError, setProductionError] = React.useState<'auth' | 'sync' | null>(null);
 
     const { data: deficitData, mutate: mutateDeficit } = useSWR<SupabaseDeficitRow[]>('/api/graviton/deficit', fetcher, { refreshInterval: 60000 });
     const { data: metrics, mutate: mutateMetrics } = useSWR<BI_Metrics>('/api/graviton/metrics', fetcher, { refreshInterval: 60000 });
+
+    // Bootstrap виробництво з кешу при відкритті сторінки
+    useEffect(() => {
+        let cancelled = false;
+        async function loadCachedProduction() {
+            try {
+                const res = await fetch('/api/graviton/production-daily');
+                if (!res.ok) {
+                    if (res.status === 401) {
+                        if (!cancelled) setProductionError('auth');
+                    } else {
+                        if (!cancelled) setProductionError('sync');
+                    }
+                    return;
+                }
+                const json = await res.json();
+                if (cancelled) return;
+                const rows: PosterManufactureRow[] = (json.data ?? []).map((r: { storage_id?: number; product_name?: string; product_name_normalized?: string; quantity_kg?: number }) => ({
+                    storage_id: r.storage_id,
+                    product_name: r.product_name,
+                    product_name_normalized: r.product_name_normalized,
+                    quantity: r.quantity_kg,
+                }));
+                setPosterManufactures(rows);
+                setLastLiveSyncAt(json.synced_at ?? null);
+                setProductionSource(rows.length > 0 ? 'cache' : 'empty');
+                setProductionError(null);
+            } catch {
+                if (!cancelled) setProductionError('sync');
+            }
+        }
+        loadCachedProduction();
+        return () => { cancelled = true; };
+    }, []);
 
     const deficitQueue = useMemo(() => transformDeficitData(deficitData || []), [deficitData]);
     const productionToday = useMemo(() => aggregateProductionToday(posterManufactures), [posterManufactures]);
@@ -161,14 +197,32 @@ export function BIDashboardV2() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
             });
+            if (response.status === 401) {
+                setProductionError('auth');
+                return;
+            }
             const result = await response.json();
             if (!response.ok || !result.success) {
+                setProductionError('sync');
                 throw new Error(result.error || 'Sync failed');
             }
 
-            setLastLiveSyncAt(result.timestamp || null);
-            setPosterManufactures(Array.isArray(result.manufactures) ? result.manufactures : []);
+            const manufactures = Array.isArray(result.manufactures) ? result.manufactures : [];
+            setLastLiveSyncAt(result.last_synced_at || result.timestamp || null);
+            setPosterManufactures(manufactures);
+            setProductionError(null);
+            const apiSource = result.production_source as string | undefined;
+            if (apiSource === 'live_edge' || apiSource === 'live_poster') {
+                setProductionSource('live');
+            } else if (apiSource === 'db_cache') {
+                setProductionSource('cache');
+            } else {
+                setProductionSource('empty');
+            }
             await Promise.all([mutateDeficit(), mutateMetrics()]);
+        } catch (err) {
+            if (productionError !== 'auth') setProductionError('sync');
+            console.error('[BIDashboard] sync-stocks error:', err);
         } finally {
             setIsRefreshing(false);
         }
@@ -263,8 +317,40 @@ export function BIDashboardV2() {
                             <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Вироблено сьогодні</div>
                             <h3 className="mt-2 text-xl font-bold text-slate-900">Top 10 позицій за фактом</h3>
                         </div>
-                        {lastLiveSyncAt && <div className="text-xs text-slate-500">Останнє оновлення: {new Date(lastLiveSyncAt).toLocaleTimeString('uk-UA')}</div>}
+                        <div className="flex flex-col items-end gap-1">
+                            {lastLiveSyncAt && (
+                                <div className="text-xs text-slate-500">
+                                    Оновлено: {new Date(lastLiveSyncAt).toLocaleTimeString('uk-UA')}
+                                </div>
+                            )}
+                            {productionSource === 'live' && (
+                                <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-700">
+                                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                                    <span>Джерело: live</span>
+                                </div>
+                            )}
+                            {productionSource === 'cache' && (
+                                <div className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500">
+                                    <Database size={10} />
+                                    <span>Джерело: кеш</span>
+                                </div>
+                            )}
+                        </div>
                     </div>
+
+                    {productionError === 'auth' && (
+                        <div className="mt-4 flex items-center gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                            <ShieldAlert size={18} className="shrink-0" />
+                            <span>Потрібна авторизація для завантаження виробництва. <a href="/login" className="underline font-semibold">Увійдіть</a>.</span>
+                        </div>
+                    )}
+
+                    {productionError === 'sync' && (
+                        <div className="mt-4 flex items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+                            <WifiOff size={18} className="shrink-0" />
+                            <span>Синк не вдався. Спробуйте натиснути «Оновити залишки».</span>
+                        </div>
+                    )}
 
                     <div className="mt-5 overflow-hidden rounded-2xl border border-slate-200">
                         <table className="w-full border-collapse text-left">
@@ -276,9 +362,17 @@ export function BIDashboardV2() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {productionToday.items.length === 0 ? (
+                                {productionSource === null ? (
                                     <tr>
-                                        <td colSpan={3} className="px-4 py-8 text-center text-sm text-slate-500">Після синхронізації тут з’явиться фактичний випуск за сьогодні.</td>
+                                        <td colSpan={3} className="px-4 py-8 text-center text-sm text-slate-400">Завантаження...</td>
+                                    </tr>
+                                ) : productionSource === 'empty' ? (
+                                    <tr>
+                                        <td colSpan={3} className="px-4 py-8 text-center text-sm text-slate-500">Сьогодні виробництва немає.</td>
+                                    </tr>
+                                ) : productionToday.items.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={3} className="px-4 py-8 text-center text-sm text-slate-500">Після синхронізації тут з'явиться фактичний випуск за сьогодні.</td>
                                     </tr>
                                 ) : productionToday.items.map((item) => (
                                     <tr key={item.name} className="border-t border-slate-100">

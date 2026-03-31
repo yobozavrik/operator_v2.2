@@ -362,6 +362,20 @@ export async function POST(request: Request) {
             throw new Error(`Critical database error inserting run meta: ${metaInsertError.message}`);
         }
 
+        // 10a. Snapshot delivery_debt before run (for reporting)
+        const { data: debtSnapshot } = await gravitonDb
+            .from('delivery_debt')
+            .select('spot_id, product_id, debt_kg')
+            .gt('debt_kg', 0)
+            .in('spot_id', resolvedShopIds.length > 0 ? resolvedShopIds : spotIds);
+
+        const debtApplied = {
+            rows_with_debt: (debtSnapshot ?? []).length,
+            total_debt_kg: parseFloat(
+                (debtSnapshot ?? []).reduce((sum: number, r: any) => sum + Number(r.debt_kg || 0), 0).toFixed(3)
+            ),
+        };
+
         // 10. Run orchestration
         const isFullRun = !requestedShopIds || requestedShopIds.length === 0;
         const { error: runError } = await gravitonDb.rpc('fn_orchestrate_distribution_live', {
@@ -403,6 +417,7 @@ export async function POST(request: Request) {
             products_processed: finalProductsProcessed,
             total_kg: parseFloat(finalTotalKg.toFixed(3)),
             catalog_sync: catalogSync,
+            debt_applied: debtApplied,
             live_sync: {
                 stocks_rows: stocksToInsert.length,
                 manufactures_rows: manufacturesToInsert.length,

@@ -63,10 +63,16 @@ export function GravitonDeliveryConfirm({
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [message, setMessage] = useState<string | null>(null);
+    const [confirmResult, setConfirmResult] = useState<{
+        delivered_spots: number;
+        debt_rows_added: number;
+        skipped: number;
+    } | null>(null);
 
     const loadData = async (date = selectedDate) => {
         setLoading(true);
         setMessage(null);
+        setConfirmResult(null);
         try {
             const [shopsRes, confirmRes] = await Promise.all([
                 fetch('/api/graviton/shops'),
@@ -117,6 +123,14 @@ export function GravitonDeliveryConfirm({
 
     const topProductionItems = productionItems.slice(0, 8);
 
+    // Pre-confirmation preview: хто доставить, хто піде в борг
+    const confirmPreview = useMemo(() => {
+        const pendingShopIds = state?.active_shop_ids ?? shops.map((s) => s.spot_id);
+        const willDeliver = deliveredSpotIds.filter((id) => pendingShopIds.includes(id)).length;
+        const willSkip = pendingShopIds.filter((id) => !deliveredSpotIds.includes(id)).length;
+        return { willDeliver, willSkip, hasPending: pendingShopIds.length > 0 };
+    }, [deliveredSpotIds, state, shops]);
+
     const toggleShop = (spotId: number) => {
         setDeliveredSpotIds((current) =>
             current.includes(spotId) ? current.filter((id) => id !== spotId) : [...current, spotId]
@@ -140,8 +154,12 @@ export function GravitonDeliveryConfirm({
                 throw new Error(result.error || 'Не вдалося підтвердити доставку');
             }
 
-            const undeliveredCount = Math.max(0, shops.length - deliveredSpotIds.length);
-            setMessage(`Доставку підтверджено: ${deliveredSpotIds.length} магазинів. Борг нараховано: ${undeliveredCount} магазинів.`);
+            setConfirmResult({
+                delivered_spots: result.delivered_spots ?? deliveredSpotIds.length,
+                debt_rows_added: result.debt_rows_added ?? 0,
+                skipped: Math.max(0, (state?.active_shop_ids?.length ?? shops.length) - deliveredSpotIds.length),
+            });
+            setMessage(null);
             await loadData(selectedDate);
         } catch (error: any) {
             setMessage(error.message || 'Помилка підтвердження');
@@ -264,9 +282,18 @@ export function GravitonDeliveryConfirm({
                                 <div>
                                     <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Дії рейсу</div>
                                     <div className="mt-2 text-sm text-slate-600">
-                                        Спочатку перерахуй повний розподіл, потім перевір фактичні точки доставки і підтвердь рейс.
+                                        Розподіл рахується по всій активній мережі. Чек-лист впливає лише на підтвердження доставки та борг.
                                     </div>
                                 </div>
+
+                                {confirmPreview.hasPending && (
+                                    <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-700">
+                                        <span className="font-semibold text-emerald-700">Буде доставлено: {confirmPreview.willDeliver}</span>
+                                        {confirmPreview.willSkip > 0 && (
+                                            <span className="ml-3 font-semibold text-amber-700">Піде в борг: {confirmPreview.willSkip}</span>
+                                        )}
+                                    </div>
+                                )}
 
                                 <div className="flex flex-wrap items-center gap-3">
                                     <button
@@ -361,6 +388,32 @@ export function GravitonDeliveryConfirm({
                                 </button>
                             );
                         })}
+                    </div>
+                )}
+
+                {confirmResult && (
+                    <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4">
+                        <div className="flex flex-wrap items-center gap-4">
+                            <CheckCircle2 size={20} className="shrink-0 text-emerald-600" />
+                            <div className="flex flex-wrap gap-6 text-sm">
+                                <div>
+                                    <span className="text-slate-500">Доставлено магазинів:</span>{' '}
+                                    <span className="font-bold text-emerald-700">{confirmResult.delivered_spots}</span>
+                                </div>
+                                {confirmResult.skipped > 0 && (
+                                    <div>
+                                        <span className="text-slate-500">Пропущено (борг):</span>{' '}
+                                        <span className="font-bold text-amber-700">{confirmResult.skipped}</span>
+                                    </div>
+                                )}
+                                {confirmResult.debt_rows_added > 0 && (
+                                    <div>
+                                        <span className="text-slate-500">Рядків боргу нараховано:</span>{' '}
+                                        <span className="font-bold text-amber-700">{confirmResult.debt_rows_added}</span>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
                     </div>
                 )}
 

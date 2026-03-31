@@ -39,6 +39,10 @@ type BatchMeta = {
     selected_shop_ids: number[] | null;
     products_processed: number;
     total_kg: number;
+    debt_applied?: {
+        rows_with_debt: number;
+        total_debt_kg: number;
+    };
     live_sync?: {
         stocks_rows: number;
         manufactures_rows: number;
@@ -496,6 +500,11 @@ export const GravitonDistributionPanel = forwardRef<GravitonDistributionPanelHan
                                     <span>Дата: <strong>{currentBatchMeta.business_date}</strong></span>
                                     <span>Позицій: <strong>{currentBatchMeta.products_processed}</strong></span>
                                     <span>Вага: <strong>{currentBatchMeta.total_kg} кг</strong></span>
+                                    {currentBatchMeta.debt_applied && currentBatchMeta.debt_applied.rows_with_debt > 0 && (
+                                        <span className="rounded-full bg-amber-100 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-amber-700">
+                                            Борг враховано: {currentBatchMeta.debt_applied.total_debt_kg} кг · {currentBatchMeta.debt_applied.rows_with_debt} рядків
+                                        </span>
+                                    )}
                                 </div>
                                 <button
                                     onClick={() => {

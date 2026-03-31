@@ -15,30 +15,27 @@ export async function GET(request: Request) {
             throw new Error('Missing Supabase service credentials');
         }
 
+        const { searchParams } = new URL(request.url);
+        const kyivDate = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Kyiv' }).format(new Date());
+        const date = searchParams.get('date') ?? kyivDate;
+        const storageId = parseInt(searchParams.get('storage_id') ?? '2');
+
         const supabase = createClient(supabaseUrl, serviceRoleKey);
         const gravitonDb = supabase.schema('graviton');
 
         const { data, error } = await gravitonDb
-            .from('production_today')
-            .select('"код_продукту", "назва_продукту", "вироблено_кількість", "кількість_виробництв", "перше_виробництво", "останнє_виробництво"')
-            .order('"вироблено_кількість"', { ascending: false });
+            .from('production_daily')
+            .select('storage_id, product_name, product_name_normalized, quantity_kg, synced_at')
+            .eq('business_date', date)
+            .eq('storage_id', storageId)
+            .order('quantity_kg', { ascending: false });
 
         if (error) throw new Error(error.message);
 
-        const rows = (data || []).map((row: any) => ({
-            product_id: Number(row['код_продукту']),
-            product_name: String(row['назва_продукту'] || ''),
-            quantity_kg: Number(row['вироблено_кількість'] || 0),
-            production_count: Number(row['кількість_виробництв'] || 0),
-            first_production_at: row['перше_виробництво'] || null,
-            last_production_at: row['останнє_виробництво'] || null,
-        }));
-
         return NextResponse.json({
             success: true,
-            data: rows,
-            total_kg: rows.reduce((sum: number, row: any) => sum + Number(row.quantity_kg || 0), 0),
-            synced_at: rows[0]?.last_production_at ?? null,
+            data: data ?? [],
+            synced_at: (data ?? [])[0]?.synced_at ?? null,
         });
     } catch (err: any) {
         console.error('production-daily GET error:', err);

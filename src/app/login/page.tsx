@@ -20,16 +20,29 @@ export default function LoginPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
+
+        if (!email.trim() || !password) {
+            setError('Введіть email та пароль');
+            return;
+        }
+
         setLoading(true);
 
         try {
             const { error } = await supabase.auth.signInWithPassword({
-                email,
+                email: email.trim(),
                 password,
             });
 
             if (error) {
-                setError('Невірний email або пароль');
+                console.error('[login] auth error:', error.status, error.code, error.message);
+                if (error.code === 'email_not_confirmed') {
+                    setError('Email не підтверджено. Перевірте пошту.');
+                } else if (error.message?.toLowerCase().includes('network') || error.status === 0) {
+                    setError('Сервер недоступний. Перевірте з\'єднання.');
+                } else {
+                    setError('Невірний email або пароль');
+                }
                 setLoading(false);
                 return;
             }
@@ -37,8 +50,8 @@ export default function LoginPage() {
             // Successful login
             router.refresh();
             router.replace('/');
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (err) {
+            console.error('[login] unexpected error:', err);
             setError('Сталася помилка при вході');
             setLoading(false);
         }

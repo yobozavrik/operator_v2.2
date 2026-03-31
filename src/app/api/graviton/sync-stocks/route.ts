@@ -228,6 +228,9 @@ export async function POST(request: Request) {
             items_count: 0
         };
 
+        let production_source: 'live_edge' | 'live_poster' | 'db_cache' | 'empty' = 'empty';
+        let last_synced_at: string | null = null;
+
         try {
             const { data: catalogRaw, error: catalogError } = await gravitonDb
                 .from('production_catalog')
@@ -261,13 +264,26 @@ export async function POST(request: Request) {
                     production_summary.total_kg += item.quantity;
                     production_summary.items_count++;
                 });
+                if (manufactures.length > 0) production_source = 'live_edge';
+                else console.warn('[sync-stocks] Edge manufactures не сматчились з каталогом');
             } else {
-                const manufacturesData = await posterRequest('storage.getManufactures', {
-                    dateFrom: dateStr,
-                    dateTo: dateStr
-                });
+                console.log('[sync-stocks] Edge не повернув manufactures, пробуємо прямий Poster API');
+                let manufacturesData: any;
+                try {
+                    manufacturesData = await posterRequest('storage.getManufactures', {
+                        dateFrom: dateStr,
+                        dateTo: dateStr
+                    });
+                } catch (posterErr: any) {
+                    console.error('[sync-stocks] Poster getManufactures запит впав:', posterErr.message);
+                    throw posterErr;
+                }
 
                 rawManufactures = (manufacturesData.response || []) as any[];
+                if (rawManufactures.length === 0) {
+                    console.warn('[sync-stocks] Poster getManufactures повернув []');
+                }
+
                 catalog_sync = await syncGravitonCatalogFromManufactures(
                     gravitonDb,
                     categoriesDb,
@@ -301,6 +317,12 @@ export async function POST(request: Request) {
                     production_summary.total_kg += quantity;
                     production_summary.items_count++;
                 });
+
+                if (manufactures.length > 0) {
+                    production_source = 'live_poster';
+                } else if (flattenedManufactures.length > 0) {
+                    console.warn('[sync-stocks] Poster manufactures є, але жоден не сматчився з каталогом');
+                }
             }
 
             // Clean up numbers
@@ -308,13 +330,15 @@ export async function POST(request: Request) {
 
             // Зберегти виробництво в БД
             if (manufactures.length > 0) {
+                const nowIso = new Date().toISOString();
+                last_synced_at = nowIso;
                 const dbRows = manufactures.map((m: any) => ({
                     business_date:           dateStr,
                     storage_id:              m.storage_id,
                     product_name_normalized: m.product_name_normalized,
                     product_name:            m.product_name,
                     quantity_kg:             m.quantity,
-                    synced_at:               new Date().toISOString(),
+                    synced_at:               nowIso,
                 }));
 
                 const { error: upsertError } = await gravitonDb
@@ -332,6 +356,36 @@ export async function POST(request: Request) {
             manufactures_warning = true;
             production_summary.total_kg = 0;
             production_summary.items_count = 0;
+        }
+
+        // Fallback: якщо live manufactures порожні — читаємо кеш з production_daily
+        if (manufactures.length === 0) {
+            console.log('[sync-stocks] manufactures порожні, читаємо кеш з production_daily');
+            const { data: cachedRows, error: cacheErr } = await gravitonDb
+                .from('production_daily')
+                .select('storage_id, product_name, product_name_normalized, quantity_kg, synced_at')
+                .eq('business_date', dateStr)
+                .eq('storage_id', productionStorageId)
+                .order('quantity_kg', { ascending: false });
+
+            if (!cacheErr && cachedRows && cachedRows.length > 0) {
+                cachedRows.forEach((r: any) => {
+                    manufactures.push({
+                        storage_id: r.storage_id,
+                        product_name: r.product_name,
+                        product_name_normalized: r.product_name_normalized,
+                        quantity: r.quantity_kg,
+                    });
+                    production_summary.total_kg += Number(r.quantity_kg || 0);
+                    production_summary.items_count++;
+                });
+                production_summary.total_kg = parseFloat(production_summary.total_kg.toFixed(3));
+                production_source = 'db_cache';
+                last_synced_at = cachedRows[0]?.synced_at ?? null;
+                console.log(`[sync-stocks] Повернено ${cachedRows.length} рядків з кешу`);
+            } else {
+                production_source = 'empty';
+            }
         }
 
         if (catalog.length === 0) {
@@ -354,6 +408,8 @@ export async function POST(request: Request) {
         return NextResponse.json({
             success: true,
             timestamp: new Date().toISOString(),
+            production_source,
+            last_synced_at,
             shops: shopsRaw.map((s: any) => ({
                 spot_id: s.spot_id,
                 storage_id: s.storage_id,
