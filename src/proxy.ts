@@ -55,19 +55,22 @@ function handleCors(request: NextRequest): NextResponse | null {
     // Only enforce CORS on API routes; no Origin header = server-to-server/cron → pass through
     if (!pathname.startsWith('/api/') || !origin) return null
 
+    // Same-origin requests are never a CORS issue
+    const host = request.headers.get('host')
+    if (host && origin.toLowerCase() === `https://${host.toLowerCase()}`) return null
+
     const allowedOrigins = parseAllowedOrigins()
 
     if (allowedOrigins.length === 0) {
-        // Fail closed in production if ALLOWED_ORIGINS is not configured
+        // No cross-origin allowlist configured — allow same-origin (handled above), block the rest
         if (process.env.NODE_ENV === 'production') {
             console.error(JSON.stringify({
                 level: 'error', event: 'CORS_MISCONFIGURED',
-                message: 'CORS blocked: ALLOWED_ORIGINS not set in production',
+                message: 'CORS blocked: cross-origin request and ALLOWED_ORIGINS not set',
                 origin, path: pathname, timestamp: new Date().toISOString(),
             }))
             return new NextResponse('Forbidden', { status: 403 })
         }
-        // Development: allow, no CORS block
         return null
     }
 
