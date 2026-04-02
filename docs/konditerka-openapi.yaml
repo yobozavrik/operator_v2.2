@@ -1,0 +1,475 @@
+openapi: 3.1.0
+info:
+  title: Konditerka Operational API
+  version: 1.0.0
+  description: >
+    OpenAPI contract for the Konditerka operational surface. The owner chain is
+    Poster API -> edge sync -> Supabase raw tables -> mapping -> views -> ERP UI.
+servers:
+  - url: /
+    description: Current application host
+tags:
+  - name: Konditerka
+    description: Operational stock, production, and distribution routes
+paths:
+  /api/konditerka/orders:
+    get:
+      tags: [Konditerka]
+      summary: Load the operational Konditerka distribution rows
+      description: >
+        Returns the current operational read model for the Konditerka matrix.
+        The response is enriched with product unit and packaging settings.
+        The owner view is keyed to the Europe/Kyiv business date, so 14-day
+        averages match the ERP report calendar.
+        When the UI overlays a fresh leftovers snapshot, it recomputes pack
+        estimates from the current stock using the same packaging config.
+      responses:
+        '200':
+          description: Operational Konditerka rows
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/KonditerkaOrderRow'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /api/konditerka/update-stock:
+    post:
+      tags: [Konditerka]
+      summary: Refresh leftovers, production, catalog, and derived views
+      description: >
+        Syncs live leftovers from Poster, refreshes production data, updates the
+        leftovers mapping, refreshes the catalog, and triggers a full
+        recalculation of Konditerka views. The response also includes the raw
+        leftovers snapshot that the client overlays on top of the owner view.
+        The visible product order in the matrix is alphabetical and is handled
+        at the presentation layer only.
+      responses:
+        '200':
+          description: Sync result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateStockResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /api/konditerka/calculate-distribution:
+    post:
+      tags: [Konditerka]
+      summary: Calculate a unit-aware distribution plan for one product
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CalculateDistributionRequest'
+      responses:
+        '200':
+          description: Distribution plan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CalculateDistributionResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /api/konditerka/production-detail:
+    get:
+      tags: [Konditerka]
+      summary: Read today's Konditerka production fact
+      responses:
+        '200':
+          description: Production rows
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductionDetailRow'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /api/konditerka/distribution/run:
+    post:
+      tags: [Konditerka]
+      summary: Rebuild the daily Konditerka distribution result set
+      description: >
+        Rebuilds the daily distribution result set by allocating the full
+        production pool to stores only. Konditerka does not emit a warehouse
+        residual row in this path.
+      responses:
+        '200':
+          description: Distribution run result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DistributionRunResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          description: Distribution is already running
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /api/konditerka/distribution/results:
+    get:
+      tags: [Konditerka]
+      summary: Read the current Konditerka distribution results
+      description: >
+        Returns the per-store distribution rows for the current business date.
+        The owner layer does not append a warehouse residual row for Konditerka.
+      parameters:
+        - in: query
+          name: date
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Business date in Europe/Kyiv. Defaults to today.
+      responses:
+        '200':
+          description: Distribution result rows
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DistributionResultRow'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /api/konditerka/summary:
+    get:
+      tags: [Konditerka]
+      summary: Read Konditerka KPI summary values
+      responses:
+        '200':
+          description: KPI summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SummaryResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+components:
+  responses:
+    Unauthorized:
+      description: Authenticated session required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    BadRequest:
+      description: Invalid request payload
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    ServerError:
+      description: Runtime or persistence failure
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+    KonditerkaOrderRow:
+      type: object
+      additionalProperties: true
+      required:
+        - product_id
+        - product_name
+        - spot_id
+        - spot_name
+        - stock_now
+        - min_stock
+        - avg_sales_day
+        - need_net
+        - baked_at_factory
+        - unit
+      properties:
+        product_id:
+          type: integer
+          minimum: 1
+        product_name:
+          type: string
+        spot_id:
+          type: integer
+          minimum: 1
+        spot_name:
+          type: string
+        storage_id:
+          type: integer
+          minimum: 0
+        storage_name:
+          type: string
+        stock_now:
+          type: number
+          minimum: 0
+        min_stock:
+          type: number
+          minimum: 0
+        avg_sales_day:
+          type: number
+          minimum: 0
+        need_net:
+          type: number
+          minimum: 0
+        baked_at_factory:
+          type: number
+          minimum: 0
+        unit:
+          type: string
+          enum: [шт, кг]
+        packaging_enabled:
+          type: boolean
+        stock_now_packs_est:
+          type: number
+          minimum: 0
+        min_stock_packs_est:
+          type: number
+          minimum: 0
+        need_net_packs_est:
+          type: number
+          minimum: 0
+        quantity_to_ship_packs_est:
+          type: number
+          minimum: 0
+    UpdateStockResponse:
+      type: object
+      required:
+        - success
+        - source
+        - data
+        - manufactures
+        - timestamp
+      properties:
+        success:
+          type: boolean
+          const: true
+        source:
+          type: string
+        edgeSync:
+          type: object
+          additionalProperties: true
+        edgeSyncError:
+          type: [string, 'null']
+        stockSync:
+          type: object
+          additionalProperties: true
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/StorageLeftoverGroup'
+        manufactures:
+          type: array
+          items:
+            $ref: '#/components/schemas/ManufactureRow'
+        syncedRows:
+          type: integer
+          minimum: 0
+        syncedStorages:
+          type: integer
+          minimum: 0
+        manufacturesCount:
+          type: integer
+          minimum: 0
+        catalogRefreshError:
+          type: [string, 'null']
+        recalcTriggered:
+          type: boolean
+        recalcError:
+          type: [string, 'null']
+        timestamp:
+          type: string
+          format: date-time
+    StorageLeftoverGroup:
+      type: object
+      required: [storage_id, storage_name, leftovers]
+      properties:
+        storage_id:
+          type: integer
+        storage_name:
+          type: string
+        leftovers:
+          type: array
+          items:
+            $ref: '#/components/schemas/LeftoverRow'
+    LeftoverRow:
+      type: object
+      required:
+        - ingredient_id
+        - ingredient_name
+        - storage_ingredient_left
+        - ingredient_unit
+      properties:
+        ingredient_id:
+          type: integer
+        ingredient_name:
+          type: string
+        storage_ingredient_left:
+          type: number
+          minimum: 0
+        ingredient_unit:
+          type: string
+          enum: [шт, кг]
+        updated_at:
+          type: string
+          format: date-time
+          nullable: true
+    ManufactureRow:
+      type: object
+      required: [product_name, product_num]
+      properties:
+        product_name:
+          type: string
+        product_num:
+          type: number
+          minimum: 0
+    CalculateDistributionRequest:
+      type: object
+      required: [productId, productionQuantity]
+      properties:
+        productId:
+          type: integer
+          minimum: 1
+        productionQuantity:
+          type: number
+          minimum: 0
+    CalculateDistributionResponse:
+      type: object
+      required:
+        - productId
+        - originalQuantity
+        - distributed
+        - remaining
+        - usedFallback
+        - unit
+      properties:
+        productId:
+          type: integer
+        originalQuantity:
+          type: number
+          minimum: 0
+        distributed:
+          type: object
+          additionalProperties:
+            type: number
+            minimum: 0
+        remaining:
+          type: number
+          minimum: 0
+        usedFallback:
+          type: boolean
+        unit:
+          type: string
+          enum: [шт, кг]
+    ProductionDetailRow:
+      type: object
+      required: [product_name, baked_at_factory, unit]
+      properties:
+        product_id:
+          type: integer
+          nullable: true
+        product_name:
+          type: string
+        baked_at_factory:
+          type: number
+          minimum: 0
+        unit:
+          type: string
+          enum: [шт, кг]
+    DistributionRunResponse:
+      type: object
+      additionalProperties: true
+      description: Distribution run result for Konditerka. The run is store-only.
+      properties:
+        success:
+          type: boolean
+        logId:
+          type: string
+        mode:
+          type: string
+        rows:
+          type: integer
+          minimum: 0
+        message:
+          type: string
+        sync_warning:
+          type: [string, 'null']
+        fallback_rows:
+          type: integer
+          minimum: 0
+        fallback_products:
+          type: integer
+          minimum: 0
+        rpc_error:
+          type: string
+    DistributionResultRow:
+      type: object
+      additionalProperties: true
+      description: Store-level distribution row returned by Konditerka.
+      required: [product_name, spot_name, quantity_to_ship, business_date]
+      properties:
+        id:
+          type: integer
+        product_name:
+          type: string
+        spot_name:
+          type: string
+        quantity_to_ship:
+          type: number
+          minimum: 0
+        calculation_batch_id:
+          type: string
+        business_date:
+          type: string
+          format: date
+        delivery_status:
+          type: string
+        current_stock:
+          type: number
+        min_stock:
+          type: number
+        avg_sales:
+          type: number
+        need_net:
+          type: number
+        unit:
+          type: string
+          enum: [шт, кг]
+        packaging_enabled:
+          type: boolean
+    SummaryResponse:
+      type: object
+      required: [total_baked, total_norm, total_need]
+      properties:
+        total_baked:
+          type: number
+          minimum: 0
+        total_norm:
+          type: number
+          minimum: 0
+        total_need:
+          type: number
+          minimum: 0
