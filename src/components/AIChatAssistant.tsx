@@ -49,7 +49,7 @@ export const AIChatAssistant = () => {
 
         setMessages(prev => [
           ...prev,
-          { role: 'assistant', content: `Ошибка запроса: ${errorText}` },
+          { role: 'assistant', content: `Помилка запиту: ${errorText}` },
         ]);
         return;
       }
@@ -60,14 +60,14 @@ export const AIChatAssistant = () => {
       } else {
         setMessages(prev => [
           ...prev,
-          { role: 'assistant', content: 'Сервис вернул пустой ответ. Попробуйте еще раз.' },
+          { role: 'assistant', content: 'Сервіс повернув порожню відповідь. Спробуйте ще раз.' },
         ]);
       }
     } catch (error) {
       console.error('Error sending message:', error);
       setMessages(prev => [
         ...prev,
-        { role: 'assistant', content: 'Сетевая ошибка при обращении к ассистенту.' },
+        { role: 'assistant', content: 'Мережева помилка під час звернення до асистента.' },
       ]);
     } finally {
       setIsLoading(false);
@@ -92,7 +92,7 @@ export const AIChatAssistant = () => {
                 </div>
                 <div>
                   <h3 className="font-bold text-sm">Graviton AI</h3>
-                  <p className="text-[10px] text-blue-100 uppercase tracking-widest font-bold">Smart Assistant</p>
+                  <p className="text-[10px] text-blue-100 uppercase tracking-widest font-bold">Розумний помічник</p>
                 </div>
               </div>
               <button 

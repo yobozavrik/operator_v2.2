@@ -19,10 +19,6 @@ import { getBulvarUnit } from '@/lib/bulvar-dictionary';
 interface ProductionItem {
     product_name: string;
     baked_at_factory: number;
-    total_qty_180d?: number;
-    prod_days?: number;
-    avg_qty_per_prod_day?: number;
-    last_manufacture_at?: string;
 }
 
 const ProductionDetailView = () => {
@@ -61,9 +57,6 @@ const ProductionDetailView = () => {
                             <tr>
                                 <th className="p-4">Бульвар-Автовокзал</th>
                                 <th className="p-4 text-center">Сьогодні (од.)</th>
-                                <th className="p-4 text-center">За 180 дн.</th>
-                                <th className="p-4 text-center">Виходів</th>
-                                <th className="p-4 text-right">Сер / варку</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-[#D9DEE4]">
@@ -75,17 +68,6 @@ const ProductionDetailView = () => {
                                     <td className="p-4 text-center">
                                         <span className="inline-flex items-center justify-center px-4 py-1.5 rounded-lg bg-[#1ABB9C]/10 text-[#1ABB9C] font-mono text-sm font-black min-w-[4rem] border border-[#1ABB9C]/20">
                                             {item.baked_at_factory} <span className="text-[10px] ml-1 opacity-70 lowercase">{getBulvarUnit(item.product_name)}</span>
-                                        </span>
-                                    </td>
-                                    <td className="p-4 text-center text-sm font-mono text-[#73879C]">
-                                        {item.total_qty_180d?.toLocaleString() || 0}
-                                    </td>
-                                    <td className="p-4 text-center text-sm font-mono text-[#BDC3C7]">
-                                        {item.prod_days || 0}
-                                    </td>
-                                    <td className="p-4 text-right">
-                                        <span className="text-sm font-mono font-bold text-[#1ABB9C]">
-                                            {Number(item.avg_qty_per_prod_day || 0).toFixed(1)}
                                         </span>
                                     </td>
                                 </tr>

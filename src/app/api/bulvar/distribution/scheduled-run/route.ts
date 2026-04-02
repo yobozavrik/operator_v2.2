@@ -147,7 +147,7 @@ async function loadEmailRows(
             .order('spot_name', { ascending: true }),
         supabaseAdmin
             .schema('bulvar1')
-            .from('v_bulvar_distribution_stats')
+            .from('v_bulvar_distribution_stats_x3')
             .select('product_name, spot_name, stock_now, min_stock, avg_sales_day'),
     ]);
 

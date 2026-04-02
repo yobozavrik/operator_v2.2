@@ -340,6 +340,12 @@ export const BulvarPowerMatrix = ({ data, onRefresh, initialViewMode = 'products
 
     }, [data, planningDays]);
 
+    const visibleProducts = useMemo(() => {
+        return products
+            .filter((product) => product.computed.totalStock > 0)
+            .sort((a, b) => a.name.localeCompare(b.name, 'uk', { sensitivity: 'base' }));
+    }, [products]);
+
     // 1.5 GROUP BY STORES (inverted view)
     const storesGrouped = useMemo(() => {
         const storeMap = new Map<string, {
@@ -438,11 +444,10 @@ export const BulvarPowerMatrix = ({ data, onRefresh, initialViewMode = 'products
                 {viewMode === 'products' ? (
                     /* PRODUCTS VIEW */
                     <div className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-4 pb-20 mt-4">
-                        {products.map(product => {
+                        {visibleProducts.map(product => {
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             const criticalStores = product.stores.filter((s: any) => s.computed.isUrgent).length;
                             const hasIssues = criticalStores > 0;
-                            const isOutOfStock = product.computed.totalStock === 0 && product.computed.totalRecommended > 0;
 
                             return (
                                 <div
@@ -458,47 +463,39 @@ export const BulvarPowerMatrix = ({ data, onRefresh, initialViewMode = 'products
                                         <div className={`w-2 h-2 rounded-full ${hasIssues ? "bg-[#E74856]" : "bg-[#1ABB9C]"} flex-shrink-0 mt-1`}></div>
                                     </div>
 
-                                    {isOutOfStock ? (
-                                        <div className="flex-1 flex items-center justify-center italic text-[10px] text-[#E74856] font-black uppercase tracking-widest text-center">
-                                            ДЕФІЦИТ / ЗАЛИШОК 0
+                                    <div className="grid grid-cols-2 gap-2 my-1 relative z-10">
+                                        <div className="flex flex-col">
+                                            <span className="text-[9px] uppercase font-black text-gray-400 mb-0 tracking-widest">Act</span>
+                                            <span className={cn("text-2xl font-bold leading-none", hasIssues ? "text-[#E74856]" : "text-[#2A3F54]")}>
+                                                {product.computed.totalStock.toFixed(0)}
+                                                <span className="text-[12px] opacity-70 ml-1 font-medium">{product.unit || 'шт'}</span>
+                                            </span>
                                         </div>
-                                    ) : (
-                                        <>
-                                            <div className="grid grid-cols-2 gap-2 my-1 relative z-10">
-                                                <div className="flex flex-col">
-                                                    <span className="text-[9px] uppercase font-black text-gray-400 mb-0 tracking-widest">Act</span>
-                                                    <span className={cn("text-2xl font-bold leading-none", hasIssues ? "text-[#E74856]" : "text-[#2A3F54]")}>
-                                                        {product.computed.totalStock.toFixed(0)}
-                                                        <span className="text-[12px] opacity-70 ml-1 font-medium">{product.unit || 'шт'}</span>
-                                                    </span>
-                                                </div>
-                                                <div className="flex flex-col items-end">
-                                                    <span className="text-[9px] uppercase font-black text-gray-400 mb-0 tracking-widest">Tgt</span>
-                                                    <span className="text-2xl font-bold text-[#73879C] leading-none">
-                                                        {product.computed.totalRecommended.toFixed(0)}
-                                                        <span className="text-[12px] opacity-70 ml-1 font-medium">{product.unit || 'шт'}</span>
-                                                    </span>
-                                                </div>
-                                            </div>
+                                        <div className="flex flex-col items-end">
+                                            <span className="text-[9px] uppercase font-black text-gray-400 mb-0 tracking-widest">Tgt</span>
+                                            <span className="text-2xl font-bold text-[#73879C] leading-none">
+                                                {product.computed.totalRecommended.toFixed(0)}
+                                                <span className="text-[12px] opacity-70 ml-1 font-medium">{product.unit || 'шт'}</span>
+                                            </span>
+                                        </div>
+                                    </div>
 
-                                            <div className="space-y-2 pt-2 border-t border-gray-100 mt-auto relative z-10">
-                                                <div className="flex justify-between items-center text-xs">
-                                                    <span className="text-gray-400 font-bold uppercase text-[9px] tracking-widest">Min. Stock</span>
-                                                    <span className="font-bold text-[#73879C] bg-gray-50 px-1.5 py-0.5 rounded text-[10px]">
-                                                        {product.computed.totalMinStock.toFixed(0)} {product.unit || 'шт'}
-                                                    </span>
-                                                </div>
-                                                <div className="relative pt-0.5">
-                                                    <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
-                                                        <div
-                                                            className={cn("h-full rounded-full transition-all duration-500", hasIssues ? "bg-[#E74856]" : "bg-[#1ABB9C]")}
-                                                            style={{ width: `${Math.min(100, (product.computed.totalStock / (Math.max(1, product.computed.totalMinStock) * 1.5)) * 100)}%` }}
-                                                        />
-                                                    </div>
-                                                </div>
+                                    <div className="space-y-2 pt-2 border-t border-gray-100 mt-auto relative z-10">
+                                        <div className="flex justify-between items-center text-xs">
+                                            <span className="text-gray-400 font-bold uppercase text-[9px] tracking-widest">Min. Stock</span>
+                                            <span className="font-bold text-[#73879C] bg-gray-50 px-1.5 py-0.5 rounded text-[10px]">
+                                                {product.computed.totalMinStock.toFixed(0)} {product.unit || 'шт'}
+                                            </span>
+                                        </div>
+                                        <div className="relative pt-0.5">
+                                            <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                                                <div
+                                                    className={cn("h-full rounded-full transition-all duration-500", hasIssues ? "bg-[#E74856]" : "bg-[#1ABB9C]")}
+                                                    style={{ width: `${Math.min(100, (product.computed.totalStock / (Math.max(1, product.computed.totalMinStock) * 1.5)) * 100)}%` }}
+                                                />
                                             </div>
-                                        </>
-                                    )}
+                                        </div>
+                                    </div>
                                 </div>
                             );
                         })}

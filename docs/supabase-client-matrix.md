@@ -12,6 +12,22 @@ This document tracks the migration of all API endpoints to the unified Supabase 
 | `/api/bakery/sales` | Server | Yes | Team / TBD | Pending |
 | `/api/bakery/sales/eod-oos` | Server | Yes | Team / TBD | Pending |
 | `/api/bakery/sales/export` | Server | Yes | Team / TBD | Pending |
+| `/api/bulvar/analytics` | Server | Yes | Team / TBD | Pending |
+| `/api/bulvar/calculate-distribution` | Server | Yes | Team / TBD | Pending |
+| `/api/bulvar/confirm-distribution` | Server | Yes | Team / TBD | Pending |
+| `/api/bulvar/create-order` | Server | Yes | Team / TBD | Pending |
+| `/api/bulvar/finance` | Server | Yes | Team / TBD | Pending |
+| `/api/bulvar/distribution/results` | Server | Yes | Team / TBD | Pending |
+| `/api/bulvar/distribution/run` | Admin (Service Role) | Yes | Team / TBD | Pending |
+| `/api/bulvar/distribution/scheduled-run` | Cron / Secret | No | Team / TBD | Pending |
+| `/api/bulvar/order-plan` | Server | Yes | Team / TBD | Pending |
+| `/api/bulvar/orders` | Server | Yes | Team / TBD | Pending |
+| `/api/bulvar/production-180d` | Server | Yes | Team / TBD | Pending |
+| `/api/bulvar/production-detail` | Server | Yes | Team / TBD | Pending |
+| `/api/bulvar/summary` | Server | Yes | Team / TBD | Pending |
+| `/api/bulvar/trends` | Server | Yes | Team / TBD | Pending |
+| `/api/bulvar/update-stock` | Server | Yes | Team / TBD | Pending |
+| `/api/bulvar/shop-stats` | Server | Yes | Team / TBD | Pending |
 | `/api/graviton/all-products` | Server | Yes | Team / TBD | Pending |
 | `/api/graviton/critical-d2` | Admin (Service Role) | No | Team / TBD | Pending |
 | `/api/graviton/critical-d3` | Admin (Service Role) | No | Team / TBD | Pending |

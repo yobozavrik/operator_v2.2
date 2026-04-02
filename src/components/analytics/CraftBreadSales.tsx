@@ -2,7 +2,7 @@
 
 import React from 'react';
 import useSWR from 'swr';
-import { Download, Calendar, Loader2, Store, AlertTriangle } from 'lucide-react';
+import { Download, Calendar, Loader2, Store, AlertTriangle, FileSpreadsheet } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
@@ -128,32 +128,35 @@ export const CraftBreadSales = () => {
                         </div>
 
                         <div className="flex flex-col gap-3">
-                            <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
-                                <Calendar size={16} className="text-blue-600" />
-                                <div className="flex items-center gap-3 font-mono text-sm font-bold text-slate-700">
-                                    <input
-                                        type="date"
-                                        value={formatDateInput(startDate)}
-                                        onChange={(e) => updateRange(e.target.value, endDate)}
-                                        className="bg-transparent outline-none cursor-pointer focus:text-blue-600"
-                                        max={endDate}
-                                    />
-                                    <span className="text-slate-300">—</span>
-                                    <input
-                                        type="date"
-                                        value={formatDateInput(endDate)}
-                                        onChange={(e) => updateRange(startDate, e.target.value)}
-                                        className="bg-transparent outline-none cursor-pointer focus:text-blue-600"
-                                        min={startDate}
-                                    />
+                            <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-sm">
+                                <div className="mb-3 flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.28em] text-slate-400">
+                                    <Calendar size={16} className="text-blue-600" />
+                                    Період продажів
                                 </div>
-                                <a
-                                    href={exportHref}
-                                    className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-xs font-black uppercase tracking-widest text-white transition-colors hover:bg-blue-700"
-                                >
-                                    <Download size={14} />
-                                    Excel
-                                </a>
+                                <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:gap-4">
+                                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                        <DateField
+                                            label="Від"
+                                            value={startDate}
+                                            max={endDate}
+                                            onChange={(value) => updateRange(value, endDate)}
+                                        />
+                                        <DateField
+                                            label="До"
+                                            value={endDate}
+                                            min={startDate}
+                                            onChange={(value) => updateRange(startDate, value)}
+                                        />
+                                    </div>
+                                    <a
+                                        href={exportHref}
+                                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-xs font-black uppercase tracking-widest text-white transition-colors hover:bg-blue-700"
+                                    >
+                                        <FileSpreadsheet size={14} />
+                                        Вивантажити Excel
+                                        <Download size={14} />
+                                    </a>
+                                </div>
                             </div>
 
                             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -349,6 +352,34 @@ function InfoCard({ title, value }: { title: string; value: string }) {
             <div className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">{title}</div>
             <div className="mt-1 text-xl font-black tracking-tight text-slate-900">{value}</div>
         </div>
+    );
+}
+
+function DateField({
+    label,
+    value,
+    onChange,
+    min,
+    max,
+}: {
+    label: string;
+    value: string;
+    onChange: (value: string) => void;
+    min?: string;
+    max?: string;
+}) {
+    return (
+        <label className="flex min-w-[180px] flex-col gap-1 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+            <span className="text-[10px] font-black uppercase tracking-[0.24em] text-slate-400">{label}</span>
+            <input
+                type="date"
+                value={formatDateInput(value)}
+                onChange={(e) => onChange(e.target.value)}
+                min={min}
+                max={max}
+                className="cursor-pointer bg-transparent font-mono text-sm font-bold text-slate-800 outline-none"
+            />
+        </label>
     );
 }
 

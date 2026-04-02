@@ -101,9 +101,16 @@ Infrastructure does not decide visibility rules, row order, or quantity formatti
 | `/api/bulvar/orders` | `v_bulvar_distribution_stats_x3` + `production_180d_products` | Main operational read for the matrix |
 | `/api/bulvar/summary` | `v_bulvar_summary_stats` + `v_bulvar_distribution_stats_x3` | KPI header read |
 | `/api/bulvar/production-detail` | `v_bulvar_production_only` + `v_bulvar_distribution_stats_x3` + `production_180d_products` | Production fact + demand detail |
+| `/api/bulvar/production-180d` | `production_180d_products` + `refresh_production_180d_products()` | 180-day catalog read |
+| `/api/bulvar/trends` | `v_bulvar_trends_14d` | 14-day trend read |
+| `/api/bulvar/finance` | `v_gb_finance_overview` + `v_gb_top_products_analytics` | Finance dashboard payload |
 | `/api/bulvar/update-stock` | Poster sync + production refresh | Refreshes the upstream snapshots |
 | `/api/bulvar/distribution/run` | `fn_full_recalculate_all()` + `distribution_results` | Orchestrates sync then owner-layer recalculation |
+| `/api/bulvar/distribution/scheduled-run` | `distribution_results` + `distribution_email_log` + `fn_full_recalculate_all()` | Cron email orchestration |
 | `/api/bulvar/distribution/results` | `distribution_results` | Delivery and Excel-facing read model |
+| `/api/bulvar/calculate-distribution` | Branch rows + in-memory split | Manual distribution preview |
+| `/api/bulvar/confirm-distribution` | Request payload only | Manual confirmation stub |
+| `/api/bulvar/create-order` | Request payload only | Manual order acceptance stub |
 | `/api/bulvar/analytics` | `v_bulvar_distribution_stats_x3` | Dashboard metrics |
 | `/api/bulvar/order-plan` | `v_bulvar_distribution_stats_x3` | Planning table |
 | `/api/bulvar/shop-stats` | `v_bulvar_distribution_stats_x3` | Per-store drilldown |

@@ -357,7 +357,7 @@ erDiagram
 ```
 
 #### Вʼюхи `bulvar1`:
-- `v_bulvar_distribution_stats` — дані для розподілу
+- `v_bulvar_distribution_stats_x3` — дані для розподілу
 - `v_bulvar_analytics_kpi` — KPI
 - `v_bulvar_analytics_top5` — топ-5 критичних позицій
 

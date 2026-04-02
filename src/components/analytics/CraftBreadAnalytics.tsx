@@ -18,6 +18,7 @@ import {
   TrendingUp,
   ChevronRight,
   Filter,
+  FileSpreadsheet,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -37,19 +38,23 @@ type ForecastPayload = {
   order:  { production: OrderSkuRow[]; distribution: Record<string, Record<string, DistCell>> } | null;
 };
 
-type OosStore = {
-  spot_id: number;
-  store_name: string;
-  balances: Record<string, number>;
-  oos_count: number;
-};
-
 type OosPayload = {
   date: string;
+  nextSnapshotDate: string;
+  periodLabel: string;
   breads: string[];
-  stores: OosStore[];
-  bread_oos: Record<string, number>;
-  total_oos: number;
+  stores: { storeId: number; storeName: string }[];
+  rows: OosRow[];
+  breadTotals: Record<string, number>;
+  totalOos: number;
+  source: 'balance_snapshots' | 'daily_oos' | 'empty';
+};
+
+type OosRow = {
+  storeId: number;
+  storeName: string;
+  balances: Record<string, number>;
+  totalOos: number;
 };
 
 type NetworkStats = {
@@ -322,6 +327,13 @@ export const CraftBreadAnalytics = () => {
                   />
                 </div>
               </div>
+              <Link
+                href={`/bakery/sales?${searchParams.toString()}`}
+                className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 text-[10px] font-black uppercase tracking-[0.22em] text-white shadow-sm transition-colors hover:bg-blue-700"
+              >
+                <FileSpreadsheet size={14} />
+                Продажі
+              </Link>
             </div>
           </div>
         </header>
@@ -374,11 +386,11 @@ export const CraftBreadAnalytics = () => {
                   onChange={(e) => setUpdateParams({ oos_date: e.target.value })}
                   className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100 transition-all font-[family-name:var(--font-jetbrains)]"
                 />
-                {oosData && (
+              {oosData && (
                   <div className="ml-auto flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-50 border border-rose-100">
                     <AlertTriangle size={14} className="text-rose-500" />
                     <span className="text-[11px] font-black text-rose-600 uppercase tracking-widest">
-                      {oosData.total_oos} OOS подій
+                      {oosData.totalOos} OOS подій
                     </span>
                   </div>
                 )}
@@ -390,7 +402,7 @@ export const CraftBreadAnalytics = () => {
                 </div>
               )}
 
-              {!oosLoading && oosData && oosData.breads.length === 0 && (
+              {!oosLoading && oosData && oosData.rows.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-24 text-slate-300">
                   <Package size={48} className="mb-4" />
                   <p className="font-bold text-lg">Знімків за цю дату ще немає</p>
@@ -398,7 +410,7 @@ export const CraftBreadAnalytics = () => {
                 </div>
               )}
 
-              {!oosLoading && oosData && oosData.breads.length > 0 && (
+              {!oosLoading && oosData && oosData.rows.length > 0 && (
                 <OosPivotTable data={oosData} />
               )}
             </div>
@@ -795,7 +807,8 @@ const ScoutKPICard = ({ title, value, subtitle, icon: Icon, color }: any) => (
 );
 
 const OosPivotTable = ({ data }: { data: OosPayload }) => {
-  const { breads, stores, bread_oos } = data;
+  const { breads, rows, breadTotals } = data;
+  const normalizedRows = [...rows].sort((a, b) => b.totalOos - a.totalOos || a.storeName.localeCompare(b.storeName));
   return (
     <div className="rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden ring-1 ring-slate-100">
       <div className="border-b border-slate-100 bg-slate-50/30 p-6 flex items-center gap-3">
@@ -826,36 +839,36 @@ const OosPivotTable = ({ data }: { data: OosPayload }) => {
                   <div className="text-[8px] font-black uppercase tracking-wide text-slate-500 leading-tight whitespace-nowrap">
                     {bread.replace('Хліб "', '').replace('"', '').replace('Багет ', '').replace('Батон', 'Батон')}
                   </div>
-                  {bread_oos[bread] > 0 && (
-                    <div className="text-[8px] font-black text-rose-400 mt-0.5">{bread_oos[bread]} OOS</div>
+                  {(breadTotals[bread] ?? 0) > 0 && (
+                    <div className="text-[8px] font-black text-rose-400 mt-0.5">{breadTotals[bread]} OOS</div>
                   )}
                 </th>
               ))}
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-50">
-            {stores.sort((a, b) => b.oos_count - a.oos_count).map((store) => (
+            {normalizedRows.map((store) => (
               <tr
-                key={store.spot_id}
+                key={store.storeId}
                 className={cn(
                   'group transition-all hover:bg-slate-50/80',
-                  store.oos_count > 0 ? 'border-l-4 border-l-rose-400' : 'border-l-4 border-l-emerald-400'
+                  store.totalOos > 0 ? 'border-l-4 border-l-rose-400' : 'border-l-4 border-l-emerald-400'
                 )}
               >
                 <td className="sticky left-0 z-10 bg-white/90 group-hover:bg-slate-50/90 backdrop-blur px-5 py-3 font-bold text-slate-800 text-sm whitespace-nowrap">
-                  {store.store_name}
+                  {store.storeName}
                 </td>
                 <td className="px-3 py-3 text-center">
-                  {store.oos_count > 0 ? (
+                  {store.totalOos > 0 ? (
                     <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-rose-100 text-rose-600 font-black text-xs">
-                      {store.oos_count}
+                      {store.totalOos}
                     </span>
                   ) : (
                     <CheckCircle2 size={16} className="text-emerald-400 mx-auto" />
                   )}
                 </td>
                 {breads.map((bread) => {
-                  const qty = store.balances[bread];
+                  const qty = store.balances?.[bread];
                   const isOos = qty === 0;
                   const noData = qty === undefined;
                   return (

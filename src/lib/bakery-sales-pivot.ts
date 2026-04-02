@@ -188,7 +188,7 @@ export async function loadCraftBreadSalesPivot(startDate: string, endDate: strin
         const { data: soldRaw, error: soldError } = await supabase
             .schema('categories')
             .from('sold_products_detailed')
-            .select('transaction_id,spot_id,product_id,product_name,num,discount,sales_time')
+            .select('transaction_id,product_id,product_name,num,discount,sales_time')
             .gte('sales_time', rangeStart)
             .lt('sales_time', rangeEndExclusive)
             .eq('discount', 0)

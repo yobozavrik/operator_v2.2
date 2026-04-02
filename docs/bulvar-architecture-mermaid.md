@@ -8,6 +8,10 @@ This document covers the current Bulvar owner flow:
 - the operational read model comes from `bulvar1.v_bulvar_distribution_stats_x3`
 - production facts come from `bulvar1.v_bulvar_production_only`
 - summary KPIs come from `bulvar1.v_bulvar_summary_stats`
+- `GET /api/bulvar/production-180d` refreshes and exposes the 180-day catalog
+- `GET /api/bulvar/trends` reads `bulvar1.v_bulvar_trends_14d`
+- `GET /api/bulvar/finance` reads the finance dashboard views
+- `GET/POST /api/bulvar/distribution/scheduled-run` orchestrates the email flow
 - the distribution runner only orchestrates sync + RPC and persists rows into `bulvar1.distribution_results`
 - UI routes must not merge Poster leftovers or recompute `min_stock` in the child layer
 

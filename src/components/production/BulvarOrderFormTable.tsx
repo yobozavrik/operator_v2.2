@@ -8,7 +8,7 @@ import { Loader2, Save, Activity, AlertCircle, Percent, TrendingUp } from 'lucid
 import { ProductionTask } from '@/types/bi';
 
 interface Props {
-    data: ProductionTask[]; // From v_bulvar_distribution_stats
+    data: ProductionTask[]; // From v_bulvar_distribution_stats_x3
     onRefresh: () => void;
 }
 

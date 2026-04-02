@@ -368,3 +368,31 @@ ormalizedRows)
   - tightened title line-height for cleaner multi-line heading alignment
 - Expected impact:
   - cards render on consistent levels; grid appears centered and cleaner
+
+### 27) Bulvar scheduled-run aligned to x3 (2026-04-03)
+- Context: ERP/API
+- Type: logic
+- Action:
+  - updated `src/app/api/bulvar/distribution/scheduled-run/route.ts` to read `v_bulvar_distribution_stats_x3`
+  - scheduler email rows now use the same owner view as orders and summary
+- Validation:
+  - runtime read path matches the owner-layer distribution stats view
+
+### 28) Bulvar docs matrix refresh (2026-04-03)
+- Context: docs
+- Type: audit
+- Action:
+  - updated `docs/architecture-mermaid.md` Bulvar view reference to `v_bulvar_distribution_stats_x3`
+  - added Bulvar API rows to `docs/supabase-client-matrix.md`
+  - refreshed a stale Bulvar form comment to reference the x3 owner view
+- Validation:
+  - docs now match the current Bulvar runtime model
+
+### 29) Bulvar docs contract refresh (2026-04-03)
+- Context: docs
+- Type: audit
+- Action:
+  - updated `docs/bulvar-openapi.yaml` with `calculate-distribution`, `production-180d`, and `scheduled-run`
+  - updated `docs/bulvar-clean-architecture.md` to list the full Bulvar endpoint surface
+- Validation:
+  - docs now cover the current Bulvar runtime contract

@@ -79,6 +79,27 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '500':
           $ref: '#/components/responses/ServerError'
+  /bulvar/calculate-distribution:
+    post:
+      tags: [Bulvar]
+      summary: Calculate a manual distribution preview for one product
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CalculateDistributionRequest'
+      responses:
+        '200':
+          description: Distribution preview
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CalculateDistributionResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
   /bulvar/distribution/run:
     post:
       tags: [Bulvar]
@@ -104,6 +125,64 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
         '500':
           $ref: '#/components/responses/ServerError'
+  /bulvar/distribution/scheduled-run:
+    get:
+      tags: [Bulvar]
+      summary: Run the scheduled Bulvar distribution email flow
+      description: >
+        Cron-triggered orchestration that can optionally force a run or skip email
+        delivery. The route is protected by the Bulvar cron secret.
+      parameters:
+        - in: query
+          name: force
+          required: false
+          schema:
+            type: boolean
+        - in: query
+          name: skip_email
+          required: false
+          schema:
+            type: boolean
+        - in: query
+          name: date
+          required: false
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: job_id
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Scheduled run payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScheduledRunResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    post:
+      tags: [Bulvar]
+      summary: Run the scheduled Bulvar distribution email flow
+      responses:
+        '200':
+          description: Scheduled run payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScheduledRunResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/ServerError'
   /bulvar/distribution/results:
     get:
       tags: [Bulvar]
@@ -118,6 +197,47 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/DistributionResultRow'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /bulvar/production-180d:
+    get:
+      tags: [Bulvar]
+      summary: Load the Bulvar 180-day production catalog
+      parameters:
+        - in: query
+          name: search
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: sort
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: order
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: limit
+          required: false
+          schema:
+            type: integer
+        - in: query
+          name: offset
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Production catalog payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Production180dResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '500':
@@ -384,6 +504,24 @@ components:
         calc_time:
           type: string
           format: date-time
+    Production180dResponse:
+      type: object
+      additionalProperties: true
+      properties:
+        rows:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        meta:
+          type: object
+          additionalProperties: true
+          properties:
+            products_count:
+              type: integer
+            last_update:
+              type: string
+              nullable: true
     AnalyticsResponse:
       type: object
       additionalProperties: true
@@ -432,6 +570,31 @@ components:
       type: object
       additionalProperties: true
     CreateOrderResponse:
+      type: object
+      additionalProperties: true
+    CalculateDistributionRequest:
+      type: object
+      additionalProperties: true
+      properties:
+        productId:
+          type: integer
+        productionQuantity:
+          type: number
+    CalculateDistributionResponse:
+      type: object
+      additionalProperties: true
+      properties:
+        productId:
+          type: integer
+        originalQuantity:
+          type: integer
+        distributed:
+          type: object
+          additionalProperties:
+            type: number
+        remaining:
+          type: integer
+    ScheduledRunResponse:
       type: object
       additionalProperties: true
     TrendRow:
