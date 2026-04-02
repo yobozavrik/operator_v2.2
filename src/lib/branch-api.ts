@@ -122,11 +122,12 @@ function normalizeDistributionRows(rows: RawRow[]): NormalizedDistributionRow[] 
 }
 
 export function createServiceRoleClient(): SupabaseClient {
-    const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const serviceRoleKey =
+        process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
     if (!supabaseUrl || !serviceRoleKey) {
-        throw new Error('Missing server-side Supabase configuration (SUPABASE_URL/NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY)');
+        throw new Error('Missing Supabase configuration');
     }
 
     return createClient(supabaseUrl, serviceRoleKey, {

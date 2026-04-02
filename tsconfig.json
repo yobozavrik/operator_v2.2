@@ -43,6 +43,7 @@
     "test_rpc.ts",
     "test_rpc.js",
     "tmp",
-    "scripts"
+    "scripts",
+    "supabase/functions"
   ]
 }

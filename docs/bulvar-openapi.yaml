@@ -1,0 +1,439 @@
+openapi: 3.0.3
+info:
+  title: Bulvar Operational API
+  version: 1.0.0
+  description: >
+    OpenAPI contract for the Bulvar operational surface. The owner chain is
+    Poster -> Supabase views/RPC -> ERP UI. The API must not merge Poster
+    leftovers into the read model or recalculate min-stock in the child layer.
+servers:
+  - url: /api
+tags:
+  - name: Bulvar
+paths:
+  /bulvar/orders:
+    get:
+      tags: [Bulvar]
+      summary: Load the Bulvar operational matrix rows
+      description: Returns the owner-backed read model for the Bulvar dashboard.
+      responses:
+        '200':
+          description: Bulvar order rows
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BulvarOrderRow'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /bulvar/summary:
+    get:
+      tags: [Bulvar]
+      summary: Read Bulvar KPI summary values
+      responses:
+        '200':
+          description: Summary values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SummaryResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /bulvar/production-detail:
+    get:
+      tags: [Bulvar]
+      summary: Read Bulvar production detail
+      responses:
+        '200':
+          description: Production rows
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductionDetailRow'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /bulvar/update-stock:
+    post:
+      tags: [Bulvar]
+      summary: Refresh the live Bulvar snapshot from Poster
+      description: >
+        Refreshes upstream production and live stock inputs. This is the
+        ingestion boundary only; it does not perform the distribution math.
+      responses:
+        '200':
+          description: Sync result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateStockResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /bulvar/distribution/run:
+    post:
+      tags: [Bulvar]
+      summary: Rebuild the daily Bulvar distribution result set
+      description: >
+        Syncs the upstream production snapshot and then runs the Supabase owner
+        RPC. The runner writes only to distribution_results and returns the
+        batch summary.
+      responses:
+        '200':
+          description: Distribution run result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DistributionRunResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          description: Distribution is already running
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /bulvar/distribution/results:
+    get:
+      tags: [Bulvar]
+      summary: Read the current Bulvar distribution results
+      description: Returns the persisted rows for the current Kyiv business date.
+      responses:
+        '200':
+          description: Distribution result rows
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DistributionResultRow'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /bulvar/analytics:
+    get:
+      tags: [Bulvar]
+      summary: Load the Bulvar analytics read model
+      responses:
+        '200':
+          description: Analytics payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyticsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /bulvar/order-plan:
+    get:
+      tags: [Bulvar]
+      summary: Generate a planning table for the next N days
+      parameters:
+        - in: query
+          name: days
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 30
+          description: Planning horizon in days. Defaults to 1.
+      responses:
+        '200':
+          description: Planning rows
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrderPlanRow'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /bulvar/shop-stats:
+    get:
+      tags: [Bulvar]
+      summary: Load per-store stats for one product
+      parameters:
+        - in: query
+          name: bulvar
+          required: false
+          schema:
+            type: string
+          description: Product name query for Bulvar stats.
+      responses:
+        '200':
+          description: Store stats
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ShopStatRow'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /bulvar/finance:
+    get:
+      tags: [Bulvar]
+      summary: Read the Bulvar finance dashboard payload
+      parameters:
+        - in: query
+          name: startDate
+          required: false
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: endDate
+          required: false
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Finance payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinanceResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /bulvar/confirm-distribution:
+    post:
+      tags: [Bulvar]
+      summary: Confirm a manual distribution payload
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConfirmDistributionRequest'
+      responses:
+        '200':
+          description: Confirmation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConfirmDistributionResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /bulvar/create-order:
+    post:
+      tags: [Bulvar]
+      summary: Accept a manual order payload
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrderRequest'
+      responses:
+        '200':
+          description: Order acceptance result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateOrderResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /bulvar/trends:
+    get:
+      tags: [Bulvar]
+      summary: Load Bulvar sales trend rows
+      responses:
+        '200':
+          description: Trend rows
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TrendRow'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+components:
+  responses:
+    Unauthorized:
+      description: Unauthorized
+    BadRequest:
+      description: Bad request
+    ServerError:
+      description: Server error
+  schemas:
+    BulvarOrderRow:
+      type: object
+      additionalProperties: true
+      required: [product_id, product_name, spot_name, stock_now, min_stock, avg_sales_day, need_net]
+      properties:
+        product_id:
+          type: integer
+        product_name:
+          type: string
+        spot_name:
+          type: string
+        store_id:
+          type: integer
+        stock_now:
+          type: number
+        min_stock:
+          type: number
+        avg_sales_day:
+          type: number
+        need_net:
+          type: number
+        baked_at_factory:
+          type: number
+        unit:
+          type: string
+    SummaryResponse:
+      type: object
+      additionalProperties: true
+      properties:
+        total_baked:
+          type: number
+        total_norm:
+          type: number
+        total_need:
+          type: number
+    ProductionDetailRow:
+      type: object
+      additionalProperties: true
+      properties:
+        product_id:
+          type: integer
+        product_name:
+          type: string
+        baked_at_factory:
+          type: number
+        total_qty_180d:
+          type: number
+        prod_days:
+          type: number
+        avg_qty_per_prod_day:
+          type: number
+        last_manufacture_at:
+          type: string
+          nullable: true
+        stock_now:
+          type: number
+        min_stock:
+          type: number
+        avg_sales_day:
+          type: number
+        need_net:
+          type: number
+    UpdateStockResponse:
+      type: object
+      additionalProperties: true
+    DistributionRunResponse:
+      type: object
+      additionalProperties: true
+      properties:
+        success:
+          type: boolean
+        batch_id:
+          type: string
+        products_processed:
+          type: integer
+        total_kg:
+          type: number
+        message:
+          type: string
+    DistributionResultRow:
+      type: object
+      additionalProperties: true
+      properties:
+        product_name:
+          type: string
+        spot_name:
+          type: string
+        quantity_to_ship:
+          type: number
+        calculation_batch_id:
+          type: string
+        business_date:
+          type: string
+          format: date
+        delivery_status:
+          type: string
+        calc_time:
+          type: string
+          format: date-time
+    AnalyticsResponse:
+      type: object
+      additionalProperties: true
+    OrderPlanRow:
+      type: object
+      additionalProperties: true
+      properties:
+        p_day:
+          type: integer
+        p_name:
+          type: string
+        p_stock:
+          type: number
+        p_order:
+          type: number
+        p_min:
+          type: number
+        p_avg:
+          type: number
+        unit:
+          type: string
+    ShopStatRow:
+      type: object
+      additionalProperties: true
+      properties:
+        spot_name:
+          type: string
+        stock_now:
+          type: number
+        min_stock:
+          type: number
+        avg_sales_day:
+          type: number
+        need_net:
+          type: number
+    FinanceResponse:
+      type: object
+      additionalProperties: true
+    ConfirmDistributionRequest:
+      type: object
+      additionalProperties: true
+    ConfirmDistributionResponse:
+      type: object
+      additionalProperties: true
+    CreateOrderRequest:
+      type: object
+      additionalProperties: true
+    CreateOrderResponse:
+      type: object
+      additionalProperties: true
+    TrendRow:
+      type: object
+      additionalProperties: true

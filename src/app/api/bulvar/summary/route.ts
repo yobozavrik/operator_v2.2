@@ -1,9 +1,6 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
 import { requireAuth } from '@/lib/auth-guard';
 import { createServiceRoleClient } from '@/lib/branch-api';
-import { syncBranchProductionFromPoster } from '@/lib/branch-production-sync';
-import { syncBulvarCatalogFromPoster } from '@/lib/bulvar-catalog';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,54 +9,42 @@ export async function GET() {
     if (auth.error) return auth.error;
 
     try {
-        let liveTotalBaked: number | null = null;
-        try {
-            const serviceClient = createServiceRoleClient();
-            const syncResult = await Promise.race([
-                (async () => {
-                    await syncBulvarCatalogFromPoster(serviceClient);
-                    return syncBranchProductionFromPoster(serviceClient, 'bulvar1', 22);
-                })(),
-                new Promise<never>((_, reject) =>
-                    setTimeout(() => reject(new Error('sync timeout')), 2500)
-                ),
-            ]);
-            liveTotalBaked = syncResult.totalQty;
-        } catch {
-            // Fallback to DB summary values if live Poster sync is unavailable.
+        const supabase = createServiceRoleClient();
+
+        const [{ data: summaryData, error: summaryError }, { data: statRows, error: statsError }] = await Promise.all([
+            supabase
+                .schema('bulvar1')
+                .from('v_bulvar_summary_stats')
+                .select('total_baked')
+                .single(),
+            supabase
+                .schema('bulvar1')
+                .from('v_bulvar_distribution_stats_x3')
+                .select('min_stock, stock_now, need_net'),
+        ]);
+
+        if (summaryError || statsError) {
+            console.error('[bulvar Summary] Supabase error:', summaryError || statsError);
+            return NextResponse.json({ total_baked: 0, total_norm: 0, total_need: 0 });
         }
 
-        const { data, error } = await supabase
-            .schema('bulvar1')
-            .from('v_bulvar_summary_stats')
-            .select('total_baked, total_stock, total_norm, total_need, fill_index')
-            .single();
+        const adjusted = (statRows || []).reduce(
+            (acc, row: any) => {
+                const min = Math.max(0, Number(row.min_stock) || 0);
+                const need = Math.max(0, Number(row.need_net) || Math.max(0, min - Math.max(0, Number(row.stock_now) || 0)));
 
-        if (error) {
-            console.error('[bulvar Summary] Supabase error:', error);
-            // Return 0 values to prevent frontend crash
-            return NextResponse.json({
-                total_baked: 0,
-                total_stock: 0,
-                total_norm: 0,
-                total_need: 0,
-                fill_index: 0,
-            });
-        }
-
-        return NextResponse.json(
-            {
-                ...(data || {
-                    total_baked: 0,
-                    total_stock: 0,
-                    total_norm: 0,
-                    total_need: 0,
-                    fill_index: 0,
-                }),
-                total_baked: liveTotalBaked ?? Number(data?.total_baked || 0),
+                acc.total_norm += min;
+                acc.total_need += need;
+                return acc;
             },
-            { headers: { 'Cache-Control': 'private, max-age=30, stale-while-revalidate=60' } }
+            { total_norm: 0, total_need: 0 }
         );
+
+        return NextResponse.json({
+            total_baked: Number(summaryData?.total_baked) || 0,
+            total_norm: adjusted.total_norm,
+            total_need: adjusted.total_need,
+        });
     } catch (error) {
         console.error('[bulvar Summary] Error:', error);
         return NextResponse.json({ error: String(error) }, { status: 500 });

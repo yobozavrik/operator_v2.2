@@ -1,17 +1,20 @@
-﻿import { NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { parseISO, format } from 'date-fns';
 import { uk } from 'date-fns/locale';
 import { requireAuth } from '@/lib/auth-guard';
+import { getAllLeftovers } from '@/lib/poster-api';
+import { getBulvarUnit } from '@/lib/bulvar-dictionary';
 import { createClient } from '@/utils/supabase/server';
 import {
     BRANCH_CONFIGS,
+    buildBranchAnalytics,
+    buildBranchOrderPlan,
+    calculateBranchDistribution,
     coercePositiveInt,
     createServiceRoleClient,
+    fetchBranchRows,
 } from '@/lib/branch-api';
 import { syncBranchProductionFromPoster } from '@/lib/branch-production-sync';
-import { syncBulvarStocksFromEdge } from '@/lib/bulvar-stock-sync';
-import { syncBulvarCatalogFromPoster } from '@/lib/bulvar-catalog';
-import { applyBulvarPackagingConfigToRows, fetchBulvarExactStocks, fetchBulvarPackagingConfig } from '@/lib/bulvar-packaging';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,34 +37,12 @@ function routeNotFound(method: 'GET' | 'POST', routePath: string) {
 
 async function handleAnalytics() {
     const supabase = createServiceRoleClient();
-    const [
-        { data: kpiRow, error: kpiError },
-        { data: topRows, error: topError },
-    ] = await Promise.all([
-        supabase.schema(config.schema).from('v_bulvar_analytics_kpi').select('*').single(),
-        supabase.schema(config.schema).from('v_bulvar_analytics_top5').select('*'),
-    ]);
-
-    if (kpiError || topError) {
-        throw new Error(kpiError?.message || topError?.message || 'Failed to load analytics');
-    }
-
-    return NextResponse.json({
-        kpi: {
-            currentStock: Number(kpiRow?.current_stock || 0),
-            totalNeed: Number(kpiRow?.total_need || 0),
-            totalTarget: Number(kpiRow?.total_target || 0),
-            criticalPositions: Number(kpiRow?.critical_positions || 0),
-            fillLevel: String(kpiRow?.fill_level ?? '0.0'),
-        },
-        top5: (topRows || []).map((row: any) => ({
-            product_id: Number(row.product_id || 0),
-            bulvar_name: String(row.bulvar_name || ''),
-            shop_stock: Number(row.shop_stock || 0),
-            risk_index: Number(row.risk_index || 0),
-            unit: String(row.unit || 'С€С‚'),
-        })),
-    });
+    const rawRows = await fetchBranchRows(
+        supabase,
+        config,
+        'product_id, product_name, spot_name, store_id, spot_id, stock_now, min_stock, avg_sales_day, need_net'
+    );
+    return NextResponse.json(buildBranchAnalytics(rawRows as any[], 'bulvar_name'));
 }
 
 async function handleShopStats(request: Request) {
@@ -82,23 +63,14 @@ async function handleShopStats(request: Request) {
     const { data, error } = await supabase
         .schema(config.schema)
         .from(config.distributionView)
-        .select('product_id, spot_id, spot_name, stock_now, min_stock, avg_sales_day, unit')
+        .select('spot_name, stock_now, min_stock, avg_sales_day, need_net')
         .eq('product_name', productName);
 
     if (error) {
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    const baseRows = Array.isArray(data) ? data : [];
-    const configMap = await fetchBulvarPackagingConfig(
-        supabase,
-        baseRows.map((row: any) => Number(row.product_id))
-    );
-    const exactStockMap = await fetchBulvarExactStocks(
-        supabase,
-        Array.from(configMap.keys())
-    );
-    return NextResponse.json(applyBulvarPackagingConfigToRows(baseRows, configMap, exactStockMap));
+    return NextResponse.json(data || []);
 }
 
 async function handleOrderPlan(request: Request) {
@@ -106,15 +78,17 @@ async function handleOrderPlan(request: Request) {
     const days = coercePositiveInt(searchParams.get('days'), 1, 1, 30);
 
     const supabase = createServiceRoleClient();
-    const { data, error } = await supabase
-        .schema(config.schema)
-        .rpc('fn_build_order_plan', { p_days: days });
+    const rawRows = await fetchBranchRows(
+        supabase,
+        config,
+        'product_id, product_name, spot_name, store_id, spot_id, stock_now, min_stock, avg_sales_day, need_net'
+    );
+    const plan = buildBranchOrderPlan(rawRows as any[], days).map((item) => ({
+        ...item,
+        unit: getBulvarUnit(item.p_name),
+    }));
 
-    if (error) {
-        throw new Error(error.message);
-    }
-
-    return NextResponse.json(data || []);
+    return NextResponse.json(plan);
 }
 
 async function handleCalculateDistribution(request: Request) {
@@ -130,33 +104,13 @@ async function handleCalculateDistribution(request: Request) {
     }
 
     const supabase = createServiceRoleClient();
-    const normalizedQuantity = Math.max(0, Math.trunc(productionQuantity));
-    const { data, error } = await supabase
-        .schema(config.schema)
-        .rpc('fn_preview_distribution', {
-            p_product_id: Math.trunc(productId),
-            p_production_quantity: normalizedQuantity,
-            p_surplus_multiplier_max: 4,
-        });
-
-    if (error) {
-        throw new Error(error.message);
-    }
-
-    const rows = Array.isArray(data) ? data : [];
-    const distributed = Object.fromEntries(
-        rows
-            .map((row: any) => [Number(row.spot_id), Number(row.quantity || 0)] as const)
-            .filter(([storeId, quantity]) => Number.isFinite(storeId) && storeId > 0 && quantity > 0)
+    const rawRows = await fetchBranchRows(
+        supabase,
+        config,
+        'product_id, product_name, spot_name, store_id, spot_id, stock_now, min_stock, avg_sales_day, need_net'
     );
-    const allocated = Object.values(distributed).reduce((sum, quantity) => sum + Number(quantity || 0), 0);
-
-    return NextResponse.json({
-        productId: Math.trunc(productId),
-        originalQuantity: normalizedQuantity,
-        distributed,
-        remaining: Math.max(0, normalizedQuantity - allocated),
-    });
+    const result = calculateBranchDistribution(rawRows as any[], Math.trunc(productId), productionQuantity);
+    return NextResponse.json(result);
 }
 
 async function handleConfirmDistribution(request: Request) {
@@ -193,25 +147,19 @@ async function handleCreateOrder(request: Request) {
 
 async function handleUpdateStock() {
     const supabase = createServiceRoleClient();
-    const [stockSync, _catalogSync, productionSync] = await Promise.all([
-        syncBulvarStocksFromEdge(supabase).catch((error) => ({
-            syncedRows: 0,
-            syncedStorages: 0,
-            skippedStorages: [],
-            warnings: [error instanceof Error ? error.message : String(error)],
-        })),
-        syncBulvarCatalogFromPoster(supabase).catch(() => []),
+    const [allLeftovers, productionSync] = await Promise.all([
+        getAllLeftovers({ categoryKeywords: null }),
         syncBranchProductionFromPoster(supabase, 'bulvar1', 22),
     ]);
 
     return NextResponse.json({
         success: true,
-        stock_sync: {
-            synced_rows: stockSync.syncedRows,
-            synced_storages: stockSync.syncedStorages,
-            skipped_storages: stockSync.skippedStorages,
-            warnings: stockSync.warnings,
-        },
+        data: allLeftovers,
+        manufactures: productionSync.items.map((item) => ({
+            product_id: item.product_id,
+            product_name: item.product_name,
+            product_num: item.quantity,
+        })),
         production_sync: {
             business_date: productionSync.businessDate,
             items_count: productionSync.itemsCount,
@@ -250,21 +198,21 @@ async function handleFinance(request: Request) {
     const { data: currentData, error: currentErr } = await supabase
         .from('v_gb_finance_overview')
         .select('*')
-        .eq('store_name', 'Р‘СѓР»СЊРІР°СЂ')
+        .eq('store_name', 'Бульвар')
         .gte('transaction_date', startDate)
         .lte('transaction_date', endDate);
 
     const { data: prevData, error: prevErr } = await supabase
         .from('v_gb_finance_overview')
         .select('*')
-        .eq('store_name', 'Р‘СѓР»СЊРІР°СЂ')
+        .eq('store_name', 'Бульвар')
         .gte('transaction_date', prevStart.toISOString().split('T')[0])
         .lte('transaction_date', prevEnd.toISOString().split('T')[0]);
 
     const { data: topProds, error: topErr } = await supabase
         .from('v_gb_top_products_analytics')
         .select('product_name, quantity_sold, revenue_generated')
-        .eq('store_name', 'Р‘СѓР»СЊРІР°СЂ')
+        .eq('store_name', 'Бульвар')
         .gte('transaction_date', startDate)
         .lte('transaction_date', endDate);
 
@@ -419,6 +367,3 @@ export async function POST(request: Request) {
         );
     }
 }
-
-
-
