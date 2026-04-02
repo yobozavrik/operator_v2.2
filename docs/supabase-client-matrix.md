@@ -8,6 +8,10 @@ This document tracks the migration of all API endpoints to the unified Supabase 
 | `/api/bakery/analytics` | Server | Yes | Team / TBD | Pending |
 | `/api/bakery/catalog` | Server | Yes | Team / TBD | Pending |
 | `/api/bakery/catalog/stores` | Server | Yes | Team / TBD | Pending |
+| `/api/bakery/oos-balance` | Server | Yes | Team / TBD | Pending |
+| `/api/bakery/sales` | Server | Yes | Team / TBD | Pending |
+| `/api/bakery/sales/eod-oos` | Server | Yes | Team / TBD | Pending |
+| `/api/bakery/sales/export` | Server | Yes | Team / TBD | Pending |
 | `/api/graviton/all-products` | Server | Yes | Team / TBD | Pending |
 | `/api/graviton/critical-d2` | Admin (Service Role) | No | Team / TBD | Pending |
 | `/api/graviton/critical-d3` | Admin (Service Role) | No | Team / TBD | Pending |

@@ -1,0 +1,253 @@
+openapi: 3.0.3
+info:
+  title: Bakery Sales Operational API
+  version: 1.0.0
+  description: >
+    OpenAPI contract for the bakery sales contour. The owner chain is
+    categories.* sales facts -> pivot loader -> sales page / Excel export.
+servers:
+  - url: /api
+tags:
+  - name: Bakery
+paths:
+  /bakery/sales:
+    get:
+      tags: [Bakery]
+      summary: Read the craft-bread sales pivot
+      parameters:
+        - in: query
+          name: start_date
+          schema:
+            type: string
+            format: date
+          required: false
+        - in: query
+          name: end_date
+          schema:
+            type: string
+            format: date
+          required: false
+        - in: query
+          name: days
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 365
+          required: false
+      responses:
+        '200':
+          description: Sales pivot
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BakerySalesPivot'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /bakery/sales/export:
+    get:
+      tags: [Bakery]
+      summary: Export the sales pivot as XLSX
+      parameters:
+        - in: query
+          name: start_date
+          schema:
+            type: string
+            format: date
+          required: false
+        - in: query
+          name: end_date
+          schema:
+            type: string
+            format: date
+          required: false
+        - in: query
+          name: days
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 365
+          required: false
+      responses:
+        '200':
+          description: XLSX file
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /bakery/sales/eod-oos:
+    get:
+      tags: [Bakery]
+      summary: Read the end-of-day OOS pivot for one exact day
+      parameters:
+        - in: query
+          name: date
+          schema:
+            type: string
+            format: date
+          required: true
+      responses:
+        '200':
+          description: OOS pivot
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BakeryOosPivot'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /bakery/oos-balance:
+    get:
+      tags: [Bakery]
+      summary: Compatibility alias for the end-of-day OOS pivot
+      parameters:
+        - in: query
+          name: date
+          schema:
+            type: string
+            format: date
+          required: true
+      responses:
+        '200':
+          description: OOS pivot
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BakeryOosPivot'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+components:
+  responses:
+    Unauthorized:
+      description: Unauthorized
+    BadRequest:
+      description: Bad request
+    ServerError:
+      description: Server error
+  schemas:
+    BakerySalesPivot:
+      type: object
+      additionalProperties: true
+      required: [startDate, endDate, periodLabel, breads, stores, rows, columnTotals, grandTotal]
+      properties:
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        periodLabel:
+          type: string
+        isSingleDay:
+          type: boolean
+        breads:
+          type: array
+          items:
+            type: string
+        stores:
+          type: array
+          items:
+            $ref: '#/components/schemas/BakeryStore'
+        rows:
+          type: array
+          items:
+            $ref: '#/components/schemas/BakerySalesRow'
+        columnTotals:
+          type: object
+          additionalProperties:
+            type: number
+        grandTotal:
+          type: number
+        transactionCount:
+          type: number
+    BakeryOosPivot:
+      type: object
+      additionalProperties: true
+      required: [date, nextSnapshotDate, periodLabel, breads, stores, rows, breadTotals, totalOos, source]
+      properties:
+        date:
+          type: string
+          format: date
+        nextSnapshotDate:
+          type: string
+          format: date
+        periodLabel:
+          type: string
+        breads:
+          type: array
+          items:
+            type: string
+        stores:
+          type: array
+          items:
+            $ref: '#/components/schemas/BakeryStore'
+        rows:
+          type: array
+          items:
+            $ref: '#/components/schemas/BakeryOosRow'
+        breadTotals:
+          type: object
+          additionalProperties:
+            type: number
+        totalOos:
+          type: number
+        source:
+          type: string
+          enum: [balance_snapshots, daily_oos, empty]
+    BakeryStore:
+      type: object
+      additionalProperties: true
+      required: [storeId, storeName]
+      properties:
+        storeId:
+          type: integer
+        storeName:
+          type: string
+    BakerySalesRow:
+      type: object
+      additionalProperties: true
+      required: [storeId, storeName, values, total]
+      properties:
+        storeId:
+          type: integer
+        storeName:
+          type: string
+        values:
+          type: object
+          additionalProperties:
+            type: number
+        total:
+          type: number
+    BakeryOosRow:
+      type: object
+      additionalProperties: true
+      required: [storeId, storeName, balances, totalOos]
+      properties:
+        storeId:
+          type: integer
+        storeName:
+          type: string
+        balances:
+          type: object
+          additionalProperties:
+            type: number
+        totalOos:
+          type: number
+

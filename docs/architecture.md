@@ -35,33 +35,14 @@ sequenceDiagram
 - **Unit Conversion**: The system automatically converts grams to kilograms (and vice-versa) based on the `KONDITERKA_UNITS_MAP` in `src/lib/konditerka-dictionary.ts`.
 - **Merge Fallback**: If the Poster API is unreachable or the token is missing, the system falls back to the `stock_now` value stored in the database view, providing a degraded but functional experience.
 
-## 5. Pizza runtime clean architecture
-
-The pizza domain now has a dedicated runtime architecture document that covers
-owner APIs, Mermaid request flow diagrams, OpenAPI-style contracts, and Clean
-Architecture boundaries.
-
-See [Pizza runtime clean architecture](./pizza-runtime-clean-architecture.md).
-
-## 6. Pizza owner-source split
-The pizza domain now uses a documented owner-source split:
-
-- operational pizza routes: Supabase owner data
-- pizza sales analytics: Poster owner data
-- runtime architecture, Mermaid flows, and OpenAPI contracts: [Pizza runtime clean architecture](./pizza-runtime-clean-architecture.md)
-- pizza OOS invariant: zero stock only, not below-minimum stock
-- pizza presentation invariant: Ukrainian-only user-facing strings
-- `/pizza` initial load invariant: render the shell first, then fill KPI and
-  matrix data from `/api/pizza/orders`
-
-## 7. Poster2 Integration Foundation
+## 5. Poster2 Integration Foundation
 The second Poster account integration is documented as a separate ingest contour in:
 - [Poster2 Ingest Overview](/D:/Programs/Начальник%20виробництва1111/docs/poster2-ingest/README.md)
 - [Poster2 Clean Architecture](/D:/Programs/Начальник%20виробництва1111/docs/poster2-ingest/clean-architecture.md)
 - [Poster2 Operations](/D:/Programs/Начальник%20виробництва1111/docs/poster2-ingest/operations.md)
 - [Poster2 OpenAPI Contract](/D:/Programs/Начальник%20виробництва1111/docs/poster2-ingest/openapi.yaml)
 
-## 8. Konditerka runtime docs
+## 6. Konditerka runtime docs
 Konditerka has a dedicated documentation set for the current owner flow:
 
 - Mermaid runtime map: [Konditerka Runtime Architecture - Mermaid](./konditerka-architecture-mermaid.md)
@@ -80,7 +61,7 @@ Current Konditerka owner rules:
 - weight items are rendered to two decimal places, piece items as integers
 - the top `Факт залишок` KPI shows the combined total with a separate `Морозиво` subtotal
 
-## 9. Bulvar runtime docs
+## 7. Bulvar runtime docs
 
 Bulvar now has the same documentation split for its owner-layer flow:
 
@@ -96,3 +77,23 @@ Current Bulvar owner rules:
 - `POST /api/bulvar/distribution/run` only orchestrates sync + owner RPC
 - the product grid hides zero-stock cards
 - `orders`, `summary`, and `production-detail` are read-only surfaces
+
+## 8. Bakery runtime docs
+
+Bakery has a separate sales contour that follows the same owner-layer pattern:
+
+- Mermaid runtime map: [Bakery Runtime Clean Architecture](./bakery-runtime-clean-architecture.md)
+- OpenAPI / Swagger contract: [Bakery Operational API](./bakery-openapi.yaml)
+
+Current Bakery owner rules:
+
+- the sales pivot is store x bread
+- fresh sales are filtered with `discount = 0`
+- the pivot uses `categories.sold_products_detailed` as the sales fact table
+- `categories.transactions` provides the store mapping
+- `categories.products` provides the craft-bread catalog
+- `categories.spots` provides the store names
+- OOS is shown only for one exact day
+- the close-of-day view comes from the next morning snapshot in `bakery1.balance_snapshots`
+- if the morning snapshot is missing, the loader falls back to `bakery1.daily_oos`
+- Excel export must use the same loader as the UI so the workbook matches the screen
