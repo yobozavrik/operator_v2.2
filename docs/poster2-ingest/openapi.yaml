@@ -1,0 +1,289 @@
+openapi: 3.1.0
+info:
+  title: Poster2 Ingest API
+  version: 1.0.0
+  description: >
+    Operational contract for the self-hosted Supabase Edge Function responsible
+    for daily stock snapshots from the second Poster account into schema
+    categories_poster2.
+servers:
+  - url: https://supabase.dmytrotovstytskyi.online
+    description: Self-hosted Supabase base URL
+x-mcp-tools:
+  server:
+    name: poster2-ingest-project
+    transport: stdio
+    entrypoint: mcp/poster2-ingest-mcp-server.mjs
+    purpose: >
+      Repository-local agent interface for Poster2 discovery, sync-contract inspection,
+      and handoff between agents after project transfer.
+  tools:
+    - name: poster_project_context
+      summary: Return stable repository and deployment context for Poster2 ingest.
+    - name: poster_sync_contract
+      summary: Return the maintained mapping between Poster endpoints and categories_poster2 tables.
+    - name: poster_discover_methods
+      summary: Probe curated Poster method groups and summarize real account availability.
+    - name: poster_call_method
+      summary: Execute a controlled Poster API GET call for investigation.
+paths:
+  /functions/v1/poster2-stock-snapshot:
+    post:
+      summary: Create or skip the daily stock snapshot for Poster2
+      operationId: poster2StockSnapshot
+      description: >
+        Invokes the stock snapshot function. The function writes data only when
+        local time in Europe/Chisinau is 06:00, unless force=true is provided.
+        In self-hosted Supabase, successful persistence also requires the target
+        schema categories_poster2 to be exposed through PGRST_DB_SCHEMAS.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                force:
+                  type: boolean
+                  description: Force snapshot creation regardless of current local hour.
+                  default: false
+      responses:
+        '200':
+          description: Snapshot written or skipped successfully.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/SnapshotSuccess'
+                  - $ref: '#/components/schemas/SnapshotSkipped'
+              examples:
+                success:
+                  value:
+                    success: true
+                    skipped: false
+                    snapshotDate: '2026-03-30'
+                    storageId: 1
+                    rowCount: 621
+                skipped:
+                  value:
+                    success: true
+                    skipped: true
+                    reason: Not 06:00 in Europe/Chisinau
+                    snapshotDate: '2026-03-30'
+                    hour: 22
+        '405':
+          description: Invalid HTTP method.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Runtime or persistence failure.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                schemaNotExposed:
+                  value:
+                    success: false
+                    error: The schema must be one of the allowed PostgREST schemas
+  /functions/v1/poster2-sync-daily:
+    post:
+      summary: Run the daily Poster2 sync into categories_poster2
+      operationId: poster2SyncDaily
+      description: >
+        Invokes the daily sync function. By default the function runs only when
+        local time in Europe/Chisinau is 06:00 and uses the previous business
+        day as the transaction/manufacture window. Manual forcing and explicit
+        dateFrom/dateTo overrides are supported.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                force:
+                  type: boolean
+                  default: false
+                dateFrom:
+                  type: string
+                  format: date
+                dateTo:
+                  type: string
+                  format: date
+      responses:
+        '200':
+          description: Daily sync executed or skipped successfully.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/DailySyncSuccess'
+                  - $ref: '#/components/schemas/DailySyncSkipped'
+              examples:
+                success:
+                  value:
+                    success: true
+                    skipped: false
+                    dateFrom: '2026-03-30'
+                    dateTo: '2026-03-30'
+                    reference:
+                      spots: 1
+                      storages: 1
+                      categories: 23
+                      products: 302
+                    facts:
+                      transactions: 2
+                      transaction_items: 0
+                      sold_products_detailed: 0
+                      manufactures: 4
+                      manufacture_items: 76
+                    derived:
+                      daily_sales: 1
+                      hourly_sales: 1
+                      product_sales: 0
+                      category_sales: 0
+                    warnings:
+                      - ingredient_categories skipped because source endpoint is unavailable in this Poster account
+                skipped:
+                  value:
+                    success: true
+                    skipped: true
+                    dateFrom: '2026-03-30'
+                    dateTo: '2026-03-30'
+                    warnings:
+                      - Not 06:00 in Europe/Chisinau
+        '500':
+          description: Runtime or persistence failure.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    SnapshotSuccess:
+      type: object
+      required:
+        - success
+        - skipped
+        - snapshotDate
+        - storageId
+        - rowCount
+      properties:
+        success:
+          type: boolean
+          const: true
+        skipped:
+          type: boolean
+          const: false
+        snapshotDate:
+          type: string
+          format: date
+        storageId:
+          type: integer
+          minimum: 1
+        rowCount:
+          type: integer
+          minimum: 0
+    SnapshotSkipped:
+      type: object
+      required:
+        - success
+        - skipped
+        - reason
+        - snapshotDate
+        - hour
+      properties:
+        success:
+          type: boolean
+          const: true
+        skipped:
+          type: boolean
+          const: true
+        reason:
+          type: string
+        snapshotDate:
+          type: string
+          format: date
+        hour:
+          type: integer
+          minimum: 0
+          maximum: 23
+    ErrorResponse:
+      type: object
+      required:
+        - success
+        - error
+      properties:
+        success:
+          type: boolean
+          const: false
+        error:
+          type: string
+    DailySyncSuccess:
+      type: object
+      required:
+        - success
+        - skipped
+        - dateFrom
+        - dateTo
+        - reference
+        - facts
+        - derived
+      properties:
+        success:
+          type: boolean
+          const: true
+        skipped:
+          type: boolean
+          const: false
+        dateFrom:
+          type: string
+          format: date
+        dateTo:
+          type: string
+          format: date
+        reference:
+          type: object
+          additionalProperties:
+            type: integer
+        facts:
+          type: object
+          additionalProperties:
+            type: integer
+        derived:
+          type: object
+          additionalProperties:
+            type: integer
+        warnings:
+          type: array
+          items:
+            type: string
+    DailySyncSkipped:
+      type: object
+      required:
+        - success
+        - skipped
+        - dateFrom
+        - dateTo
+      properties:
+        success:
+          type: boolean
+          const: true
+        skipped:
+          type: boolean
+          const: true
+        dateFrom:
+          type: string
+          format: date
+        dateTo:
+          type: string
+          format: date
+        warnings:
+          type: array
+          items:
+            type: string
