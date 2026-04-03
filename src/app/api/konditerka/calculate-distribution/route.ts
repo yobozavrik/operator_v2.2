@@ -8,6 +8,7 @@ import { fetchKonditerkaStoreRevenuePriorityMap } from '@/lib/konditerka-store-r
 
 export const dynamic = 'force-dynamic';
 const KONDITERKA_DISTRIBUTION_QUANTITY_SCALE = 1;
+const KONDITERKA_SURPLUS_PRIORITY_TOP_COUNT = 10;
 
 interface DistributionRequest {
     productId: number;
@@ -112,6 +113,7 @@ export async function POST(request: NextRequest) {
         const calc = calculateBranchDistribution(allocationRows, productId, productionQuantity, {
             unit,
             quantityScale: KONDITERKA_DISTRIBUTION_QUANTITY_SCALE,
+            surplusPriorityTopCount: KONDITERKA_SURPLUS_PRIORITY_TOP_COUNT,
             storePriorityByStoreId,
         });
 

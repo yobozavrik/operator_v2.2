@@ -43,6 +43,7 @@ export interface BranchDistributionOptions {
     unit?: string;
     quantityScale?: number;
     storePriorityByStoreId?: Map<number, number>;
+    surplusPriorityTopCount?: number;
 }
 
 function safeNumber(value: unknown): number {
@@ -102,6 +103,69 @@ function getStorePriority(
     return typeof priority === 'number' && Number.isFinite(priority) && priority > 0
         ? priority
         : Number.MAX_SAFE_INTEGER;
+}
+
+function allocateWeightedByPriority(
+    rows: NormalizedDistributionRow[],
+    scaledQuantity: number,
+    priorityMap?: Map<number, number>,
+    topCount?: number
+): { distributionMinor: Record<number, number>; remaining: number } {
+    const distributionMinor: Record<number, number> = {};
+    for (const row of rows) {
+        distributionMinor[row.storeId] = 0;
+    }
+
+    if (rows.length === 0 || scaledQuantity <= 0) {
+        return { distributionMinor, remaining: Math.max(0, scaledQuantity) };
+    }
+
+    const ordered = [...rows]
+        .sort((a, b) => {
+            const priorityA = getStorePriority(a, priorityMap);
+            const priorityB = getStorePriority(b, priorityMap);
+            if (priorityA !== priorityB) return priorityA - priorityB;
+            return a.storeId - b.storeId;
+        })
+        .slice(0, Math.max(1, Math.trunc(topCount || rows.length)));
+
+    const totalWeight = ordered.reduce((sum, _row, index) => sum + (ordered.length - index), 0);
+    if (totalWeight <= 0) {
+        return { distributionMinor, remaining: Math.max(0, scaledQuantity) };
+    }
+
+    const allocations = ordered.map((row, index) => {
+        const weight = ordered.length - index;
+        const exact = (scaledQuantity * weight) / totalWeight;
+        const base = Math.floor(exact);
+        return {
+            storeId: row.storeId,
+            weight,
+            base,
+            fraction: exact - base,
+        };
+    });
+
+    let remaining = scaledQuantity;
+    for (const allocation of allocations) {
+        if (allocation.base <= 0) continue;
+        distributionMinor[allocation.storeId] += allocation.base;
+        remaining -= allocation.base;
+    }
+
+    allocations.sort((a, b) => {
+        if (b.fraction !== a.fraction) return b.fraction - a.fraction;
+        if (b.weight !== a.weight) return b.weight - a.weight;
+        return a.storeId - b.storeId;
+    });
+
+    for (const allocation of allocations) {
+        if (remaining <= 0) break;
+        distributionMinor[allocation.storeId] += 1;
+        remaining -= 1;
+    }
+
+    return { distributionMinor, remaining };
 }
 
 function getExplicitStoreId(row: RawRow): number {
@@ -386,6 +450,38 @@ export function calculateBranchDistribution(
 
     // Step 3: spread leftovers by demand priority.
     if (remaining > 0) {
+        const weightedSurplusTopCount = Math.max(0, Math.trunc(options.surplusPriorityTopCount || 0));
+        if (weightedSurplusTopCount > 0 && options.storePriorityByStoreId) {
+            const weighted = allocateWeightedByPriority(
+                productRows,
+                remaining,
+                options.storePriorityByStoreId,
+                weightedSurplusTopCount
+            );
+            for (const [storeIdRaw, qtyMinor] of Object.entries(weighted.distributionMinor)) {
+                const storeId = Number(storeIdRaw);
+                if (!Number.isFinite(storeId) || storeId <= 0 || qtyMinor <= 0) continue;
+                distributionMinor[storeId] += qtyMinor;
+            }
+            remaining = weighted.remaining;
+        }
+
+        if (remaining <= 0) {
+            const distribution: Record<number, number> = {};
+            for (const [storeIdRaw, quantityMinor] of Object.entries(distributionMinor)) {
+                const storeId = Number(storeIdRaw);
+                if (!Number.isFinite(storeId) || storeId <= 0) continue;
+                distribution[storeId] = fromScaledUnits(quantityMinor, quantityScale);
+            }
+
+            return {
+                productId,
+                originalQuantity: fromScaledUnits(initialQuantity, quantityScale),
+                distributed: distribution,
+                remaining: fromScaledUnits(remaining, quantityScale),
+            };
+        }
+
         const priority = [...productRows].sort((a, b) => {
             if (b.avgSalesDay !== a.avgSalesDay) return b.avgSalesDay - a.avgSalesDay;
             if (b.needNet !== a.needNet) return b.needNet - a.needNet;
