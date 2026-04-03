@@ -175,7 +175,7 @@ export async function POST(request: Request) {
                                 ingredient_id: parseInt(item.ingredient_id),
                                 ingredient_name: item.ingredient_name,
                                 ingredient_name_normalized: normalizeSadovaName(item.ingredient_name),
-                                stock_left: parseFloat(item.stock_left || item.ingredient_left || item.storage_ingredient_left || '0') / 1000,
+                                stock_left: Number(item.stock_left || item.ingredient_left || item.storage_ingredient_left || 0) / 1000,
                                 unit: item.unit || 'кг'
                             }));
                             liveStocks.push(...normalizedDirect);
@@ -260,7 +260,7 @@ export async function POST(request: Request) {
                         m.products.forEach((p: any) => {
                             const name = p.product_name || p.ingredient_name || '';
                             const normalized = normalizeSadovaName(name);
-                            const quantity = parseFloat(p.product_num || '0') / 1000;
+                            const quantity = Number(p.product_num || 0) / 1000;
 
                             if (name && catalogNamesNormalized.has(normalized)) {
                                 const catalogId = catalogData.get(normalized);

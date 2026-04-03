@@ -298,7 +298,7 @@ export async function POST(request: Request) {
                 flattenedManufactures.forEach((item) => {
                     const name = item.product_name || '';
                     const normalized = normalizeSadovaName(name);
-                    const quantity = parseFloat(item.product_num || '0') / 1000;
+                    const quantity = (Number(item.product_num) || 0) / 1000;
 
                     if (!name || quantity <= 0) return;
 
