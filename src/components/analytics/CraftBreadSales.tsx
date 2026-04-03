@@ -87,9 +87,10 @@ export const CraftBreadSales = ({ embedded = false }: CraftBreadSalesProps) => {
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const fallback = defaultRange();
+    const singleDate = searchParams.get('date');
 
-    const startDate = searchParams.get('start_date') || fallback.start_date;
-    const endDate = searchParams.get('end_date') || fallback.end_date;
+    const startDate = singleDate || searchParams.get('start_date') || fallback.start_date;
+    const endDate = singleDate || searchParams.get('end_date') || fallback.end_date;
     const isSingleDay = startDate === endDate;
 
     const salesQuery = `/api/bakery/sales?start_date=${startDate}&end_date=${endDate}`;
@@ -101,6 +102,7 @@ export const CraftBreadSales = ({ embedded = false }: CraftBreadSalesProps) => {
 
     const updateRange = (nextStart: string, nextEnd: string) => {
         const params = new URLSearchParams(searchParams.toString());
+        params.delete('date');
         params.set('start_date', nextStart);
         params.set('end_date', nextEnd);
         router.push(`${pathname}?${params.toString()}`, { scroll: false });
