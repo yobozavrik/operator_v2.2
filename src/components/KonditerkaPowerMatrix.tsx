@@ -91,6 +91,12 @@ export const KonditerkaPowerMatrix = ({ data, initialViewMode = 'products' }: Pr
 
     }, [data, planningDays]);
 
+    const visibleProducts = useMemo(() => {
+        return products
+            .filter((product) => product.computed.totalStock > 0)
+            .sort((a, b) => a.name.localeCompare(b.name, 'uk', { sensitivity: 'base' }));
+    }, [products]);
+
     // 1.5 GROUP BY STORES (inverted view)
     const storesGrouped = useMemo(() => {
         const storeMap = new Map<string, {
@@ -189,7 +195,7 @@ export const KonditerkaPowerMatrix = ({ data, initialViewMode = 'products' }: Pr
                 {viewMode === 'products' ? (
                     /* PRODUCTS VIEW */
                     <div className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-3 pb-20 mt-4">
-                        {products.map(product => {
+                        {visibleProducts.map(product => {
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             const criticalStores = product.stores.filter((s: any) => s.computed.isUrgent).length;
                             const hasIssues = criticalStores > 0;

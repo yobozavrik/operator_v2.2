@@ -7,6 +7,7 @@ import {
     createServiceRoleClient,
     type NormalizedDistributionRow,
 } from '@/lib/branch-api';
+import { buildKonditerkaFallbackAllocationRows } from '@/lib/konditerka-distribution-fallback';
 import { fetchKonditerkaProductUnitMap } from '@/lib/konditerka-product-units';
 import { normalizeKonditerkaUnit } from '@/lib/konditerka-dictionary';
 import { fetchKonditerkaTodayProduction } from '@/lib/konditerka-production-source';
@@ -152,6 +153,11 @@ async function attachKonditerkaUnits(rows: NormalizedDistributionRow[]) {
     }));
 }
 
+async function loadKonditerkaUnitMap(productIds: number[]) {
+    const supabase = createServiceRoleClient();
+    return fetchKonditerkaProductUnitMap(supabase, productIds).catch(() => new Map());
+}
+
 async function runLiveFallbackDistribution(
     supabaseAdmin: SupabaseClient,
     businessDate: string
@@ -162,27 +168,32 @@ async function runLiveFallbackDistribution(
         fetchKonditerkaTodayProduction(serviceClient),
     ]);
     const rowsWithUnits = await attachKonditerkaUnits(rows);
+    const unitMap = await loadKonditerkaUnitMap([
+        ...rowsWithUnits.map((row) => row.productId),
+        ...liveProduction.map((item) => item.product_id),
+    ]);
     const storePriorityByStoreId = await fetchKonditerkaStoreRevenuePriorityMap().catch(
         () => new Map<number, number>()
     );
+    const rowsByProductId = new Map<number, NormalizedDistributionRow[]>();
     const unitByProductId = new Map<number, string>();
     rowsWithUnits.forEach((row) => {
+        const currentRows = rowsByProductId.get(row.productId) || [];
+        currentRows.push(row);
+        rowsByProductId.set(row.productId, currentRows);
         if (!unitByProductId.has(row.productId)) {
             unitByProductId.set(
                 row.productId,
-                String(row.unit || '').trim() || normalizeKonditerkaUnit(undefined, row.productName)
+                unitMap.get(row.productId)
+                    || String(row.unit || '').trim()
+                    || normalizeKonditerkaUnit(undefined, row.productName)
             );
         }
     });
 
     const batchId = crypto.randomUUID();
-    const productNameById = new Map<number, string>();
-    const storeNameById = new Map<number, string>();
-
-    rowsWithUnits.forEach((row) => {
-        productNameById.set(row.productId, row.productName);
-        storeNameById.set(row.storeId, row.storeName);
-    });
+    const fallbackRowsByProductId = new Map<number, NormalizedDistributionRow[]>();
+    const fallbackProductIds = new Set<number>();
 
     const insertRows: Array<{
         product_name: string;
@@ -197,12 +208,34 @@ async function runLiveFallbackDistribution(
         const qty = Math.max(0, Number(item.baked_at_factory));
         if (qty <= 0) continue;
 
-        const unit = unitByProductId.get(item.product_id) || normalizeKonditerkaUnit(undefined, item.product_name);
-        const calc = calculateBranchDistribution(rowsWithUnits, item.product_id, qty, {
+        const unit = unitByProductId.get(item.product_id)
+            || unitMap.get(item.product_id)
+            || normalizeKonditerkaUnit(undefined, item.product_name);
+        let allocationRows = rowsByProductId.get(item.product_id) || [];
+        if (allocationRows.length === 0) {
+            fallbackProductIds.add(item.product_id);
+            const cachedFallbackRows = fallbackRowsByProductId.get(item.product_id);
+            allocationRows = cachedFallbackRows ?? await buildKonditerkaFallbackAllocationRows(serviceClient, {
+                    productId: item.product_id,
+                    productName: item.product_name,
+                    productionQuantity: qty,
+                    unit,
+                });
+            fallbackRowsByProductId.set(item.product_id, allocationRows);
+        }
+
+        const storeNameById = new Map<number, string>();
+        allocationRows.forEach((row) => {
+            if (!storeNameById.has(row.storeId)) {
+                storeNameById.set(row.storeId, row.storeName);
+            }
+        });
+
+        const calc = calculateBranchDistribution(allocationRows, item.product_id, qty, {
             unit,
             storePriorityByStoreId,
         });
-        const productName = productNameById.get(item.product_id) || item.product_name || `Product ${item.product_id}`;
+        const productName = allocationRows[0]?.productName || item.product_name || `Product ${item.product_id}`;
 
         Object.entries(calc.distributed).forEach(([storeIdRaw, shipQtyRaw]) => {
             const shipQty = Math.max(0, Number(shipQtyRaw));
@@ -251,6 +284,7 @@ async function runLiveFallbackDistribution(
         batchId,
         insertedRows: insertRows.length,
         productsWithProduction: liveProduction.length,
+        fallbackProductsWithoutStats: fallbackProductIds.size,
     };
 }
 

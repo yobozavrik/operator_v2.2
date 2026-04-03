@@ -121,13 +121,21 @@ export async function GET(request: Request) {
 
         const uniqueProductIds = Array.from(new Set(Array.from(statsMap.values()).map((row) => row.product_id)))
             .filter((id) => Number.isFinite(id) && id > 0);
+        const distributionProductNames = Array.from(
+            new Set(
+                ((distributionRes.data || []) as Array<Record<string, unknown>>)
+                    .map((row) => String(row.product_name || '').trim())
+                    .filter(Boolean)
+            )
+        );
 
         const unitByProductId = new Map<number, string>();
+        const unitByProductName = new Map<string, string>();
         if (uniqueProductIds.length > 0) {
             const { data: unitRows, error: unitError } = await supabaseAdmin
                 .schema('konditerka1')
                 .from('production_180d_products')
-                .select('product_id, unit')
+                .select('product_id, product_name, unit')
                 .in('product_id', uniqueProductIds);
 
             if (unitError) {
@@ -138,7 +146,38 @@ export async function GET(request: Request) {
             for (const unitRow of (unitRows || []) as Array<Record<string, unknown>>) {
                 const productId = Math.max(0, toSafeNumber(unitRow.product_id));
                 if (productId <= 0) continue;
-                unitByProductId.set(productId, normalizeKonditerkaUnit(unitRow.unit));
+                const unit = normalizeKonditerkaUnit(unitRow.unit, String(unitRow.product_name || ''));
+                unitByProductId.set(productId, unit);
+                const productNameKey = normalizeKey(unitRow.product_name);
+                if (productNameKey) {
+                    unitByProductName.set(productNameKey, unit);
+                }
+            }
+        }
+
+        const missingUnitNames = distributionProductNames.filter(
+            (productName) => !unitByProductName.has(normalizeKey(productName))
+        );
+
+        if (missingUnitNames.length > 0) {
+            const { data: unitRowsByName, error: unitByNameError } = await supabaseAdmin
+                .schema('konditerka1')
+                .from('production_180d_products')
+                .select('product_name, unit')
+                .in('product_name', missingUnitNames);
+
+            if (unitByNameError) {
+                console.error('Konditerka units-by-name read error:', unitByNameError);
+                return NextResponse.json({ error: unitByNameError.message }, { status: 500 });
+            }
+
+            for (const unitRow of (unitRowsByName || []) as Array<Record<string, unknown>>) {
+                const productNameKey = normalizeKey(unitRow.product_name);
+                if (!productNameKey) continue;
+                unitByProductName.set(
+                    productNameKey,
+                    normalizeKonditerkaUnit(unitRow.unit, String(unitRow.product_name || ''))
+                );
             }
         }
 
@@ -146,7 +185,10 @@ export async function GET(request: Request) {
             const key = `${normalizeKey(row.product_name)}::${normalizeKey(row.spot_name)}`;
             const stats = statsMap.get(key);
             const productId = stats?.product_id ?? 0;
-            const unit = normalizeKonditerkaUnit(unitByProductId.get(productId), String(row.product_name || ''));
+            const unit = normalizeKonditerkaUnit(
+                unitByProductId.get(productId) || unitByProductName.get(normalizeKey(row.product_name)),
+                String(row.product_name || '')
+            );
             return {
                 ...row,
                 product_id: productId,
