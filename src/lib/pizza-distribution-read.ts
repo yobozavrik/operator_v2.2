@@ -238,7 +238,7 @@ async function fetchPizzaDistributionRowsForProduct(
     return mergePizzaRows(legacyRows, oosRows, flagsBySpotId);
 }
 
-export async function fetchPizzaDistributionRowsByProduct<T>(
+export async function fetchPizzaDistributionRowsByProduct<T extends Record<string, unknown>>(
     supabase: SupabaseClient,
     selectClause: string,
     options?: { productIds?: number[] },

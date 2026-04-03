@@ -99,7 +99,9 @@ function getStorePriority(
 ): number {
     if (!priorityMap) return Number.MAX_SAFE_INTEGER;
     const priority = priorityMap.get(row.storeId);
-    return Number.isFinite(priority) && priority > 0 ? priority : Number.MAX_SAFE_INTEGER;
+    return typeof priority === 'number' && Number.isFinite(priority) && priority > 0
+        ? priority
+        : Number.MAX_SAFE_INTEGER;
 }
 
 function sortRowsByPriority(

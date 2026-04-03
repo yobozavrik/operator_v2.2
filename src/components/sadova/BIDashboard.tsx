@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import useSWR from 'swr';
 import { supabase } from '@/lib/supabase';
 import { ProductionTask, BI_Metrics, SupabaseDeficitRow } from '@/types/bi';
-import { transformDeficitData, SADOVA_SHOPS } from '@/lib/transformers';
+import { transformDeficitData } from '@/lib/transformers';
 import { SyncOverlay } from '@/components/SyncOverlay';
 import { cn } from '@/lib/utils';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
