@@ -18,6 +18,7 @@ import {
 } from '@/lib/konditerka-distribution-email';
 
 export const dynamic = 'force-dynamic';
+const KONDITERKA_DISTRIBUTION_QUANTITY_SCALE = 1;
 
 function getKonditerkaCronSecret(): string {
     return process.env.KONDITERKA_CRON_SECRET || process.env.CRON_SECRET || '';
@@ -233,6 +234,7 @@ async function runLiveFallbackDistribution(
 
         const calc = calculateBranchDistribution(allocationRows, item.product_id, qty, {
             unit,
+            quantityScale: KONDITERKA_DISTRIBUTION_QUANTITY_SCALE,
             storePriorityByStoreId,
         });
         const productName = allocationRows[0]?.productName || item.product_name || `Product ${item.product_id}`;

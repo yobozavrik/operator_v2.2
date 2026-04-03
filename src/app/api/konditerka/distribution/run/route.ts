@@ -15,6 +15,7 @@ import { fetchKonditerkaTodayProduction } from '@/lib/konditerka-production-sour
 import { fetchKonditerkaStoreRevenuePriorityMap } from '@/lib/konditerka-store-revenue';
 
 export const dynamic = 'force-dynamic';
+const KONDITERKA_DISTRIBUTION_QUANTITY_SCALE = 1;
 
 function toPositiveInt(value: unknown): number {
     const raw = Number(value);
@@ -156,6 +157,7 @@ async function runLiveFallbackDistribution(supabaseAdmin: SupabaseClient) {
 
         const calc = calculateBranchDistribution(allocationRows, item.product_id, qty, {
             unit,
+            quantityScale: KONDITERKA_DISTRIBUTION_QUANTITY_SCALE,
             storePriorityByStoreId,
         });
         const productName = allocationRows[0]?.productName || item.product_name || `Product ${item.product_id}`;
