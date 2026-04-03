@@ -104,72 +104,6 @@ function getStorePriority(
         : Number.MAX_SAFE_INTEGER;
 }
 
-function sortRowsByPriority(
-    rows: NormalizedDistributionRow[],
-    priorityMap?: Map<number, number>
-): NormalizedDistributionRow[] {
-    return [...rows].sort((a, b) => {
-        const priorityA = getStorePriority(a, priorityMap);
-        const priorityB = getStorePriority(b, priorityMap);
-        if (priorityA !== priorityB) return priorityA - priorityB;
-        return a.storeId - b.storeId;
-    });
-}
-
-function allocateWeightedZeroDemand(
-    rows: NormalizedDistributionRow[],
-    scaledQuantity: number,
-    priorityMap?: Map<number, number>
-): { distributionMinor: Record<number, number>; remaining: number } {
-    const distributionMinor: Record<number, number> = {};
-    for (const row of rows) {
-        distributionMinor[row.storeId] = 0;
-    }
-
-    if (rows.length === 0 || scaledQuantity <= 0) {
-        return { distributionMinor, remaining: Math.max(0, scaledQuantity) };
-    }
-
-    const ordered = sortRowsByPriority(rows, priorityMap);
-    const totalWeight = ordered.reduce((sum, _row, index) => sum + (ordered.length - index), 0);
-    if (totalWeight <= 0) {
-        return { distributionMinor, remaining: Math.max(0, scaledQuantity) };
-    }
-
-    const allocations = ordered.map((row, index) => {
-        const weight = ordered.length - index;
-        const exact = (scaledQuantity * weight) / totalWeight;
-        const base = Math.floor(exact);
-        return {
-            storeId: row.storeId,
-            weight,
-            base,
-            fraction: exact - base,
-        };
-    });
-
-    let remaining = scaledQuantity;
-    for (const allocation of allocations) {
-        if (allocation.base <= 0) continue;
-        distributionMinor[allocation.storeId] += allocation.base;
-        remaining -= allocation.base;
-    }
-
-    allocations.sort((a, b) => {
-        if (b.fraction !== a.fraction) return b.fraction - a.fraction;
-        if (b.weight !== a.weight) return b.weight - a.weight;
-        return a.storeId - b.storeId;
-    });
-
-    for (const allocation of allocations) {
-        if (remaining <= 0) break;
-        distributionMinor[allocation.storeId] += 1;
-        remaining -= 1;
-    }
-
-    return { distributionMinor, remaining };
-}
-
 function getExplicitStoreId(row: RawRow): number {
     const candidate = row.store_id ?? row.spot_id ?? row.code;
     const id = safeInteger(candidate);
@@ -370,8 +304,6 @@ export function calculateBranchDistribution(
     const productRows = rows.filter((row) => row.productId === productId);
     const quantityScale = getQuantityScale(options.unit || productRows[0]?.unit, options.quantityScale);
     const initialQuantity = toScaledUnits(productionQuantity, quantityScale);
-    const zeroDemandMode = productRows.length > 0 &&
-        productRows.every((row) => row.avgSalesDay <= 0 && row.stockNow <= 0);
 
     if (productRows.length === 0 || initialQuantity <= 0) {
         return {
@@ -387,42 +319,17 @@ export function calculateBranchDistribution(
         distributionMinor[row.storeId] = 0;
     }
 
-    if (zeroDemandMode) {
-        const weighted = allocateWeightedZeroDemand(
-            productRows,
-            initialQuantity,
-            options.storePriorityByStoreId
-        );
-
-        const distribution: Record<number, number> = {};
-        for (const [storeIdRaw, quantityMinor] of Object.entries(weighted.distributionMinor)) {
-            const storeId = Number(storeIdRaw);
-            if (!Number.isFinite(storeId) || storeId <= 0) continue;
-            distribution[storeId] = fromScaledUnits(quantityMinor, quantityScale);
-        }
-
-        return {
-            productId,
-            originalQuantity: fromScaledUnits(initialQuantity, quantityScale),
-            distributed: distribution,
-            remaining: fromScaledUnits(weighted.remaining, quantityScale),
-        };
-    }
-
     let remaining = initialQuantity;
 
     // Step 1: each zero-stock store receives one unit first.
     const zeroStockRows = productRows
         .filter((row) => toScaledUnits(row.stockNow, quantityScale) <= 0)
         .sort((a, b) => {
-            if (zeroDemandMode) {
-                const priorityA = getStorePriority(a, options.storePriorityByStoreId);
-                const priorityB = getStorePriority(b, options.storePriorityByStoreId);
-                if (priorityA !== priorityB) return priorityA - priorityB;
-            }
-
             if (b.needNet !== a.needNet) return b.needNet - a.needNet;
             if (b.minStock !== a.minStock) return b.minStock - a.minStock;
+            const priorityA = getStorePriority(a, options.storePriorityByStoreId);
+            const priorityB = getStorePriority(b, options.storePriorityByStoreId);
+            if (priorityA !== priorityB) return priorityA - priorityB;
             return a.storeId - b.storeId;
         });
 
@@ -480,15 +387,11 @@ export function calculateBranchDistribution(
     // Step 3: spread leftovers by demand priority.
     if (remaining > 0) {
         const priority = [...productRows].sort((a, b) => {
-            if (zeroDemandMode) {
-                const priorityA = getStorePriority(a, options.storePriorityByStoreId);
-                const priorityB = getStorePriority(b, options.storePriorityByStoreId);
-                if (priorityA !== priorityB) return priorityA - priorityB;
-                return a.storeId - b.storeId;
-            }
-
             if (b.avgSalesDay !== a.avgSalesDay) return b.avgSalesDay - a.avgSalesDay;
             if (b.needNet !== a.needNet) return b.needNet - a.needNet;
+            const priorityA = getStorePriority(a, options.storePriorityByStoreId);
+            const priorityB = getStorePriority(b, options.storePriorityByStoreId);
+            if (priorityA !== priorityB) return priorityA - priorityB;
             return a.storeId - b.storeId;
         });
 
