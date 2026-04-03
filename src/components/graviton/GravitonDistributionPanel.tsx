@@ -2,7 +2,7 @@
 
 import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Loader2, RefreshCw, ShoppingBag, Truck } from 'lucide-react';
+import { Loader2, RefreshCw, ShoppingBag, Trash2, Truck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { generateDistributionExcel } from '@/lib/distribution-export';
 
@@ -86,6 +86,7 @@ export const GravitonDistributionPanel = forwardRef<GravitonDistributionPanelHan
         const [loading, setLoading] = useState(false);
         const [tableLoading, setTableLoading] = useState(false);
         const [shopsLoading, setShopsLoading] = useState(true);
+        const [clearingDebt, setClearingDebt] = useState(false);
         const [tableData, setTableData] = useState<GravitonResult[]>([]);
         const [shops, setShops] = useState<GravitonShop[]>([]);
         const [lastRunMessage, setLastRunMessage] = useState<string | null>(null);
@@ -165,13 +166,30 @@ export const GravitonDistributionPanel = forwardRef<GravitonDistributionPanelHan
         const fetchPublicTableData = async () => {
             setTableLoading(true);
             try {
-                const { data, error } = await supabase
-                    .from('v_graviton_results_public')
-                    .select('*')
-                    .order('Название продукта', { ascending: true });
+                // Пытаемся найти последний успешный батч для Гравитона
+                const { data: lastBatch, error: batchError } = await supabase
+                    .schema('graviton')
+                    .from('distribution_logs')
+                    .select('batch_id')
+                    .eq('status', 'success')
+                    .order('started_at', { ascending: false })
+                    .limit(1)
+                    .single();
 
-                if (error) throw error;
-                setTableData((data || []) as GravitonResult[]);
+                if (batchError || !lastBatch) {
+                    // Если батчей нет, откатываемся к простому виду
+                    const { data, error } = await supabase
+                        .from('v_graviton_results_public')
+                        .select('*')
+                        .order('Название продукта', { ascending: true });
+
+                    if (error) throw error;
+                    setTableData((data || []) as GravitonResult[]);
+                } else {
+                    // Если нашли батч, загружаем его детально (с Боргом и остатками)
+                    setCurrentBatchId(lastBatch.batch_id);
+                    await fetchBatchTableData(lastBatch.batch_id);
+                }
             } catch (err) {
                 console.error('Error fetching public graviton results:', err);
             } finally {
@@ -296,14 +314,25 @@ export const GravitonDistributionPanel = forwardRef<GravitonDistributionPanelHan
                         const spotId = spotNameToId[normalizeStoreName(row.spot_name)];
                         const key = spotId ? `${spotId}_${row.product_id}` : '';
 
+                        const rawStock = key ? stockMap[key] ?? 0 : 0;
+                        const minStock = key ? minStockMap[key] ?? 0 : 0;
+                        const distributed = row.quantity_to_ship || 0;
+
+                        // Для Хаба (код 5) вычитаем производство, чтобы получить "чистый" остаток витрины
+                        const hubProduction = (spotId === 5) ? (productionMap.get(row.product_id)?.quantityKg || 0) : 0;
+                        const effectiveStock = rawStock - hubProduction;
+
+                        // Борг = Потребность - Распределено (Shortfall)
+                        const shortfall = Math.max(0, minStock - (effectiveStock + distributed));
+
                         return {
                             'Название продукта': row.product_name,
                             'Магазин': row.spot_name,
-                            'Факт. залишок': key ? stockMap[key] ?? null : null,
-                            'Мін. залишок': key ? minStockMap[key] ?? null : null,
+                            'Факт. залишок': effectiveStock,
+                            'Мін. залишок': minStock > 0 ? minStock : null,
                             'Сер. продажі': key ? salesMap[key] ?? null : null,
-                            'Борг': key ? (debtMap[key] ?? null) : null,
-                            'Количество': row.quantity_to_ship,
+                            'Борг': shortfall > 0 ? shortfall : null,
+                            'Количество': distributed,
                             'Время расчета': row.business_date,
                         };
                     });
@@ -395,6 +424,29 @@ export const GravitonDistributionPanel = forwardRef<GravitonDistributionPanelHan
             }
         };
 
+        const handleClearDebt = async () => {
+            if (!confirm('Ви впевнені, что хочете ОЧИСТИТИ ВСІ БОРГИ? Цю дію неможливо скасувати.')) {
+                return;
+            }
+
+            setClearingDebt(true);
+            try {
+                const { error } = await supabase
+                    .schema('graviton')
+                    .rpc('fn_clear_all_debts');
+
+                if (error) throw error;
+
+                setLastRunMessage('Всі борги успішно очищено');
+                handleRefresh();
+            } catch (err: any) {
+                console.error('Error clearing debt:', err);
+                setLastRunMessage(`Помилка очистки: ${err.message}`);
+            } finally {
+                setClearingDebt(false);
+            }
+        };
+
         const exportExcel = async (deliveredSpotIds?: number[]) => {
             if (isExportDisabled) return;
             try {
@@ -450,6 +502,24 @@ export const GravitonDistributionPanel = forwardRef<GravitonDistributionPanelHan
                             <p className="mt-3 text-sm leading-6 text-slate-600">
                                 Нижче тільки результат розподілу: що поїхало по магазинах, які залишки вільні на складі і які позиції потрапили в поточний run.
                             </p>
+                            <div className="mt-4 flex flex-wrap gap-3">
+                                <button
+                                    onClick={handleRefresh}
+                                    disabled={loading || tableLoading}
+                                    className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-all hover:bg-slate-50 disabled:opacity-50"
+                                >
+                                    <RefreshCw size={16} className={cn(tableLoading && "animate-spin")} />
+                                    Оновити дані
+                                </button>
+                                <button
+                                    onClick={handleClearDebt}
+                                    disabled={loading || clearingDebt}
+                                    className="inline-flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 transition-all hover:bg-red-100 disabled:opacity-50"
+                                >
+                                    {clearingDebt ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+                                    Очистити борг
+                                </button>
+                            </div>
                         </div>
 
                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 xl:min-w-[460px]">
@@ -546,6 +616,7 @@ export const GravitonDistributionPanel = forwardRef<GravitonDistributionPanelHan
                                         <th className="px-5 py-4 text-right text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Фактичний залишок</th>
                                         <th className="px-5 py-4 text-right text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Мінімальний залишок</th>
                                         <th className="px-5 py-4 text-right text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Сер. продажі</th>
+                                        <th className="px-5 py-4 text-right text-[10px] font-bold uppercase tracking-[0.18em] text-amber-600">В борг (кг)</th>
                                         <th className="px-5 py-4 text-right text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">До відправки</th>
                                     </tr>
                                 </thead>
@@ -573,6 +644,15 @@ export const GravitonDistributionPanel = forwardRef<GravitonDistributionPanelHan
                                             </td>
                                             <td className="px-5 py-3 text-right text-sm text-slate-600">
                                                 {row['Сер. продажі'] != null ? Number(row['Сер. продажі']).toFixed(2) : '—'}
+                                            </td>
+                                            <td className="px-5 py-3 text-right text-sm">
+                                                {row['Борг'] != null ? (
+                                                    <span className="font-bold text-amber-600">
+                                                        {Number(row['Борг']).toFixed(2)}
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-slate-300">—</span>
+                                                )}
                                             </td>
                                             <td className="px-5 py-3 text-right">
                                                 <span className="inline-flex min-w-[5rem] justify-center rounded-lg bg-slate-900 px-3 py-1 text-sm font-semibold text-white">
