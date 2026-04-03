@@ -2,7 +2,7 @@
 
 This document is the source of truth for the pizza operational runtime,
 analytics boundaries, API contracts, and owner data sources. It captures the
-current owner-layer behavior after the March 29-30, 2026 stabilization work.
+current owner-layer behavior after the April 3, 2026 stabilization work.
 
 ## Overview
 
@@ -38,9 +38,9 @@ The critical owner rules are:
 - Read routes must not run live sync as a side effect.
 - Business coefficients must live in the owner route or SQL owner layer.
 - Heavy pizza read routes must not full-scan `pizza1.v_pizza_distribution_stats`.
-- Runtime operational reads currently reconstruct the merge contract from
-  `legacy + oos` because the direct merge-view path is unstable for
-  some SKU queries.
+- Runtime operational reads reconstruct the merge contract from
+  `legacy + oos` per SKU with bounded parallelism because the hot path must
+  avoid a single heavy merge-view query.
 - The pizza section presentation contract is Ukrainian-only for user-facing text.
 - OOS in pizza means zero stock at a store, not stock below minimum.
 
@@ -48,12 +48,12 @@ The critical owner rules are:
 
 | Route / surface | Business role | Owner source | Fallback | Notes |
 |---|---|---|---|---|
-| `/api/pizza/orders` | Production queue | `pizza1.v_pizza_distribution_stats_legacy` + `pizza1.v_pizza_distribution_stats_oos` | Fixed 16-SKU seed for per-SKU `product_id` reads | Supabase operational read, route reconstructs merge contract |
-| `/api/pizza/summary` | Aggregate fallback only | `pizza1.v_pizza_distribution_stats_legacy` + `pizza1.v_pizza_distribution_stats_oos` | Fixed 16-SKU seed for per-SKU `product_id` reads | `total_norm = SUM(min_stock) * 2`, but `/pizza` header no longer depends on this route |
+| `/api/pizza/orders` | Production queue | `pizza1.v_pizza_distribution_stats_legacy` + `pizza1.v_pizza_distribution_stats_oos` | Fixed 16-SKU seed for per-SKU `product_id` reads | Supabase operational read, helper reconstructs merge contract per SKU |
+| `/api/pizza/summary` | Aggregate fallback only | `pizza1.v_pizza_distribution_stats_legacy` + `pizza1.v_pizza_distribution_stats_oos` | Fixed 16-SKU seed for per-SKU `product_id` reads | `total_norm = SUM(min_stock) * 2`, computed from reconstructed operational rows |
 | `/api/pizza/production-detail` | Production fact | `pizza1.v_pizza_production_only` | `pizza1.v_pizza_distribution_stats_legacy` | Supabase operational read |
-| `/api/pizza/analytics/dashboard` | Operational analytics | `pizza1.v_pizza_distribution_stats_legacy` + `pizza1.v_pizza_distribution_stats_oos` | Fixed 16-SKU seed for per-SKU `product_id` reads | Supabase operational read, route reconstructs merge contract |
-| `/api/pizza/shop-stats` | Product store drill-down | `pizza1.v_pizza_distribution_stats_legacy` + `pizza1.v_pizza_distribution_stats_oos` | Fixed 16-SKU seed for per-SKU `product_id` reads | Supabase operational read, route reconstructs merge contract |
-| `/api/pizza/distribution-stats` | Raw distribution diagnostics | `pizza1.v_pizza_distribution_stats_legacy` + `pizza1.v_pizza_distribution_stats_oos` | Fixed 16-SKU seed for per-SKU `product_id` reads | Supabase operational read, route reconstructs merge contract |
+| `/api/pizza/analytics/dashboard` | Operational analytics | `pizza1.v_pizza_distribution_stats_legacy` + `pizza1.v_pizza_distribution_stats_oos` | Fixed 16-SKU seed for per-SKU `product_id` reads | Supabase operational read, helper reconstructs merge contract per SKU |
+| `/api/pizza/shop-stats` | Product store drill-down | `pizza1.v_pizza_distribution_stats` | none | Single-SKU filtered read; safe to keep on the compatibility view |
+| `/api/pizza/distribution-stats` | Raw distribution diagnostics | `pizza1.v_pizza_distribution_stats_legacy` + `pizza1.v_pizza_distribution_stats_oos` | Fixed 16-SKU seed for per-SKU `product_id` reads | Supabase operational read, helper reconstructs merge contract per SKU |
 | `/pizza` header cards | Production header UI | `ProductionTask[]` from `/api/pizza/orders` | none | `ProductionTabs.tsx` computes fact stock, norm, fill index, and baked count locally from owner data already loaded by the page |
 | `/api/pizza/finance` | Sales / revenue / trends | Poster sales APIs | none | Poster analytical read |
 
@@ -183,21 +183,6 @@ Runtime fallback if grants are missing:
 This fallback does not replace business metrics. It only determines which pizza
 `product_id` values are queried from the Supabase owner views.
 
-### Adaptive read-splitting invariant
-
-Operational pizza read helpers do not fail the whole route on the first
-multi-SKU timeout.
-
-The runtime strategy is:
-
-- try reading a batched `product_id` slice
-- if Supabase returns `statement timeout`, split the slice into smaller groups
-- continue splitting until the problematic batch is isolated
-- only fail the route if a single-SKU read still times out
-
-This keeps the owner contract intact while removing batch-level timeout
-coupling between unrelated pizza SKU reads.
-
 ### Per-SKU read invariant
 
 Operational pizza reads do not batch multiple pizza SKU into one Supabase
@@ -212,6 +197,10 @@ The runtime strategy is:
 
 This avoids the large latency penalty from one slow multi-SKU batch blocking
 the rest of the page.
+
+The compatibility view `pizza1.v_pizza_distribution_stats` still exists for
+single-SKU filtered reads such as `/api/pizza/shop-stats`, but it is not the
+operational hot path for production queue loading.
 
 ### Initial load invariant
 
@@ -372,10 +361,11 @@ The current page responsibilities are:
 4. Pizza norm keeps the `* 2` business coefficient in the owner route.
 5. Sales analytics uses Poster sales as its owner source.
 6. Operational analytics uses Supabase pizza views as its owner source.
-7. Runtime operational routes reconstruct the merge contract from `legacy + oos` because the direct merge-view path is unstable for some SKU queries.
+7. Runtime operational routes reconstruct the merge contract from `legacy + oos` per SKU with bounded parallelism because the hot path must avoid a single heavy merge-view query.
 8. Runtime product-id scoping prefers `pizza1.product_leftovers_map` and falls back to the fixed 16-SKU seed when table grants are unavailable.
-9. Pizza OOS means `stock_now == 0` and must not be overloaded with the below-minimum deficit rule.
-10. Pizza user-facing screens must remain Ukrainian-only.
+9. Compatibility reads like `/api/pizza/shop-stats` may still use `pizza1.v_pizza_distribution_stats` for a single filtered SKU.
+10. Pizza OOS means `stock_now == 0` and must not be overloaded with the below-minimum deficit rule.
+11. Pizza user-facing screens must remain Ukrainian-only.
 
 ## Next steps
 

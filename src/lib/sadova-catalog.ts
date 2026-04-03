@@ -11,6 +11,8 @@ interface ManufactureProductRow {
     product_id?: MaybeNumber;
     product_name?: string | null;
     ingredient_name?: string | null;
+    storage_id?: MaybeNumber;
+    product_num?: MaybeNumber;
 }
 
 interface ManufactureDocRow {
@@ -44,6 +46,13 @@ export interface SadovaCatalogSyncStats {
     renamed: number;
     reactivated: number;
     skipped_without_id: number;
+}
+
+export interface FlattenedSadovaManufactureRow {
+    storage_id: number | null;
+    product_id: number | null;
+    product_name: string;
+    product_num: number;
 }
 
 export function normalizeSadovaName(value: string): string {
@@ -110,6 +119,35 @@ async function loadCategoryMeta(categoriesDb: any, productIds: number[]): Promis
     });
 
     return meta;
+}
+export function extractSadovaManufactureProducts(
+    rawManufactures: ManufactureDocRow[],
+    productionStorageId: number | null = null
+): FlattenedSadovaManufactureRow[] {
+    const rows: FlattenedSadovaManufactureRow[] = [];
+
+    for (const manufacture of rawManufactures || []) {
+        const parentStorageId = parsePositiveInt(manufacture.storage_id);
+
+        if (Array.isArray(manufacture.products) && manufacture.products.length > 0) {
+            for (const product of manufacture.products) {
+                const storageId = parsePositiveInt(product.storage_id) ?? parentStorageId;
+                if (productionStorageId !== null && storageId !== productionStorageId) continue;
+
+                const productName = normalizeProductName(product);
+                // @ts-ignore
+                const quantity = Number.parseFloat(String(product.product_num ?? '0').replace(',', '.')) || 0;
+
+                rows.push({
+                    storage_id: storageId,
+                    product_id: parsePositiveInt(product.product_id),
+                    product_name: productName,
+                    product_num: quantity,
+                });
+            }
+        }
+    }
+    return rows;
 }
 
 export async function syncSadovaCatalogFromManufactures(
@@ -294,3 +332,4 @@ export async function syncSadovaCatalogFromManufactures(
 function candidateKey(value: string): string {
     return normalizeSadovaName(value);
 }
+

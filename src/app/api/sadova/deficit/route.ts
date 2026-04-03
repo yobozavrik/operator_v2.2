@@ -1,0 +1,74 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { serverAuditLog } from '@/lib/logger.server';
+import { Logger } from '@/lib/logger';
+import { createClient } from '@/utils/supabase/server';
+import { requireAuth } from '@/lib/auth-guard';
+import { SupabaseDeficitRow } from '@/types/bi';
+
+export const dynamic = 'force-dynamic';
+
+export async function GET(request: NextRequest) {
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
+
+    const supabase = await createClient();
+
+    // Log API access (non-blocking)
+    serverAuditLog('VIEW_DEFICIT', '/api/sadova/deficit', request, {
+        timestamp: new Date().toISOString()
+    });
+
+    const { data, error } = await (supabase as any)
+        .schema('sadova1')
+        .from('v_plan_d1_detailed')
+        .select('*')
+        .in('priority_number', [1, 2, 3])
+        .order('priority_number', { ascending: true })
+        .order('deficit_percent', { ascending: false })
+        .limit(1000);
+
+    if (error) {
+        Logger.error('Supabase error', { error: error.message, path: '/api/sadova/deficit' });
+        return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    // Отримуємо довідник порційності
+    const { data: catalog } = await (supabase as any)
+        .schema('sadova1')
+        .from('production_catalog')
+        .select('product_id, portion_size, unit');
+
+    const portionMap = new Map();
+    if (catalog) {
+        catalog.forEach((item: any) => {
+            portionMap.set(String(item.product_id), {
+                size: item.portion_size,
+                unit: item.unit
+            });
+        });
+    }
+
+    // Нормалізація для фронтенду (у тому числі переклад грамів у КГ, якщо база у грамах)
+    const mappedData = (data || []).map((row: any) => {
+        const portion = portionMap.get(String(row.код_продукту));
+        const unit = portion?.unit || 'кг';
+        // Для Садови все, що не "шт", вважаємо за КГ (і ділимо грами на 1000)
+        const multiplier = (unit === 'шт' || unit === 'pcs') ? 1 : 0.001;
+
+        return {
+            ...row,
+            current_stock: Number(row.current_stock || 0) * multiplier,
+            min_stock: Number(row.min_stock || 0) * multiplier,
+            deficit_kg: Number(row.deficit_kg || 0) * multiplier,
+            recommended_kg: Number(row.recommended_kg || 0) * multiplier,
+            avg_sales_day: Number(row.avg_sales_day || 0) * multiplier,
+            priority: row.priority_number === 1 ? 'critical' :
+                row.priority_number === 2 ? 'high' :
+                    row.priority_number === 3 ? 'reserve' : 'normal',
+            portion_size: portion?.size || 0,
+            portion_unit: unit
+        } as SupabaseDeficitRow;
+    });
+
+    return NextResponse.json(mappedData);
+}

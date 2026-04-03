@@ -18,21 +18,9 @@ function getServiceClient() {
     return createClient(supabaseUrl, serviceRoleKey);
 }
 
-function hasInternalApiAccess(request: Request): boolean {
-    const secret = process.env.INTERNAL_API_SECRET;
-    if (!secret) return false;
-
-    const authHeader = request.headers.get('authorization');
-    const headerSecret = request.headers.get('x-internal-api-secret');
-
-    return authHeader === `Bearer ${secret}` || headerSecret === secret;
-}
-
-export async function GET(request: Request) {
-    if (!hasInternalApiAccess(request)) {
-        const auth = await requireAuth();
-        if (auth.error) return auth.error;
-    }
+export async function GET() {
+    const auth = await requireAuth();
+    if (auth.error) return auth.error;
 
     try {
         const supabase = getServiceClient();
@@ -77,9 +65,8 @@ export async function GET(request: Request) {
             success: true,
             shops,
         });
-    } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : String(err);
-        console.error('Sadova shops fetch error:', err);
-        return NextResponse.json({ success: false, error: message }, { status: 500 });
+    } catch (err: any) {
+        console.error('Shops fetch error:', err);
+        return NextResponse.json({ success: false, error: err.message }, { status: 500 });
     }
 }

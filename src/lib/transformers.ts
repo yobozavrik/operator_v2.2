@@ -85,9 +85,10 @@ export function getProductionQueue(skus: SKU[]): ProductionTask[] {
 export function transformDeficitData(data: SupabaseDeficitRow[]): ProductionTask[] {
     if (!data || !Array.isArray(data)) return [];
 
-    return data.map((row) => {
+    return data.map((row, index) => {
+        const storeId = row.код_магазину || `agg-${index}`;
         return {
-            id: `${row.код_продукту}-${row.код_магазину}`,
+            id: `${row.код_продукту}-${storeId}`,
             productCode: row.код_продукту,
             name: row.назва_продукту,
             category: (row.category_name?.toUpperCase() as SKUCategory) || 'Інше',

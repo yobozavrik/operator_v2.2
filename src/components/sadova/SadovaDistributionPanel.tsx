@@ -1,25 +1,20 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Play, Loader2, RefreshCw, ShoppingBag, CheckCircle2, Send, Truck } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+'use client';
+
+import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useState } from 'react';
+import { supabase } from '@/lib/supabase';
+import { Loader2, RefreshCw, ShoppingBag, Trash2, Truck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { generateDistributionExcel } from '@/lib/distribution-export';
-import { ShopSelector } from '../ShopSelector';
-import { createClient } from '@/utils/supabase/client';
 
 interface SadovaResult {
-    id: number;
-    product_id: number;
-    product_name: string;
-    spot_id: number | null;
-    spot_name: string;
-    quantity_to_ship: number;
-    calculation_batch_id: string;
-    business_date: string;
-    delivery_status: string;
-    created_at: string;
-    stock_now?: number | null;
-    min_stock?: number | null;
-    avg_sales_day?: number | null;
+    'Название продукта': string;
+    'Магазин': string;
+    'Количество': number;
+    'Факт. залишок'?: number | null;
+    'Мін. залишок'?: number | null;
+    'Сер. продажі'?: number | null;
+    'Борг'?: number | null;
+    'Время расчета'?: string;
 }
 
 interface SadovaShop {
@@ -28,375 +23,665 @@ interface SadovaShop {
     spot_name: string;
 }
 
-interface SadovaRunResponse {
-    success: boolean;
-    error?: string;
-    batch_id?: string;
-    products_processed?: number;
-    total_kg?: number;
-    live_sync?: {
-        partial_sync?: boolean;
-    };
+interface DistributionResultRow {
+    product_id: string;
+    product_name: string;
+    spot_name: string;
+    quantity_to_ship: number;
+    calculation_batch_id: string;
+    business_date: string;
 }
 
-type ApiObject = Record<string, unknown>;
+type BatchMeta = {
+    batch_id: string;
+    business_date: string;
+    full_run: boolean;
+    selected_shop_ids: number[] | null;
+    products_processed: number;
+    total_kg: number;
+    debt_applied?: {
+        rows_with_debt: number;
+        total_debt_kg: number;
+    };
+    live_sync?: {
+        stocks_rows: number;
+        manufactures_rows: number;
+        partial_sync: boolean;
+        failed_storages: number[];
+    };
+};
 
-const WAREHOUSE_ROW_NAME = 'Остаток на Складі';
+export type ProductionSnapshotItem = {
+    productId: string;
+    productName: string;
+    quantityKg: number;
+};
 
-export const SadovaDistributionPanel = () => {
-    const [loading, setLoading] = useState(false);
-    const [tableLoading, setTableLoading] = useState(false);
-    const [shopsLoading, setShopsLoading] = useState(true);
-    const [tableData, setTableData] = useState<SadovaResult[]>([]);
-    const [shops, setShops] = useState<SadovaShop[]>([]);
-    const [selectedShops, setSelectedShops] = useState<number[]>([]);
-    const [lastRunMessage, setLastRunMessage] = useState<string | null>(null);
+export type SadovaDistributionPanelHandle = {
+    runDistribution: (shopIds?: number[] | null) => Promise<void>;
+    exportExcel: (deliveredSpotIds?: number[]) => Promise<void>;
+    isRunDisabled: boolean;
+    isExportDisabled: boolean;
+    isRunLoading: boolean;
+};
 
-    const summary = useMemo(() => {
-        const uniqueProducts = new Set(tableData.map((row) => row.product_id)).size;
-        const totalKg = tableData.reduce((sum, row) => sum + Number(row.quantity_to_ship || 0), 0);
-        const distributedKg = tableData
-            .filter((row) => row.spot_name !== WAREHOUSE_ROW_NAME)
-            .reduce((sum, row) => sum + Number(row.quantity_to_ship || 0), 0);
-        const warehouseFreeKg = tableData
-            .filter((row) => row.spot_name === WAREHOUSE_ROW_NAME)
-            .reduce((sum, row) => sum + Number(row.quantity_to_ship || 0), 0);
-        const uniqueShops = new Set(
-            tableData
-                .map((row) => row.spot_name)
-                .filter((name) => name && name !== WAREHOUSE_ROW_NAME)
-        ).size;
+interface Props {
+    onActionStateChange?: (state: {
+        isRunDisabled: boolean;
+        isExportDisabled: boolean;
+        isRunLoading: boolean;
+        productionItems: ProductionSnapshotItem[];
+        productionTotalKg: number;
+        distributedKg: number;
+        warehouseFreeKg: number;
+        uniqueShops: number;
+    }) => void;
+}
 
-        return {
-            rows: tableData.length,
-            uniqueProducts,
-            totalKg,
-            distributedKg,
-            warehouseFreeKg,
-            uniqueShops,
-        };
-    }, [tableData]);
+const WAREHOUSE_REMAINDER_LABEL = 'Вільні залишки на складі';
+const WAREHOUSE_SOURCE_LABEL = 'Остаток на Складе';
 
-    const authedFetch = useCallback(async (url: string, options: RequestInit = {}) => {
-        const supabase = createClient();
-        const {
-            data: { session },
-        } = await supabase.auth.getSession();
+export const SadovaDistributionPanel = forwardRef<SadovaDistributionPanelHandle, Props>(
+    function SadovaDistributionPanel({ onActionStateChange }, ref) {
+        const [loading, setLoading] = useState(false);
+        const [tableLoading, setTableLoading] = useState(false);
+        const [shopsLoading, setShopsLoading] = useState(true);
+        const [clearingDebt, setClearingDebt] = useState(false);
+        const [tableData, setTableData] = useState<SadovaResult[]>([]);
+        const [shops, setShops] = useState<SadovaShop[]>([]);
+        const [lastRunMessage, setLastRunMessage] = useState<string | null>(null);
+        const [currentBatchId, setCurrentBatchId] = useState<string | null>(null);
+        const [currentBatchMeta, setCurrentBatchMeta] = useState<BatchMeta | null>(null);
+        const [productionItems, setProductionItems] = useState<ProductionSnapshotItem[]>([]);
 
-        const headers = new Headers(options.headers);
-        if (session?.access_token) {
-            headers.set('Authorization', `Bearer ${session.access_token}`);
-        }
+        const isRunDisabled = loading || shopsLoading || shops.length === 0;
+        const isExportDisabled = tableData.length === 0 || loading;
 
-        return fetch(url, {
-            ...options,
-            credentials: 'include',
-            headers,
-        });
-    }, []);
+        const summary = useMemo(() => {
+            const distributedKg = tableData
+                .filter((row) => row['Магазин'] !== WAREHOUSE_REMAINDER_LABEL)
+                .reduce((sum, row) => sum + Number(row['Количество'] || 0), 0);
+            const warehouseFreeKg = tableData
+                .filter((row) => row['Магазин'] === WAREHOUSE_REMAINDER_LABEL)
+                .reduce((sum, row) => sum + Number(row['Количество'] || 0), 0);
+            const uniqueShops = new Set(
+                tableData
+                    .map((row) => row['Магазин'])
+                    .filter((name) => name && name !== WAREHOUSE_REMAINDER_LABEL)
+            ).size;
 
-    const extractApiError = useCallback((raw: unknown, fallback: string): string => {
-        if (!raw || typeof raw !== 'object') return fallback;
-        const obj = raw as ApiObject;
-        if (typeof obj.error === 'string' && obj.error.trim()) return obj.error;
-        if (typeof obj.message === 'string' && obj.message.trim()) return obj.message;
-        if (typeof obj.code === 'string' && obj.code.trim()) return obj.code;
-        if (obj.error && typeof obj.error === 'object') {
-            const nested = obj.error as ApiObject;
-            if (typeof nested.message === 'string' && nested.message.trim()) return nested.message;
-            if (typeof nested.code === 'string' && nested.code.trim()) return nested.code;
-        }
-        return fallback;
-    }, []);
+            return {
+                rows: tableData.length,
+                distributedKg,
+                warehouseFreeKg,
+                uniqueShops,
+            };
+        }, [tableData]);
 
-    const fetchShops = useCallback(async () => {
-        setShopsLoading(true);
-        try {
-            const res = await authedFetch('/api/sadova/shops');
-            const data: unknown = await res.json().catch(() => null);
+        const productionTotalKg = useMemo(
+            () => productionItems.reduce((sum, item) => sum + item.quantityKg, 0),
+            [productionItems]
+        );
 
-            if (!res.ok) {
-                throw new Error(extractApiError(data, `HTTP ${res.status}`));
-            }
-
-            const payload = data && typeof data === 'object' ? (data as ApiObject) : null;
-            const isSuccess = payload?.success === true;
-            const fetchedShops = isSuccess && Array.isArray(payload?.shops) ? (payload.shops as SadovaShop[]) : [];
-
-            if (!isSuccess) {
-                throw new Error(extractApiError(payload, 'Failed to load shops'));
-            }
-
-            setShops(fetchedShops);
-            setSelectedShops(fetchedShops.map((s) => s.spot_id));
-        } catch (err: unknown) {
-            const message = err instanceof Error ? err.message : String(err);
-            setLastRunMessage(`Error loading shops: ${message}`);
-            setShops([]);
-            setSelectedShops([]);
-        } finally {
-            setShopsLoading(false);
-        }
-    }, [authedFetch, extractApiError]);
-
-    const fetchResults = useCallback(async () => {
-        setTableLoading(true);
-        try {
-            const res = await authedFetch('/api/sadova/distribution/results');
-            const raw: unknown = await res.json().catch(() => null);
-
-            if (!res.ok) {
-                throw new Error(extractApiError(raw, `HTTP ${res.status}`));
-            }
-
-            const rows = Array.isArray(raw)
-                ? (raw as SadovaResult[])
-                : raw && typeof raw === 'object' && Array.isArray((raw as ApiObject).data)
-                    ? ((raw as { data: SadovaResult[] }).data || [])
-                    : [];
-
-            setTableData(rows);
-        } catch (err: unknown) {
-            const message = err instanceof Error ? err.message : String(err);
-            setLastRunMessage(`Error loading results: ${message}`);
-            setTableData([]);
-        } finally {
-            setTableLoading(false);
-        }
-    }, [authedFetch, extractApiError]);
-
-    const handleRefresh = useCallback(() => {
-        void fetchResults();
-    }, [fetchResults]);
-
-    useEffect(() => {
-        void fetchShops();
-        void fetchResults();
-    }, [fetchShops, fetchResults]);
-
-    const handleRunDistribution = async () => {
-        if (loading || shopsLoading || shops.length === 0) return;
-        setLoading(true);
-        setLastRunMessage(null);
-        try {
-            if (selectedShops.length === 0) throw new Error('Select at least one shop');
-            const allSelected = selectedShops.length === shops.length;
-
-            const res = await authedFetch('/api/sadova/distribution/run', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ shop_ids: allSelected ? null : selectedShops }),
+        useEffect(() => {
+            onActionStateChange?.({
+                isRunDisabled,
+                isExportDisabled,
+                isRunLoading: loading,
+                productionItems,
+                productionTotalKg,
+                distributedKg: summary.distributedKg,
+                warehouseFreeKg: summary.warehouseFreeKg,
+                uniqueShops: summary.uniqueShops,
             });
-            const raw: unknown = await res.json().catch(() => null);
-            if (!res.ok) throw new Error(extractApiError(raw, `HTTP ${res.status}`));
+        }, [
+            isRunDisabled,
+            isExportDisabled,
+            loading,
+            onActionStateChange,
+            productionItems,
+            productionTotalKg,
+            summary.distributedKg,
+            summary.uniqueShops,
+            summary.warehouseFreeKg,
+        ]);
 
-            const data = (raw || {}) as SadovaRunResponse;
-            if (!data.success) throw new Error(data.error || 'Distribution run failed');
+        const normalizeStoreName = (name: string) =>
+            name.toLowerCase().replace(/магазин\s*/gi, '').replace(/["'«»]/g, '').trim();
 
-            let msg = `Batch ${String(data.batch_id || '').slice(0, 8)} · Products ${data.products_processed || 0} · Weight ${data.total_kg || 0} kg`;
-            if (data.live_sync?.partial_sync) msg += ' · Partial sync';
+        const fetchShops = async () => {
+            setShopsLoading(true);
+            try {
+                const res = await fetch('/api/sadova/shops');
+                const data = await res.json();
+                if (!data.success) throw new Error(data.error || 'Failed to fetch shops');
+                setShops(data.shops || []);
+            } catch (err) {
+                console.error('Error fetching shops:', err);
+            } finally {
+                setShopsLoading(false);
+            }
+        };
 
-            setLastRunMessage(msg);
-            await fetchResults();
-        } catch (err: unknown) {
-            const message = err instanceof Error ? err.message : String(err);
-            setLastRunMessage(`Error: ${message}`);
-        } finally {
-            setLoading(false);
-        }
-    };
+        const fetchPublicTableData = async () => {
+            setTableLoading(true);
+            try {
+                // Пытаемся найти последний успешный батч для Гравитона
+                const { data: lastBatch, error: batchError } = await supabase
+                    .schema('sadova1')
+                    .from('distribution_logs')
+                    .select('batch_id')
+                    .eq('status', 'success')
+                    .order('started_at', { ascending: false })
+                    .limit(1)
+                    .single();
 
-    const handleExport = async () => {
-        if (tableData.length === 0) return;
-        try {
-            const exportData = tableData.map((row) => ({
-                Product: row.product_name,
-                Shop: row.spot_name,
-                Quantity: row.quantity_to_ship,
-                Date: row.business_date,
-                StockNow: row.stock_now ?? '',
-                MinStock: row.min_stock ?? '',
-                AvgSales: row.avg_sales_day ?? '',
-            }));
-            await generateDistributionExcel(exportData, 'Sadova');
-            setLastRunMessage('Excel export created');
-        } catch {
-            setLastRunMessage('Export failed');
-        }
-    };
+                if (batchError || !lastBatch) {
+                    // Если батчей нет, откатываемся к простому виду
+                    const { data, error } = await supabase
+                        .schema('sadova1')
+                        .from('v_results_public')
+                        .select('*')
+                        .order('Название продукта', { ascending: true });
 
-    return (
-        <div className="relative flex h-full w-full flex-col gap-6 overflow-hidden rounded-3xl bg-slate-100 p-6 text-slate-900">
-            <header className="shrink-0 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
-                    <div className="max-w-3xl">
-                        <div className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-600">
-                            <Truck size={12} /> Distribution (Sadova)
+                    if (error) throw error;
+                    setTableData((data || []) as SadovaResult[]);
+                } else {
+                    // Если нашли батч, загружаем его детально (с Боргом и остатками)
+                    setCurrentBatchId(lastBatch.batch_id);
+                    await fetchBatchTableData(lastBatch.batch_id);
+                }
+            } catch (err) {
+                console.error('Error fetching public sadova results:', err);
+            } finally {
+                setTableLoading(false);
+            }
+        };
+
+        const fetchBatchTableData = async (batchId: string) => {
+            setTableLoading(true);
+            try {
+                const { data, error } = await supabase
+                    .schema('sadova1')
+                    .from('distribution_results')
+                    .select('product_id, product_name, spot_name, quantity_to_ship, calculation_batch_id, business_date')
+                    .eq('calculation_batch_id', batchId)
+                    .order('product_name', { ascending: true })
+                    .order('spot_name', { ascending: true });
+
+                if (error) throw error;
+
+                const batchRows = ((data as DistributionResultRow[]) || []);
+                if (batchRows.length === 0) {
+                    setTableData([]);
+                    setProductionItems([]);
+                    return;
+                }
+
+                const businessDate = batchRows[0].business_date;
+
+                const { data: prodData, error: prodError } = await supabase
+                    .schema('sadova1')
+                    .from('distribution_input_production')
+                    .select('product_id, product_name, quantity')
+                    .eq('batch_id', batchId);
+
+                if (prodError) console.error('Error fetching production snapshot:', prodError);
+
+                const productionMap = new Map<string, ProductionSnapshotItem>();
+                ((prodData as any[]) || []).forEach((row) => {
+                    if (!row.product_id) return;
+                    const existing = productionMap.get(row.product_id);
+                    if (existing) {
+                        existing.quantityKg += Number(row.quantity || 0);
+                    } else {
+                        productionMap.set(row.product_id, {
+                            productId: row.product_id,
+                            productName: row.product_name,
+                            quantityKg: Number(row.quantity || 0),
+                        });
+                    }
+                });
+
+                const nextProductionItems = Array.from(productionMap.values())
+                    .sort((a, b) => b.quantityKg - a.quantityKg);
+                setProductionItems(nextProductionItems);
+
+                const uniqueProductIds = Array.from(new Set(batchRows.map((row) => row.product_id)));
+                const spotNameToId: Record<string, number> = {};
+                shops.forEach((shop) => {
+                    spotNameToId[normalizeStoreName(shop.spot_name)] = shop.spot_id;
+                });
+
+                const uniqueSpotIds = Array.from(
+                    new Set(
+                        batchRows
+                            .filter((row) => row.spot_name !== WAREHOUSE_SOURCE_LABEL)
+                            .map((row) => spotNameToId[normalizeStoreName(row.spot_name)])
+                            .filter((id): id is number => id !== undefined)
+                    )
+                );
+
+                const { data: stockData, error: stockError } = await supabase
+                    .schema('sadova1')
+                    .from('distribution_input_stocks')
+                    .select('spot_id, product_id, stock_left')
+                    .eq('batch_id', batchId);
+
+                if (stockError) console.error('Error fetching stock snapshot:', stockError);
+
+                let salesDataRaw: Record<string, any>[] = [];
+                if (uniqueSpotIds.length > 0 && uniqueProductIds.length > 0) {
+                    const { data: salesDataResult, error: salesError } = await supabase
+                        .schema('sadova1')
+                        .from('distribution_base')
+                        .select('*')
+                        .in('код_продукту', uniqueProductIds)
+                        .in('код_магазину', uniqueSpotIds);
+
+                    if (salesError) console.error('Error fetching sales data:', salesError);
+                    salesDataRaw = (salesDataResult || []) as Record<string, any>[];
+                }
+
+                // Борг по магазинах
+                const { data: debtData } = await supabase
+                    .schema('sadova1')
+                    .from('delivery_debt')
+                    .select('spot_id, product_id, debt_kg')
+                    .gt('debt_kg', 0);
+
+                const debtMap: Record<string, number> = {};
+                (debtData || []).forEach((d: any) => {
+                    const k = `${d.spot_id}_${d.product_id}`;
+                    debtMap[k] = (debtMap[k] || 0) + Number(d.debt_kg);
+                });
+
+                const stockMap: Record<string, number> = {};
+                (stockData || []).forEach((row: any) => {
+                    stockMap[`${row.spot_id}_${row.product_id}`] = row.stock_left;
+                });
+
+                const salesMap: Record<string, number> = {};
+                const minStockMap: Record<string, number> = {};
+                salesDataRaw.forEach((row) => {
+                    const key = `${row['код_магазину']}_${row['код_продукту']}`;
+                    salesMap[key] = row.avg_sales_day;
+                    minStockMap[key] = row.min_stock;
+                });
+
+                const mappedData: SadovaResult[] = batchRows
+                    .filter((row) => row.spot_name !== WAREHOUSE_SOURCE_LABEL)
+                    .map((row) => {
+                        const spotId = spotNameToId[normalizeStoreName(row.spot_name)];
+                        const key = spotId ? `${spotId}_${row.product_id}` : '';
+
+                        const rawStock = key ? stockMap[key] ?? 0 : 0;
+                        const minStock = key ? minStockMap[key] ?? 0 : 0;
+                        const distributed = row.quantity_to_ship || 0;
+
+                        // Для Хаба (код 5) вычитаем производство, чтобы получить "чистый" остаток витрины
+                        const hubProduction = (spotId === 5) ? (productionMap.get(row.product_id)?.quantityKg || 0) : 0;
+                        const effectiveStock = rawStock - hubProduction;
+
+                        // Борг = Потребность - Распределено (Shortfall)
+                        const shortfall = Math.max(0, minStock - (effectiveStock + distributed));
+
+                        return {
+                            'Название продукта': row.product_name,
+                            'Магазин': row.spot_name,
+                            'Факт. залишок': effectiveStock,
+                            'Мін. залишок': minStock > 0 ? minStock : null,
+                            'Сер. продажі': key ? salesMap[key] ?? null : null,
+                            'Борг': shortfall > 0 ? shortfall : null,
+                            'Количество': distributed,
+                            'Время расчета': row.business_date,
+                        };
+                    });
+
+                const distributedMap: Record<string, number> = {};
+                batchRows.forEach((row) => {
+                    if (row.spot_name !== WAREHOUSE_SOURCE_LABEL) {
+                        distributedMap[row.product_id] = (distributedMap[row.product_id] || 0) + row.quantity_to_ship;
+                    }
+                });
+
+                const remainderRows: SadovaResult[] = [];
+                nextProductionItems.forEach((item) => {
+                    const distributedQty = distributedMap[item.productId] || 0;
+                    const remainingQty = Math.floor(item.quantityKg) - distributedQty;
+                    if (remainingQty > 0) {
+                        remainderRows.push({
+                            'Название продукта': item.productName,
+                            'Магазин': WAREHOUSE_REMAINDER_LABEL,
+                            'Количество': remainingQty,
+                            'Время расчета': businessDate,
+                        });
+                    }
+                });
+
+                const finalData = [...mappedData, ...remainderRows].sort((a, b) => {
+                    if (a['Название продукта'] < b['Название продукта']) return -1;
+                    if (a['Название продукта'] > b['Название продукта']) return 1;
+                    return a['Магазин'].localeCompare(b['Магазин']);
+                });
+
+                setTableData(finalData);
+            } catch (err) {
+                console.error(`Error fetching batch results for ${batchId}:`, err);
+            } finally {
+                setTableLoading(false);
+            }
+        };
+
+        const handleRefresh = () => {
+            if (currentBatchId) {
+                fetchBatchTableData(currentBatchId);
+            } else {
+                fetchPublicTableData();
+            }
+        };
+
+        useEffect(() => {
+            fetchShops();
+            fetchPublicTableData();
+        }, []);
+
+        const runDistribution = async (shopIds?: number[] | null) => {
+            if (isRunDisabled) return;
+
+            setLoading(true);
+            setLastRunMessage(null);
+            try {
+                const normalizedShopIds =
+                    Array.isArray(shopIds) && shopIds.length > 0 && shopIds.length < shops.length
+                        ? shopIds
+                        : null;
+
+                const res = await fetch('/api/sadova/distribution/run', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ shop_ids: normalizedShopIds }),
+                });
+                const data = await res.json();
+
+                if (!data.success) {
+                    throw new Error(data.error || 'Помилка виконання розподілу');
+                }
+
+                let msg = `Партія ${data.batch_id?.slice(0, 8)} · Позицій ${data.products_processed} · Вага ${data.total_kg} кг`;
+                if (data.live_sync?.partial_sync) {
+                    msg += ' · Часткова синхронізація';
+                }
+
+                setLastRunMessage(msg);
+                setCurrentBatchId(data.batch_id);
+                setCurrentBatchMeta(data as BatchMeta);
+                await fetchBatchTableData(data.batch_id);
+            } catch (err: any) {
+                console.error('Error running sadova calc:', err);
+                setLastRunMessage(`Помилка: ${err.message}`);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        const handleClearDebt = async () => {
+            if (!confirm('Ви впевнені, что хочете ОЧИСТИТИ ВСІ БОРГИ? Цю дію неможливо скасувати.')) {
+                return;
+            }
+
+            setClearingDebt(true);
+            try {
+                const { error } = await supabase
+                    .schema('sadova1')
+                    .rpc('fn_clear_all_debts');
+
+                if (error) throw error;
+
+                setLastRunMessage('Всі борги успішно очищено');
+                handleRefresh();
+            } catch (err: any) {
+                console.error('Error clearing debt:', err);
+                setLastRunMessage(`Помилка очистки: ${err.message}`);
+            } finally {
+                setClearingDebt(false);
+            }
+        };
+
+        const exportExcel = async (deliveredSpotIds?: number[]) => {
+            if (isExportDisabled) return;
+            try {
+                let exportData = tableData;
+                if (deliveredSpotIds && deliveredSpotIds.length > 0 && deliveredSpotIds.length < shops.length) {
+                    const norm = (name: string) =>
+                        name.toLowerCase().replace(/магазин\s*/gi, '').replace(/["'«»]/g, '').trim();
+                    const deliveredNorm = new Set(
+                        shops
+                            .filter((s) => deliveredSpotIds.includes(s.spot_id))
+                            .map((s) => norm(s.spot_name))
+                    );
+                    exportData = tableData.filter(
+                        (row) =>
+                            row['Магазин'] === WAREHOUSE_REMAINDER_LABEL ||
+                            deliveredNorm.has(norm(row['Магазин']))
+                    );
+                }
+                await generateDistributionExcel(exportData);
+                const skipped = shops.length - (deliveredSpotIds?.length ?? shops.length);
+                setLastRunMessage(
+                    skipped > 0
+                        ? `Excel сформовано: ${deliveredSpotIds?.length} магазинів, ${skipped} пропущено`
+                        : 'Excel успішно сформовано'
+                );
+            } catch (err) {
+                console.error('Export error:', err);
+                setLastRunMessage('Помилка експорту');
+            }
+        };
+
+        useImperativeHandle(
+            ref,
+            () => ({
+                runDistribution,
+                exportExcel,
+                isRunDisabled,
+                isExportDisabled,
+                isRunLoading: loading,
+            }),
+            [isRunDisabled, isExportDisabled, loading, tableData]
+        );
+
+        return (
+            <div className="relative flex h-full w-full flex-col gap-6 overflow-hidden rounded-3xl bg-slate-100 p-6 text-slate-900">
+                <header className="shrink-0 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
+                        <div className="max-w-3xl">
+                            <div className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-600">
+                                <Truck size={12} /> Розподіл
+                            </div>
+                            <h1 className="mt-3 text-3xl font-bold text-slate-900">Розподіл виробленої продукції</h1>
+                            <p className="mt-3 text-sm leading-6 text-slate-600">
+                                Нижче тільки результат розподілу: що поїхало по магазинах, які залишки вільні на складі і які позиції потрапили в поточний run.
+                            </p>
+                            <div className="mt-4 flex flex-wrap gap-3">
+                                <button
+                                    onClick={handleRefresh}
+                                    disabled={loading || tableLoading}
+                                    className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-all hover:bg-slate-50 disabled:opacity-50"
+                                >
+                                    <RefreshCw size={16} className={cn(tableLoading && "animate-spin")} />
+                                    Оновити дані
+                                </button>
+                                <button
+                                    onClick={handleClearDebt}
+                                    disabled={loading || clearingDebt}
+                                    className="inline-flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 transition-all hover:bg-red-100 disabled:opacity-50"
+                                >
+                                    {clearingDebt ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+                                    Очистити борг
+                                </button>
+                            </div>
                         </div>
-                        <h1 className="mt-3 text-3xl font-bold text-slate-900">Produced Goods Distribution</h1>
-                        <p className="mt-3 text-sm leading-6 text-slate-600">Shop balances and product cards are shown in the table below.</p>
+
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 xl:min-w-[460px]">
+                            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                                <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Розподілено</div>
+                                <div className="mt-2 text-2xl font-bold text-slate-900">{summary.distributedKg.toFixed(0)} кг</div>
+                                <div className="mt-2 text-xs text-slate-600">Обсяг, який уже пішов по магазинах у поточному run</div>
+                            </div>
+                            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                                <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Вільний залишок</div>
+                                <div className="mt-2 text-2xl font-bold text-slate-900">{summary.warehouseFreeKg.toFixed(0)} кг</div>
+                                <div className="mt-2 text-xs text-slate-600">Що лишилося на складі після run</div>
+                            </div>
+                            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                                <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Магазини в розподілі</div>
+                                <div className="mt-2 text-2xl font-bold text-slate-900">{summary.uniqueShops}</div>
+                                <div className="mt-2 text-xs text-slate-600">Точки, які отримали позиції в поточному run</div>
+                            </div>
+                        </div>
                     </div>
+                </header>
 
-                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 xl:min-w-[460px]">
-                        <div className="rounded-2xl border border-indigo-200 bg-indigo-50 p-4">
-                            <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-indigo-700">Shops</div>
-                            <div className="mt-2 text-2xl font-bold text-indigo-700">{selectedShops.length}</div>
-                        </div>
-                        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                            <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Products</div>
-                            <div className="mt-2 text-2xl font-bold text-slate-900">{summary.uniqueProducts}</div>
-                        </div>
-                        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                            <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Total kg</div>
-                            <div className="mt-2 text-2xl font-bold text-slate-900">{summary.totalKg.toFixed(0)}</div>
-                        </div>
-                    </div>
-                </div>
-            </header>
+                {lastRunMessage && (
+                    <section className={cn(
+                        'shrink-0 rounded-2xl border px-4 py-3 text-sm shadow-sm',
+                        lastRunMessage.startsWith('Помилка')
+                            ? 'border-red-200 bg-red-50 text-red-700'
+                            : 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                    )}>
+                        {lastRunMessage}
+                    </section>
+                )}
 
-            <section className="grid shrink-0 gap-4 xl:grid-cols-[0.95fr_1.05fr]">
-                <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                    <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Current split</div>
-                    <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
-                        <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-                            <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Distributed</div>
-                            <div className="mt-1 text-2xl font-bold text-slate-900">{summary.distributedKg.toFixed(0)}</div>
+                <section className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+                    {currentBatchMeta && (
+                        <div className="shrink-0 border-b border-slate-200 bg-slate-50 p-4">
+                            <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+                                <div className="flex flex-wrap items-center gap-3 text-sm text-slate-700">
+                                    <span
+                                        className={cn(
+                                            'rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em]',
+                                            currentBatchMeta.full_run ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                                        )}
+                                    >
+                                        {currentBatchMeta.full_run ? 'Повний розрахунок' : 'Частковий розрахунок'}
+                                    </span>
+                                    <span>Партія: <strong>{currentBatchMeta.batch_id.slice(0, 8)}</strong></span>
+                                    <span>Дата: <strong>{currentBatchMeta.business_date}</strong></span>
+                                    <span>Позицій: <strong>{currentBatchMeta.products_processed}</strong></span>
+                                    <span>Вага: <strong>{currentBatchMeta.total_kg} кг</strong></span>
+                                    {currentBatchMeta.debt_applied && currentBatchMeta.debt_applied.rows_with_debt > 0 && (
+                                        <span className="rounded-full bg-amber-100 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-amber-700">
+                                            Борг враховано: {currentBatchMeta.debt_applied.total_debt_kg} кг · {currentBatchMeta.debt_applied.rows_with_debt} рядків
+                                        </span>
+                                    )}
+                                </div>
+                                <button
+                                    onClick={() => {
+                                        setCurrentBatchId(null);
+                                        setCurrentBatchMeta(null);
+                                        setProductionItems([]);
+                                        fetchPublicTableData();
+                                    }}
+                                    className="text-sm font-medium text-slate-600 hover:text-slate-900"
+                                >
+                                    Повернутись до загальної вітрини
+                                </button>
+                            </div>
                         </div>
-                        <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-                            <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Warehouse left</div>
-                            <div className="mt-1 text-2xl font-bold text-slate-900">{summary.warehouseFreeKg.toFixed(0)}</div>
-                        </div>
-                        <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-                            <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Active shops</div>
-                            <div className="mt-1 text-2xl font-bold text-slate-900">{summary.uniqueShops}</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                    {!shopsLoading && (
-                        <ShopSelector shops={shops} selectedShops={selectedShops} setSelectedShops={setSelectedShops} />
                     )}
 
-                    <div className="mt-4 flex flex-wrap items-center gap-3">
-                        <button
-                            onClick={handleRunDistribution}
-                            disabled={loading || shopsLoading || shops.length === 0}
-                            className={cn(
-                                'inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition-colors',
-                                loading ? 'cursor-not-allowed bg-slate-200 text-slate-500' : 'bg-indigo-600 text-white hover:bg-indigo-700'
-                            )}
-                        >
-                            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4 fill-current" />}
-                            Run distribution
-                        </button>
+                    {tableLoading && (
+                        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm">
+                            <div className="mb-4 h-10 w-10 animate-spin rounded-full border-4 border-slate-300 border-t-slate-900" />
+                            <p className="text-sm font-semibold text-slate-700">Рахуємо розподіл…</p>
+                        </div>
+                    )}
 
-                        <button
-                            onClick={handleExport}
-                            disabled={tableData.length === 0 || loading}
-                            className={cn(
-                                'inline-flex items-center gap-2 rounded-xl border px-5 py-3 text-sm font-semibold transition-colors',
-                                tableData.length === 0 || loading
-                                    ? 'cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400'
-                                    : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                            )}
-                        >
-                            <Send className="h-4 w-4" />
-                            Export Excel
-                        </button>
-                    </div>
+                    {!tableLoading && tableData.length === 0 && (
+                        <div className="flex flex-1 flex-col items-center justify-center text-slate-500">
+                            <ShoppingBag className="mb-4 h-14 w-14 opacity-30" />
+                            <p className="text-sm font-semibold uppercase tracking-[0.18em]">Розподіл ще не сформовано</p>
+                        </div>
+                    )}
 
-                    <AnimatePresence>
-                        {lastRunMessage && (
-                            <motion.div
-                                initial={{ opacity: 0, y: 8 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0 }}
-                                className={cn(
-                                    'mt-4 rounded-xl border px-4 py-3 text-sm',
-                                    lastRunMessage.startsWith('Error') ? 'border-red-200 bg-red-50 text-red-700' : 'border-emerald-200 bg-emerald-50 text-emerald-700'
-                                )}
-                            >
-                                <div className="flex items-center gap-2">
-                                    {!lastRunMessage.startsWith('Error') && <CheckCircle2 size={16} />}
-                                    <span>{lastRunMessage}</span>
-                                </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                </div>
-            </section>
-
-            <section className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-                {tableLoading && (
-                    <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm">
-                        <div className="mb-4 h-10 w-10 animate-spin rounded-full border-4 border-slate-300 border-t-indigo-600" />
-                        <p className="text-sm font-semibold text-slate-700">Refreshing...</p>
-                    </div>
-                )}
-
-                {!tableLoading && tableData.length === 0 && (
-                    <div className="flex flex-1 flex-col items-center justify-center text-slate-500">
-                        <ShoppingBag className="mb-4 h-14 w-14 opacity-30" />
-                        <p className="text-sm font-semibold uppercase tracking-[0.18em]">No data</p>
-                    </div>
-                )}
-
-                {tableData.length > 0 && (
-                    <div className="flex-1 overflow-auto">
-                        <table className="w-full border-collapse text-left">
-                            <thead className="sticky top-0 z-10 border-b border-slate-200 bg-white">
-                                <tr>
-                                    <th className="px-5 py-4 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">#</th>
-                                    <th className="px-5 py-4 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Product</th>
-                                    <th className="px-5 py-4 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Shop</th>
-                                    <th className="px-5 py-4 text-right text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Stock</th>
-                                    <th className="px-5 py-4 text-right text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Min stock</th>
-                                    <th className="px-5 py-4 text-right text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Avg sales</th>
-                                    <th className="px-5 py-4 text-right text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">To ship</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {tableData
-                                    .slice()
-                                    .sort((a, b) => a.product_name.localeCompare(b.product_name, 'uk'))
-                                    .map((row, idx) => (
-                                        <tr key={`${row.id}-${idx}`} className="border-b border-slate-100 hover:bg-slate-50">
+                    {tableData.length > 0 && (
+                        <div className="flex-1 overflow-auto">
+                            <table className="w-full border-collapse text-left">
+                                <thead className="sticky top-0 z-10 border-b border-slate-200 bg-white">
+                                    <tr>
+                                        <th className="px-5 py-4 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">#</th>
+                                        <th className="px-5 py-4 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Позиція</th>
+                                        <th className="px-5 py-4 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Магазин</th>
+                                        <th className="px-5 py-4 text-right text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Фактичний залишок</th>
+                                        <th className="px-5 py-4 text-right text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Мінімальний залишок</th>
+                                        <th className="px-5 py-4 text-right text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Сер. продажі</th>
+                                        <th className="px-5 py-4 text-right text-[10px] font-bold uppercase tracking-[0.18em] text-amber-600">В борг (кг)</th>
+                                        <th className="px-5 py-4 text-right text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">До відправки</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {tableData.map((row, idx) => (
+                                        <tr
+                                            key={`${row['Название продукта']}-${row['Магазин']}-${idx}`}
+                                            className="border-b border-slate-100 hover:bg-slate-50"
+                                        >
                                             <td className="px-5 py-3 text-sm text-slate-500">{idx + 1}</td>
-                                            <td className="px-5 py-3 text-sm font-semibold text-slate-900">{row.product_name}</td>
-                                            <td className={cn('px-5 py-3 text-sm', row.spot_name === WAREHOUSE_ROW_NAME ? 'font-semibold text-amber-700' : 'text-slate-700')}>
-                                                {row.spot_name}
+                                            <td className="px-5 py-3 text-sm font-semibold text-slate-900">{row['Название продукта']}</td>
+                                            <td
+                                                className={cn(
+                                                    'px-5 py-3 text-sm',
+                                                    row['Магазин'] === WAREHOUSE_REMAINDER_LABEL ? 'font-semibold text-amber-700' : 'text-slate-700'
+                                                )}
+                                            >
+                                                {row['Магазин']}
                                             </td>
-                                            <td className="px-5 py-3 text-right text-sm text-slate-600">{row.stock_now != null ? Number(row.stock_now).toFixed(2) : '-'}</td>
-                                            <td className="px-5 py-3 text-right text-sm text-slate-600">{row.min_stock != null ? Number(row.min_stock).toFixed(0) : '-'}</td>
-                                            <td className="px-5 py-3 text-right text-sm text-slate-600">{row.avg_sales_day != null ? Number(row.avg_sales_day).toFixed(2) : '-'}</td>
+                                            <td className="px-5 py-3 text-right text-sm text-slate-600">
+                                                {row['Факт. залишок'] != null ? Number(row['Факт. залишок']).toFixed(2) : '—'}
+                                            </td>
+                                            <td className="px-5 py-3 text-right text-sm text-slate-600">
+                                                {row['Мін. залишок'] != null ? Number(row['Мін. залишок']).toFixed(0) : '—'}
+                                            </td>
+                                            <td className="px-5 py-3 text-right text-sm text-slate-600">
+                                                {row['Сер. продажі'] != null ? Number(row['Сер. продажі']).toFixed(2) : '—'}
+                                            </td>
+                                            <td className="px-5 py-3 text-right text-sm">
+                                                {row['Борг'] != null ? (
+                                                    <span className="font-bold text-amber-600">
+                                                        {Number(row['Борг']).toFixed(2)}
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-slate-300">—</span>
+                                                )}
+                                            </td>
                                             <td className="px-5 py-3 text-right">
-                                                <span className="inline-flex min-w-[4rem] justify-center rounded-lg bg-slate-900 px-3 py-1 text-sm font-semibold text-white">
-                                                    {row.quantity_to_ship}
+                                                <span className="inline-flex min-w-[5rem] justify-center rounded-lg bg-slate-900 px-3 py-1 text-sm font-semibold text-white">
+                                                    {row['Количество']}
                                                 </span>
                                             </td>
                                         </tr>
                                     ))}
-                            </tbody>
-                        </table>
-                    </div>
-                )}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
 
-                <div className="shrink-0 border-t border-slate-200 bg-slate-50 px-5 py-3">
-                    <div className="flex items-center justify-between">
+                    <div className="shrink-0 flex items-center justify-between border-t border-slate-200 bg-slate-50 px-5 py-3">
                         <div className="text-sm text-slate-600">
-                            Rows: <strong className="text-slate-900">{summary.rows}</strong>
+                            Рядків: <strong className="text-slate-900">{summary.rows}</strong> · Магазинів: <strong className="text-slate-900">{summary.uniqueShops}</strong>
                         </div>
                         <button
                             onClick={handleRefresh}
                             className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                            title="Оновити"
                         >
                             <RefreshCw className="h-4 w-4" />
-                            Refresh
+                            Оновити
                         </button>
                     </div>
-                </div>
-            </section>
-        </div>
-    );
-};
+                </section>
+            </div>
+        );
+    }
+);

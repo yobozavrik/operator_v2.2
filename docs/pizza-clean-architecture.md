@@ -1,4 +1,4 @@
-# Pizza System — Clean Architecture (2026-03-31)
+# Pizza System — Clean Architecture (2026-04-03)
 
 ---
 
@@ -96,6 +96,7 @@ interface AnalyticsDashboard {
 3. **need_net:** `max(0, min_stock - stock_now)` — завжди ≥ 0
 4. **total_norm multiplier:** `× 2` (норма мережі = подвійний запас)
 5. **Версіонування:** один `confirmed` резерв per (дата, клієнт) одночасно
+6. **Hot-path pizza reads:** `/api/pizza/orders`, `/api/pizza/summary`, and `/api/pizza/distribution-stats` reconstruct merged rows from per-SKU reads over `legacy + oos` with bounded parallelism instead of one large merge-view query.
 
 ### Статусна машина резервів
 
@@ -166,15 +167,15 @@ draft → confirmed → used_in_distribution
 
 | Route | Тип | Джерело |
 |-------|-----|---------|
-| `/api/pizza/orders` | GET | `v_pizza_distribution_stats` |
+| `/api/pizza/orders` | GET | `legacy + oos per SKU` via `fetchPizzaDistributionRowsByProduct` |
 | `/api/pizza/sync-stocks` | POST | Poster API → Supabase |
-| `/api/pizza/summary` | GET | `fetchPizzaDistributionRowsByProduct` |
+| `/api/pizza/summary` | GET | `legacy + oos per SKU` via `fetchPizzaDistributionRowsByProduct` |
 | `/api/pizza/shop-stats` | GET | `v_pizza_distribution_stats` (фільтр по product_name) |
-| `/api/pizza/distribution-stats` | GET | `fetchPizzaDistributionRowsByProduct` |
+| `/api/pizza/distribution-stats` | GET | `legacy + oos per SKU` via `fetchPizzaDistributionRowsByProduct` |
 | `/api/pizza/distribution/run` | POST | `fn_full_recalculate_all` + `fn_apply_customer_reservation` |
 | `/api/pizza/distribution/results` | GET | `v_today_distribution` + `customer_reservations` |
 | `/api/pizza/production-detail` | GET | `v_pizza_production_only` |
-| `/api/pizza/analytics/dashboard` | GET | `fetchPizzaDistributionRowsByProduct` + `v_pizza_summary_stats` |
+| `/api/pizza/analytics/dashboard` | GET | `legacy + oos per SKU` via `fetchPizzaDistributionRowsByProduct` + `v_pizza_summary_stats` |
 | `/api/pizza/reservations` | GET/POST | `customer_reservations` |
 | `/api/pizza/finance/summary` | GET | фінансові view |
 
@@ -199,6 +200,12 @@ serializeRouteError(error)
 PIZZA_ACTIVE_PRODUCT_IDS  // fallback константа
 ```
 
+`fetchPizzaDistributionRowsByProduct` now reads each active pizza SKU
+individually from `pizza1.v_pizza_distribution_stats_legacy` and
+`pizza1.v_pizza_distribution_stats_oos`, then reconstructs the merged row in
+application code. This avoids one heavyweight hot-path query against
+`pizza1.v_pizza_distribution_stats`.
+
 ---
 
 ## Шар 4: Infrastructure
@@ -215,7 +222,7 @@ PIZZA_ACTIVE_PRODUCT_IDS  // fallback константа
 | `customer_reservation_items` | TABLE | SKU рядки резерву + applied_result |
 | `v_pizza_distribution_stats_legacy` | VIEW | Frozen legacy avg/min_stock логіка |
 | `v_pizza_distribution_stats_oos` | VIEW | OOS-aware dynamic 14-day window |
-| `v_pizza_distribution_stats` | VIEW (MERGE) | Роутинг legacy/oos per store via flags |
+| `v_pizza_distribution_stats` | VIEW (MERGE) | Compatibility view for filtered/single-SKU callers; hot path reconstructs per SKU in application code |
 | `v_pizza_production_only` | VIEW | baked_at_factory per SKU |
 | `v_pizza_summary_stats` | VIEW | Зведена статистика |
 | `fn_full_recalculate_all` | FUNCTION | Алгоритм розподілу |
@@ -279,10 +286,10 @@ createServiceRoleClient()  // bypass RLS, для server-side
 | 4 | OOS window = 14 днів | Достатньо для виявлення OutOfStock патернів, не надто довго |
 | 5 | Fallback avg/14 якщо < 7 available_days | Запобігання завищеним нормам при нових магазинах |
 | 6 | Версіонування резервів | Клієнт може передзамовити → розподіл скоригується автоматично |
-| 7 | `fetchPizzaDistributionRowsByProduct` — один запит до merge-view | До 2026-03-31: обхід через JS-мерж двох view (legacy+oos). Виправлено: тепер єдиний запит до `v_pizza_distribution_stats` |
+| 7 | `fetchPizzaDistributionRowsByProduct` — per-SKU reconstruction | Hot-path routes now read `legacy + oos` per SKU with bounded parallelism and rebuild merged rows in application code to avoid merge-view timeouts |
 | 8 | `fn_apply_customer_reservation` в БД | Атомарність: вираховування + applied_result в одній транзакції |
 | 9 | `product_leftovers_map` — service_role only | Таблиця містить ingredient mapping, не потрібна для RLS-рівня |
 
 ---
 
-*Версія: 2026-03-31 | Clean Architecture audit*
+*Версія: 2026-04-03 | Clean Architecture audit*

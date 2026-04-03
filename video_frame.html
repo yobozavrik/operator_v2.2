@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+<body style="margin:0;background:black;overflow:hidden">
+<canvas id="c"></canvas>
+<video id="v" muted playsinline></video>
+<script>
+const params = new URLSearchParams(location.search);
+const t = parseFloat(params.get('t') || '0');
+const video = document.getElementById('v');
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+video.src = 'file:///C:/Users/user/Downloads/WhatsApp%20Video%202026-04-03%20at%2012.54.34.mp4';
+video.addEventListener('loadedmetadata', () => {
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  video.currentTime = t;
+});
+video.addEventListener('seeked', () => {
+  ctx.drawImage(video, 0, 0);
+  document.body.innerHTML = '';
+  document.body.appendChild(canvas);
+});
+video.load();
+</script>
+</body>
+</html>

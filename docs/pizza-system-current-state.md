@@ -1,4 +1,4 @@
-# Pizza System — Current State (2026-03-31)
+# Pizza System — Current State (2026-04-03)
 
 Документ фіксує поточний технічний стан пицерійного модуля ERP.
 Генерується автоматично під час аудиту.
@@ -58,7 +58,7 @@ graph TD
         LV[v_pizza_distribution_stats_legacy\nсток + baked_at_factory + avg legacy]
         OV[v_pizza_distribution_stats_oos\nOOS-aware avg_sales_day\ndynamic 14-day window]
         FLAGS[pizza_oos_logic_flags\nuse_oos_logic per spot_id]
-        MV[v_pizza_distribution_stats\nMERGE-VIEW\nроутинг legacy ↔ oos per store]
+        MV[v_pizza_distribution_stats\nMERGE-VIEW\ncompatibility view for filtered callers]
         PROD[v_pizza_production_only\nbaked_at_factory per SKU]
         SUMM[v_pizza_summary_stats\ntotal norm / baked / need]
     end
@@ -104,7 +104,7 @@ sequenceDiagram
 
     U->>DR: POST { date }
     DR->>DB: fn_full_recalculate_all(date)
-    Note over DB: читає v_pizza_distribution_stats (merge-view)\nрозраховує quantity_to_ship per spot
+    Note over DB: reads legacy + oos per SKU with bounded parallelism\nрозраховує quantity_to_ship per spot
     DR->>DB: SELECT confirmed reservations for date
     alt є confirmed резерв
         DR->>DB: fn_apply_customer_reservation(reservation_id)
@@ -155,17 +155,17 @@ graph LR
 
 ---
 
-## 4. Merge-view routing per store
+## 4. Operational routing per SKU
 
 ```mermaid
 graph TD
     subgraph "Запит від сервісу"
-        Q[fetchPizzaDistributionRowsByProduct\nSELECT FROM v_pizza_distribution_stats]
+        Q[fetchPizzaDistributionRowsByProduct\nreconstructs rows from legacy + oos per SKU]
     end
 
-    subgraph "v_pizza_distribution_stats (merge-view)"
+    subgraph "Runtime hot path"
         direction LR
-        JOIN[LEFT JOIN\nlegacy + oos + flags]
+        JOIN[legacy + oos + flags\nbounded parallelism per SKU]
     end
 
     subgraph "Для кожного рядка (spot)"
@@ -256,5 +256,5 @@ graph TD
 
 ---
 
-*Дата фіксації: 2026-03-31*
+*Дата фіксації: 2026-04-03*
 *Джерело: аудит codebase + перевірка DB*

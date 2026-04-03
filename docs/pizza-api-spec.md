@@ -1,4 +1,4 @@
-# Pizza API Specification (2026-03-31)
+# Pizza API Specification (2026-04-03)
 
 Всі endpoints вимагають аутентифікації (cookie session або Bearer token).
 Базовий URL: `/api/pizza`
@@ -42,7 +42,9 @@
 
 **Кешування:** `refreshInterval: 60000` (SWR)
 
-**Джерело:** `v_pizza_distribution_stats` (merge-view) через `fetchPizzaDistributionRowsByProduct`
+**Джерело:** `v_pizza_distribution_stats_legacy` + `v_pizza_distribution_stats_oos` через `fetchPizzaDistributionRowsByProduct`
+
+**Примітка:** helper читає кожен active SKU окремо та реконструює merged row в application code, щоб уникнути statement timeout на великому merge-view батчі.
 
 ---
 
@@ -85,6 +87,8 @@
 
 **Логіка:** `total_norm = sum(min_stock) × 2` (коефіцієнт мережі)
 
+**Джерело:** reconstructed operational rows from `v_pizza_distribution_stats_legacy` + `v_pizza_distribution_stats_oos`
+
 ---
 
 ### `GET /api/pizza/shop-stats`
@@ -115,6 +119,8 @@
 { "error": "Pizza name is required" }
 ```
 
+**Джерело:** single-SKU filtered read on `v_pizza_distribution_stats` (compatibility view). This route is not on the hot path.
+
 ---
 
 ### `GET /api/pizza/distribution-stats`
@@ -141,6 +147,8 @@
   }
 ]
 ```
+
+**Джерело:** `v_pizza_distribution_stats_legacy` + `v_pizza_distribution_stats_oos` через `fetchPizzaDistributionRowsByProduct`
 
 ---
 
@@ -387,4 +395,4 @@ draft ──confirm──► confirmed ──distribution/run──► used_in_d
 
 ---
 
-*Версія: 2026-03-31 | Аудит + документація*
+*Версія: 2026-04-03 | Аудит + документація*
