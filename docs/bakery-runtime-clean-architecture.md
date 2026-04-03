@@ -9,7 +9,7 @@ and avoid duplicating the business rules in the UI.
 ```mermaid
 sequenceDiagram
     participant User as Browser
-    participant Page as /bakery/sales
+    participant Page as /bakery/[tab]
     participant SalesAPI as /api/bakery/sales
     participant OOSAPI as /api/bakery/sales/eod-oos
     participant ExportAPI as /api/bakery/sales/export
@@ -39,7 +39,7 @@ sequenceDiagram
 
 ### Presentation
 
-- `/bakery/sales`
+- `/bakery/[tab]` with the `sales` tab inside the shared analytics shell
 - `src/components/analytics/CraftBreadSales.tsx`
 
 Presentation responsibilities:

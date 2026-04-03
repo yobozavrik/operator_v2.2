@@ -4,6 +4,7 @@ import React, { useMemo } from 'react';
 import useSWR from 'swr';
 import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { CraftBreadSales } from '@/components/analytics/CraftBreadSales';
 import {
   Activity,
   AlertTriangle,
@@ -24,7 +25,7 @@ import { cn } from '@/lib/utils';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-type TabId = 'summary' | 'ranking' | 'catalog' | 'trend' | 'discount' | 'scout' | 'oos' | 'forecast' | 'order';
+type TabId = 'summary' | 'ranking' | 'catalog' | 'trend' | 'discount' | 'scout' | 'oos' | 'forecast' | 'sales' | 'order';
 
 type ForecastCell = { predicted_qty: number; oos_prob: number; actual_qty: number | null; actual_oos: boolean | null };
 type OrderSkuRow  = { sku_id: number; sku_name: string; forecast_total: number; oos_stores: number; adjusted_total: number; order_qty: number; surplus: number };
@@ -210,10 +211,8 @@ export const CraftBreadAnalytics = () => {
   };
 
   const periodQuery = `start_date=${startDate}&end_date=${endDate}`;
-  const { data: analytics, isLoading } = useSWR<AnalyticsPayload>(
-    `/api/bakery/analytics?${periodQuery}`,
-    fetcher
-  );
+  const analyticsQuery = activeTab === 'sales' ? null : `/api/bakery/analytics?${periodQuery}`;
+  const { data: analytics, isLoading } = useSWR<AnalyticsPayload>(analyticsQuery, fetcher);
 
   // OOS: окрема дата (один день)
   const oosDate = searchParams?.get('oos_date') || (() => {
@@ -347,6 +346,7 @@ export const CraftBreadAnalytics = () => {
             { id: 'scout', label: 'Розвідник', icon: Filter },
             { id: 'oos', label: 'OOS Карта', icon: AlertTriangle },
             { id: 'forecast', label: 'Прогноз', icon: TrendingUp },
+            { id: 'sales', label: 'Продажі', icon: FileSpreadsheet },
             { id: 'order', label: 'Замовлення', icon: Package },
           ].map((tab) => (
             <Link
@@ -378,7 +378,7 @@ export const CraftBreadAnalytics = () => {
               <div className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white/80 p-5 shadow-sm backdrop-blur-md">
                 <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
                   <Calendar size={14} className="text-rose-500" />
-                  Вечірній знімок залишків (21:30)
+                  Знімок залишків на кінець дня
                 </div>
                 <input
                   type="date"
@@ -390,7 +390,7 @@ export const CraftBreadAnalytics = () => {
                   <div className="ml-auto flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-50 border border-rose-100">
                     <AlertTriangle size={14} className="text-rose-500" />
                     <span className="text-[11px] font-black text-rose-600 uppercase tracking-widest">
-                      {oosData.totalOos} OOS подій
+                      {oosData.totalOos} OOS подій · snapshot {oosData.nextSnapshotDate}
                     </span>
                   </div>
                 )}
@@ -406,7 +406,7 @@ export const CraftBreadAnalytics = () => {
                 <div className="flex flex-col items-center justify-center py-24 text-slate-300">
                   <Package size={48} className="mb-4" />
                   <p className="font-bold text-lg">Знімків за цю дату ще немає</p>
-                  <p className="text-sm mt-2">Знімки робляться щодня о 21:30</p>
+                  <p className="text-sm mt-2">Для закриття дня використовується ранковий snapshot наступного дня</p>
                 </div>
               )}
 
@@ -455,6 +455,12 @@ export const CraftBreadAnalytics = () => {
               {!forecastLoading && forecastData && forecastData.skus.length > 0 && (
                 <ForecastPivotTable data={forecastData} />
               )}
+            </div>
+          )}
+
+          {activeTab === 'sales' && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-3 duration-700 ease-out">
+              <CraftBreadSales embedded />
             </div>
           )}
 
@@ -817,7 +823,7 @@ const OosPivotTable = ({ data }: { data: OosPayload }) => {
         </div>
         <div>
           <h2 className="font-display font-bold text-slate-900 uppercase tracking-widest font-[family-name:var(--font-chakra)] text-lg">
-            OOS карта — залишки на 21:30
+            OOS карта — кінець дня
           </h2>
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-mono">
             🔴 OOS (0 шт) &nbsp;·&nbsp; 🟢 В наявності

@@ -78,7 +78,11 @@ function defaultRange() {
     };
 }
 
-export const CraftBreadSales = () => {
+type CraftBreadSalesProps = {
+    embedded?: boolean;
+};
+
+export const CraftBreadSales = ({ embedded = false }: CraftBreadSalesProps) => {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -106,9 +110,17 @@ export const CraftBreadSales = () => {
     const rows = data?.rows || [];
     const oosRows = oosData?.rows || [];
 
+    const shellClassName = embedded
+        ? 'text-slate-900'
+        : 'min-h-screen bg-[radial-gradient(circle_at_top,_#f8fafc,_#eef4ff_45%,_#f8fafc)] text-slate-900';
+
+    const contentClassName = embedded
+        ? 'space-y-6'
+        : 'mx-auto max-w-[1680px] px-4 py-6 md:px-8 md:py-8 space-y-6';
+
     return (
-        <div className="min-h-screen bg-[radial-gradient(circle_at_top,_#f8fafc,_#eef4ff_45%,_#f8fafc)] text-slate-900">
-            <div className="mx-auto max-w-[1680px] px-4 py-6 md:px-8 md:py-8 space-y-6">
+        <div className={shellClassName}>
+            <div className={contentClassName}>
                 <header className="rounded-3xl border border-slate-200 bg-white/85 p-6 shadow-sm backdrop-blur-md md:p-8">
                     <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
                         <div className="space-y-4">
