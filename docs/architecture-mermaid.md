@@ -1,13 +1,15 @@
 # Архітектура системи — Mermaid-діаграми
 
 > Документ описує повну архітектуру системи управління виробництвом та дистрибуцією.
-> Актуальна дата: 2026-03-31.
+> Актуальна дата: 2026-04-03.
 
 ---
 
 ## 1. Загальна карта системи
 
 Всі модулі, їх зв'язки з Supabase-схемами та зовнішніми API.
+Для Konditerka окремо зафіксовано Poster-based fallback ranking для
+zero-demand розподілу.
 
 ```mermaid
 graph TD
@@ -49,6 +51,7 @@ graph TD
     end
 
     POSTER -->|"menu, storages, manufactures"| LIVE_STOCKS
+    POSTER -->|"spots.getSpots + dash.getProductsSales"| KONDITERKA
     POSTER -->|"direct fallback"| AUTH_GUARD
 
     SUPABASE_AUTH --> AUTH_GUARD
@@ -137,7 +140,7 @@ erDiagram
 #### Вʼюхи schema `pizza1`:
 - `v_pizza_distribution_stats_legacy` — legacy розподіл (без OOS)
 - `v_pizza_distribution_stats_oos` — OOS-логіка (avg_sales_day, min_stock)
-- `v_pizza_distribution_stats` — merge-view (перемикається через `pizza_oos_logic_flags`)
+- `v_pizza_distribution_stats` — compatibility merge-view для filtered/single-SKU callers; hot-path pizza reads реконструюють rows per SKU з `v_pizza_distribution_stats_legacy` + `v_pizza_distribution_stats_oos`
 - `v_pizza_production_only` — тільки виробничі дані
 - `v_pizza_summary_stats` — зведена статистика
 - `v_today_distribution` — поточний розподіл (доступна через public schema)
@@ -1137,4 +1140,4 @@ graph TD
 
 ---
 
-*Документ згенеровано: 2026-03-31. Версія системи: після security audit + reservation system (Phase 1).*
+*Документ згенеровано: 2026-04-03. Версія системи: після security audit + reservation system (Phase 1).*

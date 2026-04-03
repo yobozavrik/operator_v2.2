@@ -19,6 +19,9 @@
 - [**Bakery OpenAPI contract**](./docs/bakery-openapi.yaml): Swagger contract for sales, export, and OOS endpoints.
 - [**Bulvar runtime docs**](./docs/bulvar-clean-architecture.md): Mermaid flow, Clean Architecture, and owner rules for Bulvar distribution.
 - [**Bulvar OpenAPI contract**](./docs/bulvar-openapi.yaml): Swagger contract for Bulvar orders, production, and distribution endpoints.
+- [**Konditerka runtime docs**](./docs/konditerka-clean-architecture.md): Mermaid flow, Clean Architecture, and owner rules for Konditerka distribution.
+- [**Konditerka Mermaid map**](./docs/konditerka-architecture-mermaid.md): End-to-end Mermaid diagrams for the Konditerka owner flow.
+- [**Konditerka OpenAPI contract**](./docs/konditerka-openapi.yaml): Swagger contract for Konditerka orders, sync, and distribution endpoints.
 - [**Onboarding / ТЗ**](./project_overview_tz.md): Глибокий огляд для нових учасників команди.
 - [**Runbook розробника**](./docs/runbook-dev.md): Інструкції з локального запуску та вирішення типових проблем.
 

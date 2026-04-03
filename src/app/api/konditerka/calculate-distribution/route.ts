@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { requireAuth } from '@/lib/auth-guard';
 import { calculateBranchDistribution, type NormalizedDistributionRow } from '@/lib/branch-api';
 import { normalizeKonditerkaUnit } from '@/lib/konditerka-dictionary';
+import { fetchKonditerkaStoreRevenuePriorityMap } from '@/lib/konditerka-store-revenue';
 
 export const dynamic = 'force-dynamic';
 
@@ -151,6 +152,9 @@ export async function POST(request: NextRequest) {
         }
 
         const unit = normalizeKonditerkaUnit(unitRow?.unit);
+        const storePriorityByStoreId = await fetchKonditerkaStoreRevenuePriorityMap().catch(
+            () => new Map<number, number>()
+        );
 
         const storesData = ((stores || []) as Array<Record<string, unknown>>).map((s) => ({
             spot_id: toPositiveInt(s.spot_id) || toPositiveInt(s.store_id) || 0,
@@ -184,7 +188,10 @@ export async function POST(request: NextRequest) {
             bakedAtFactory: productionQuantity,
         }));
 
-        const calc = calculateBranchDistribution(allocationRows, productId, productionQuantity, { unit });
+        const calc = calculateBranchDistribution(allocationRows, productId, productionQuantity, {
+            unit,
+            storePriorityByStoreId,
+        });
 
         return NextResponse.json({
             productId,

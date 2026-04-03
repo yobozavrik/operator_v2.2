@@ -26,6 +26,7 @@ sequenceDiagram
   - `product_leftovers_map`: Product-to-leftover identity mapping.
   - `production_180d_products`: Catalog and unit whitelist for visible cards.
   - `v_konditerka_distribution_stats`: The operational baseline view combining products, spots, historical sales, and mapped stock.
+  - Poster store revenue ranking from `spots.getSpots` + `dash.getProductsSales`, used only when both sales and stock are zero.
 - **`pizza1`**: Production and stock data related to the pizza line.
 - **`public`**: Shared functions and orchestrator RPC cards.
   - `f_plan_konditerka_production_ndays`: Simulates production outcomes over $N$ days with specific capacity.
@@ -33,8 +34,9 @@ sequenceDiagram
 ## 4. Business Logic Invariants
 - **Stock Filtering**: Storage locations with names containing `Склад Кондитерка` or `цех` are excluded from retail stock totals to prevent factory inventory from masking retail shortages.
 - **Unit Conversion**: The system automatically converts grams to kilograms (and vice-versa) based on the Konditerka unit helpers in `src/lib/konditerka-dictionary.ts`.
-- **Average Sales**: Konditerka `avg_sales_day` comes from a fixed 14-day transaction window, `SUM(num) / 14.0`, with a fallback to the legacy `v_konditerka_orders.avg_sales_day` value when the 14-day aggregate is missing.
-- **Owner Read Model**: Konditerka read routes consume the Supabase view and mapping layer. If live sync fails, the UI must not fabricate stock values on the client.
+- **Average Sales**: Konditerka `avg_sales_day` comes from a fixed 14-day transaction window, `SUM(num) / 14.0`, with no legacy fallback when the window is empty.
+- **Zero-demand Allocation**: When both sales and stock are zero, distribution uses a weighted allocation based on the 14-day Poster store revenue rank, not round-robin or alphabetical order.
+- **Owner Read Model**: Konditerka read routes consume the Supabase view and mapping layer. For zero-demand fallback allocation they also consult the Poster 14-day store ranking helper. If live sync fails, the UI must not fabricate stock values on the client.
 
 
 ## 5. Pizza runtime clean architecture

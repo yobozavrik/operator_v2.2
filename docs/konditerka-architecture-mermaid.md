@@ -2,7 +2,8 @@
 
 > Source of truth for the Konditerka operational flow after leftovers mapping,
 > Kyiv-date sales windows, unit-aware quantities, pack recalculation from
-> current stock, alphabetic card ordering, and zero-stock card suppression.
+> current stock, weighted zero-demand allocation from Poster revenue rank, and
+> zero-stock card suppression.
 > Date: 2026-04-02.
 
 ## Scope
@@ -106,7 +107,20 @@ sequenceDiagram
     Note over UI,DB: Cards reappear automatically when stock becomes positive again
 ```
 
-## 3. Unit and visibility rules
+## 3. Zero-demand weighted allocation
+
+```mermaid
+flowchart LR
+    rows["Distribution rows for one product"] --> check["All rows have avg_sales_day = 0<br/>and stock_now = 0?"]
+    check -->|No| regular["Use normal demand-based allocator"]
+    check -->|Yes| poster["Load 14-day Poster store revenue rank"]
+    poster --> weight["Build linear weights by rank<br/>rank 1 = N, rank N = 1"]
+    weight --> split["Split quantity proportionally"]
+    split --> remainder["Assign remainder by largest fractional part"]
+    remainder --> result["Final store quantities"]
+```
+
+## 4. Unit and visibility rules
 
 - Weight items use two decimal places in UI and calculations.
 - Piece items remain whole numbers.
@@ -117,6 +131,8 @@ sequenceDiagram
 - The product matrix hides cards with zero total stock.
 - Product cards are sorted alphabetically in the matrix; this is a presentation
   rule only and does not change totals or visibility.
+- When sales and stock are both zero, distribution uses the Poster revenue rank
+  only for weighted fallback allocation. It does not affect the matrix sort.
 - The card becomes visible again when the same catalog item receives a positive stock value.
 - Pack labels in the Konditerka drawer are recomputed from the current in-memory
   stock after the live leftovers overlay, so they stay aligned with the visible
@@ -124,7 +140,7 @@ sequenceDiagram
 - Konditerka distribution does not emit a warehouse residual row; the full
   produced pool is allocated to stores and any remaining quantity is a bug.
 
-## 4. Operational owner chain
+## 5. Operational owner chain
 
 `Poster API -> edge sync -> Supabase raw tables -> mapping -> views -> ERP UI`
 

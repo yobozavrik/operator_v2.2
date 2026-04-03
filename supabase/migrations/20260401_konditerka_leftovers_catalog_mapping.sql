@@ -222,9 +222,9 @@ CREATE OR REPLACE VIEW konditerka1.v_konditerka_production_only AS
   GROUP BY mi.product_id, mi.product_name;
 
 GRANT SELECT ON TABLE konditerka1.product_leftovers_map TO anon, authenticated, service_role;
-GRANT SELECT ON VIEW konditerka1.v_konditerka_orders TO anon, authenticated, service_role;
-GRANT SELECT ON VIEW konditerka1.v_konditerka_distribution_stats TO anon, authenticated, service_role;
-GRANT SELECT ON VIEW konditerka1.v_konditerka_production_only TO anon, authenticated, service_role;
+GRANT SELECT ON TABLE konditerka1.v_konditerka_orders TO anon, authenticated, service_role;
+GRANT SELECT ON TABLE konditerka1.v_konditerka_distribution_stats TO anon, authenticated, service_role;
+GRANT SELECT ON TABLE konditerka1.v_konditerka_production_only TO anon, authenticated, service_role;
 GRANT EXECUTE ON FUNCTION konditerka1.refresh_konditerka_product_leftovers_map() TO authenticated, service_role;
 
 COMMIT;

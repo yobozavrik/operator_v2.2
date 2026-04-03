@@ -5,6 +5,9 @@ info:
   description: >
     OpenAPI contract for the Konditerka operational surface. The owner chain is
     Poster API -> edge sync -> Supabase raw tables -> mapping -> views -> ERP UI.
+    When a product has zero sales and zero stock across stores, distribution
+    uses a Poster 14-day store revenue rank with descending linear weights and
+    largest remainder allocation.
 servers:
   - url: /
     description: Current application host
@@ -62,6 +65,10 @@ paths:
     post:
       tags: [Konditerka]
       summary: Calculate a unit-aware distribution plan for one product
+      description: >
+        Calculates the owner-layer distribution for a single product. In the
+        zero-sales / zero-stock case it applies the Poster 14-day weighted
+        fallback rank instead of alphabetical ordering.
       requestBody:
         required: true
         content:
@@ -105,7 +112,9 @@ paths:
       description: >
         Rebuilds the daily distribution result set by allocating the full
         production pool to stores only. Konditerka does not emit a warehouse
-        residual row in this path.
+        residual row in this path. If all stores have zero sales and zero stock
+        for a product, the allocator uses Poster revenue weights for the store
+        order and proportional split.
       responses:
         '200':
           description: Distribution run result

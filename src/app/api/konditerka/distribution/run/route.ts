@@ -11,6 +11,7 @@ import {
 import { fetchKonditerkaProductUnitMap } from '@/lib/konditerka-product-units';
 import { normalizeKonditerkaUnit } from '@/lib/konditerka-dictionary';
 import { fetchKonditerkaTodayProduction } from '@/lib/konditerka-production-source';
+import { fetchKonditerkaStoreRevenuePriorityMap } from '@/lib/konditerka-store-revenue';
 
 export const dynamic = 'force-dynamic';
 
@@ -83,6 +84,9 @@ async function runLiveFallbackDistribution(supabaseAdmin: SupabaseClient) {
         fetchKonditerkaTodayProduction(serviceClient),
     ]);
     const rowsWithUnits = await attachKonditerkaUnits(rows);
+    const storePriorityByStoreId = await fetchKonditerkaStoreRevenuePriorityMap().catch(
+        () => new Map<number, number>()
+    );
     const unitByProductId = new Map<number, string>();
     rowsWithUnits.forEach((row) => {
         if (!unitByProductId.has(row.productId)) {
@@ -117,7 +121,10 @@ async function runLiveFallbackDistribution(supabaseAdmin: SupabaseClient) {
         if (qty <= 0) continue;
 
         const unit = unitByProductId.get(item.product_id) || normalizeKonditerkaUnit(undefined, item.product_name);
-        const calc = calculateBranchDistribution(rowsWithUnits, item.product_id, qty, { unit });
+        const calc = calculateBranchDistribution(rowsWithUnits, item.product_id, qty, {
+            unit,
+            storePriorityByStoreId,
+        });
         const productName = productNameById.get(item.product_id) || item.product_name || `Product ${item.product_id}`;
 
         Object.entries(calc.distributed).forEach(([storeIdRaw, shipQtyRaw]) => {

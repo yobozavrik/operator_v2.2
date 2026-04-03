@@ -82,10 +82,11 @@ Core domain rules:
   and `categories.transaction_items` as `SUM(num) / 14.0`, using the
   `Europe/Kyiv` business date as the window boundary, then rounded in the view
   layer
-- if the 14-day sales aggregate is missing, the read model falls back to the
-  legacy `v_konditerka_orders.avg_sales_day` value for the same product/store
-- Konditerka does not use the Pizza-style OOS-aware `available_days_14d`
-  formula at the moment
+- when the 14-day sales aggregate is missing, the operational read model keeps
+  `avg_sales_day = 0` and `min_stock = 0`; it does not rehydrate legacy demand
+- the zero-sales / zero-stock fallback distribution rule uses a Poster-based
+  14-day store revenue rank from `spots.getSpots` + `dash.getProductsSales`,
+  then allocates quantity with descending linear weights and largest remainder
 - packaging estimates are computed from kg-normalized values for weight items,
   not from the raw SQL display units
 - when live leftovers are overlaid into the presentation model, the UI
@@ -122,7 +123,7 @@ Infrastructure does not decide visibility rules or quantity formatting.
 | `/api/konditerka/update-stock` | `poster-live-stocks`, `leftovers`, `product_leftovers_map`, `v_konditerka_production_only` | Refreshes raw snapshots and recalculates views |
 | `/api/konditerka/calculate-distribution` | `v_konditerka_distribution_stats` + `production_180d_products` | Unit-aware branch distribution |
 | `/api/konditerka/production-detail` | `v_konditerka_production_only` | Production fact view |
-| `/api/konditerka/distribution/run` | `v_konditerka_distribution_stats` + `v_konditerka_production_only` + `distribution_results` | Rebuilds the daily distribution result set and allocates the full pool to stores only |
+| `/api/konditerka/distribution/run` | `v_konditerka_distribution_stats` + `v_konditerka_production_only` + Poster 14-day store ranking + `distribution_results` | Rebuilds the daily distribution result set and allocates the full pool to stores only |
 | `/api/konditerka/distribution/results` | `distribution_results` + `v_konditerka_distribution_stats` | Delivery and Excel-facing read model |
 | `/api/konditerka/summary` | `v_konditerka_summary_stats` | KPI header read |
 
