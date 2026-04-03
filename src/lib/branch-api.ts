@@ -31,11 +31,17 @@ export interface NormalizedDistributionRow {
     productName: string;
     storeId: number;
     storeName: string;
+    unit?: string;
     stockNow: number;
     minStock: number;
     avgSalesDay: number;
     needNet: number;
     bakedAtFactory: number;
+}
+
+export interface BranchDistributionOptions {
+    unit?: string;
+    quantityScale?: number;
 }
 
 function safeNumber(value: unknown): number {
@@ -51,6 +57,33 @@ function safeNumber(value: unknown): number {
 function safeInteger(value: unknown): number {
     const parsed = Math.trunc(safeNumber(value));
     return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function normalizeUnit(unit?: string): string {
+    return String(unit || '').trim().toLowerCase();
+}
+
+function isKgUnit(unit?: string): boolean {
+    const normalized = normalizeUnit(unit);
+    return normalized === 'kg' || normalized === 'кг';
+}
+
+function getQuantityScale(unit?: string, overrideScale?: number): number {
+    if (Number.isFinite(overrideScale) && Number(overrideScale) > 0) {
+        return Math.max(1, Math.trunc(Number(overrideScale)));
+    }
+    return isKgUnit(unit) ? 100 : 1;
+}
+
+function toScaledUnits(value: unknown, scale: number): number {
+    const numeric = Math.max(0, safeNumber(value));
+    return Math.max(0, Math.round(numeric * scale));
+}
+
+function fromScaledUnits(value: number, scale: number): number {
+    const safe = Math.max(0, Math.round(value));
+    if (scale <= 1) return safe;
+    return Number((safe / scale).toFixed(2));
 }
 
 function getStoreName(row: RawRow): string {
@@ -111,6 +144,7 @@ function normalizeDistributionRows(rows: RawRow[]): NormalizedDistributionRow[] 
                 productName,
                 storeId,
                 storeName,
+                unit: typeof row.unit === 'string' && row.unit.trim() ? row.unit.trim() : undefined,
                 stockNow: Math.max(0, safeNumber(row.stock_now ?? row.current_stock)),
                 minStock: Math.max(0, safeNumber(row.min_stock ?? row.norm_3_days)),
                 avgSalesDay: Math.max(0, safeNumber(row.avg_sales_day ?? row.avg_sales)),
@@ -118,7 +152,7 @@ function normalizeDistributionRows(rows: RawRow[]): NormalizedDistributionRow[] 
                 bakedAtFactory: safeNumber(row.baked_at_factory),
             } satisfies NormalizedDistributionRow;
         })
-        .filter((row): row is NormalizedDistributionRow => row !== null);
+        .filter((row) => row !== null) as NormalizedDistributionRow[];
 }
 
 export function createServiceRoleClient(): SupabaseClient {
@@ -252,35 +286,37 @@ export function buildBranchAnalytics(rows: NormalizedDistributionRow[], topNameK
 export function calculateBranchDistribution(
     rows: NormalizedDistributionRow[],
     productId: number,
-    productionQuantity: number
+    productionQuantity: number,
+    options: BranchDistributionOptions = {}
 ) {
     const productRows = rows.filter((row) => row.productId === productId);
-    const initialQuantity = Math.max(0, Math.floor(productionQuantity));
+    const quantityScale = getQuantityScale(options.unit || productRows[0]?.unit, options.quantityScale);
+    const initialQuantity = toScaledUnits(productionQuantity, quantityScale);
 
     if (productRows.length === 0 || initialQuantity <= 0) {
         return {
             productId,
-            originalQuantity: initialQuantity,
+            originalQuantity: fromScaledUnits(initialQuantity, quantityScale),
             distributed: {} as Record<number, number>,
-            remaining: initialQuantity,
+            remaining: fromScaledUnits(initialQuantity, quantityScale),
         };
     }
 
-    const distribution: Record<number, number> = {};
+    const distributionMinor: Record<number, number> = {};
     for (const row of productRows) {
-        distribution[row.storeId] = 0;
+        distributionMinor[row.storeId] = 0;
     }
 
     let remaining = initialQuantity;
 
     // Step 1: each zero-stock store receives one unit first.
     const zeroStockRows = productRows
-        .filter((row) => row.stockNow <= 0)
+        .filter((row) => toScaledUnits(row.stockNow, quantityScale) <= 0)
         .sort((a, b) => b.needNet - a.needNet);
 
     for (const row of zeroStockRows) {
         if (remaining <= 0) break;
-        distribution[row.storeId] += 1;
+        distributionMinor[row.storeId] += 1;
         remaining -= 1;
     }
 
@@ -288,8 +324,8 @@ export function calculateBranchDistribution(
     if (remaining > 0) {
         const needs = productRows
             .map((row) => {
-                const effectiveStock = row.stockNow + (distribution[row.storeId] || 0);
-                const need = Math.max(0, row.minStock - effectiveStock);
+                const effectiveStock = toScaledUnits(row.stockNow, quantityScale) + (distributionMinor[row.storeId] || 0);
+                const need = Math.max(0, toScaledUnits(row.minStock, quantityScale) - effectiveStock);
                 return { storeId: row.storeId, need };
             })
             .filter((item) => item.need > 0);
@@ -298,9 +334,8 @@ export function calculateBranchDistribution(
         if (totalNeed > 0) {
             if (remaining >= totalNeed) {
                 for (const item of needs) {
-                    const qty = Math.floor(item.need);
-                    distribution[item.storeId] += qty;
-                    remaining -= qty;
+                    distributionMinor[item.storeId] += item.need;
+                    remaining -= item.need;
                 }
             } else {
                 const allocations = needs.map((item) => {
@@ -315,7 +350,7 @@ export function calculateBranchDistribution(
 
                 for (const allocation of allocations) {
                     if (allocation.base > 0) {
-                        distribution[allocation.storeId] += allocation.base;
+                        distributionMinor[allocation.storeId] += allocation.base;
                         remaining -= allocation.base;
                     }
                 }
@@ -323,7 +358,7 @@ export function calculateBranchDistribution(
                 allocations.sort((a, b) => b.fraction - a.fraction);
                 for (const allocation of allocations) {
                     if (remaining <= 0) break;
-                    distribution[allocation.storeId] += 1;
+                    distributionMinor[allocation.storeId] += 1;
                     remaining -= 1;
                 }
             }
@@ -340,16 +375,23 @@ export function calculateBranchDistribution(
         while (remaining > 0 && priority.length > 0) {
             for (const row of priority) {
                 if (remaining <= 0) break;
-                distribution[row.storeId] += 1;
+                distributionMinor[row.storeId] += 1;
                 remaining -= 1;
             }
         }
     }
 
+    const distribution: Record<number, number> = {};
+    for (const [storeIdRaw, quantityMinor] of Object.entries(distributionMinor)) {
+        const storeId = Number(storeIdRaw);
+        if (!Number.isFinite(storeId) || storeId <= 0) continue;
+        distribution[storeId] = fromScaledUnits(quantityMinor, quantityScale);
+    }
+
     return {
         productId,
-        originalQuantity: initialQuantity,
+        originalQuantity: fromScaledUnits(initialQuantity, quantityScale),
         distributed: distribution,
-        remaining,
+        remaining: fromScaledUnits(remaining, quantityScale),
     };
 }

@@ -8,6 +8,8 @@ import {
     createServiceRoleClient,
     type NormalizedDistributionRow,
 } from '@/lib/branch-api';
+import { fetchKonditerkaProductUnitMap } from '@/lib/konditerka-product-units';
+import { normalizeKonditerkaUnit } from '@/lib/konditerka-dictionary';
 import { fetchKonditerkaTodayProduction } from '@/lib/konditerka-production-source';
 
 export const dynamic = 'force-dynamic';
@@ -61,19 +63,42 @@ async function loadKonditerkaDistributionRows(
         .filter((row): row is NormalizedDistributionRow => row !== null);
 }
 
+async function attachKonditerkaUnits(rows: NormalizedDistributionRow[]) {
+    const supabase = createServiceRoleClient();
+    const unitMap = await fetchKonditerkaProductUnitMap(
+        supabase,
+        rows.map((row) => row.productId)
+    ).catch(() => new Map());
+
+    return rows.map((row) => ({
+        ...row,
+        unit: unitMap.get(row.productId) || normalizeKonditerkaUnit(undefined, row.productName),
+    }));
+}
+
 async function runLiveFallbackDistribution(supabaseAdmin: SupabaseClient) {
     const serviceClient = createServiceRoleClient();
     const [rows, liveProduction] = await Promise.all([
         loadKonditerkaDistributionRows(serviceClient),
         fetchKonditerkaTodayProduction(serviceClient),
     ]);
+    const rowsWithUnits = await attachKonditerkaUnits(rows);
+    const unitByProductId = new Map<number, string>();
+    rowsWithUnits.forEach((row) => {
+        if (!unitByProductId.has(row.productId)) {
+            unitByProductId.set(
+                row.productId,
+                String(row.unit || '').trim() || normalizeKonditerkaUnit(undefined, row.productName)
+            );
+        }
+    });
 
     const businessDate = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Kyiv' }).format(new Date());
     const batchId = crypto.randomUUID();
     const productNameById = new Map<number, string>();
     const storeNameById = new Map<number, string>();
 
-    rows.forEach((row) => {
+    rowsWithUnits.forEach((row) => {
         productNameById.set(row.productId, row.productName);
         storeNameById.set(row.storeId, row.storeName);
     });
@@ -88,14 +113,15 @@ async function runLiveFallbackDistribution(supabaseAdmin: SupabaseClient) {
     }> = [];
 
     for (const item of liveProduction) {
-        const qty = toPositiveInt(item.baked_at_factory);
+        const qty = Math.max(0, Number(item.baked_at_factory));
         if (qty <= 0) continue;
 
-        const calc = calculateBranchDistribution(rows, item.product_id, qty);
+        const unit = unitByProductId.get(item.product_id) || normalizeKonditerkaUnit(undefined, item.product_name);
+        const calc = calculateBranchDistribution(rowsWithUnits, item.product_id, qty, { unit });
         const productName = productNameById.get(item.product_id) || item.product_name || `Product ${item.product_id}`;
 
         Object.entries(calc.distributed).forEach(([storeIdRaw, shipQtyRaw]) => {
-            const shipQty = toPositiveInt(shipQtyRaw);
+            const shipQty = Math.max(0, Number(shipQtyRaw));
             if (shipQty <= 0) return;
 
             const storeId = Number(storeIdRaw);
@@ -110,14 +136,9 @@ async function runLiveFallbackDistribution(supabaseAdmin: SupabaseClient) {
         });
 
         if (calc.remaining > 0) {
-            insertRows.push({
-                product_name: productName,
-                spot_name: 'Остаток на складе',
-                quantity_to_ship: toPositiveInt(calc.remaining),
-                calculation_batch_id: batchId,
-                business_date: businessDate,
-                delivery_status: 'delivered',
-            });
+            throw new Error(
+                `Bug: full pool was not allocated for product ${item.product_id} (${productName}); remaining=${calc.remaining}`
+            );
         }
     }
 

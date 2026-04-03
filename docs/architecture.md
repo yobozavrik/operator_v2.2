@@ -56,14 +56,7 @@ The pizza domain now uses a documented owner-source split:
 - `/pizza` initial load invariant: render the shell first, then fill KPI and
   matrix data from `/api/pizza/orders`
 
-## 7. Poster2 Integration Foundation
-The second Poster account integration is documented as a separate ingest contour in:
-- [Poster2 Ingest Overview](./poster2-ingest/README.md)
-- [Poster2 Clean Architecture](./poster2-ingest/clean-architecture.md)
-- [Poster2 Operations](./poster2-ingest/operations.md)
-- [Poster2 OpenAPI Contract](./poster2-ingest/openapi.yaml)
-
-## 8. Konditerka runtime docs
+## 7. Konditerka runtime docs
 Konditerka now has a dedicated documentation set for the current owner flow:
 
 - Mermaid runtime map: [Konditerka Runtime Architecture - Mermaid](./konditerka-architecture-mermaid.md)
@@ -81,9 +74,8 @@ Current Konditerka owner rules:
 - the product matrix hides cards with zero total stock
 - a card reappears automatically when the mapped stock becomes positive
 - weight items are rendered to two decimal places, piece items as integers
-- the top `Факт залишок` KPI shows the combined total with a separate `Морозиво` subtotal
 
-## 9. Bakery runtime docs
+## 8. Bakery runtime docs
 
 The bakery surface now has a dedicated documentation set for craft bread
 sales, closing OOS, and XLSX export:
@@ -101,20 +93,3 @@ Current bakery owner rules:
   spots and must not appear in the store pivot
 - Excel export must reuse the same sales loader as the UI, otherwise the
   workbook and the screen can drift
-
-## 10. Bulvar runtime docs
-
-Bulvar has the same documentation split for its owner-layer flow:
-
-- Mermaid runtime map: [Bulvar Runtime Architecture - Mermaid](./bulvar-architecture-mermaid.md)
-- Clean Architecture: [Bulvar Clean Architecture](./bulvar-clean-architecture.md)
-- OpenAPI / Swagger contract: [Bulvar Operational API](./bulvar-openapi.yaml)
-
-Current Bulvar owner rules:
-
-- `v_bulvar_distribution_stats_x3` is the canonical operational read model
-- `distribution_results` is the persisted output of the daily run
-- `POST /api/bulvar/update-stock` refreshes the upstream snapshot
-- `POST /api/bulvar/distribution/run` only orchestrates sync + owner RPC
-- the product grid hides zero-stock cards
-- `orders`, `summary`, and `production-detail` are read-only surfaces

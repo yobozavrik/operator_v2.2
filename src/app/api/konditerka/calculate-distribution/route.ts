@@ -1,6 +1,8 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { requireAuth } from '@/lib/auth-guard';
+import { calculateBranchDistribution, type NormalizedDistributionRow } from '@/lib/branch-api';
+import { normalizeKonditerkaUnit } from '@/lib/konditerka-dictionary';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,6 +18,7 @@ interface RuntimeStoreRow {
     norm_3_days: number;
     need_net: number;
     priority: number;
+    unit?: string;
 }
 
 function toNumber(value: unknown): number {
@@ -109,7 +112,7 @@ async function buildFallbackStoresForNewProduct(productId: number): Promise<Runt
 
 /**
  * POST /api/konditerka/calculate-distribution
- * Calculates distribution plan based on 4-stage algorithm
+ * Calculates distribution plan based on shared Konditerka allocator.
  */
 export async function POST(request: NextRequest) {
     const auth = await requireAuth();
@@ -136,6 +139,19 @@ export async function POST(request: NextRequest) {
             throw new Error(error.message || 'Failed to fetch distribution stats');
         }
 
+        const { data: unitRow, error: unitError } = await supabase
+            .schema('konditerka1')
+            .from('production_180d_products')
+            .select('unit')
+            .eq('product_id', productId)
+            .maybeSingle();
+
+        if (unitError) {
+            throw new Error(`Failed to fetch product unit: ${unitError.message}`);
+        }
+
+        const unit = normalizeKonditerkaUnit(unitRow?.unit);
+
         const storesData = ((stores || []) as Array<Record<string, unknown>>).map((s) => ({
             spot_id: toPositiveInt(s.spot_id) || toPositiveInt(s.store_id) || 0,
             spot_name: String(s.spot_name || s.store_name || '').trim(),
@@ -143,92 +159,39 @@ export async function POST(request: NextRequest) {
             norm_3_days: Math.max(0, toNumber(s.norm_3_days ?? s.min_stock ?? 0)),
             need_net: Math.max(0, toNumber(s.need_net ?? s.net_need ?? 0)),
             priority: Math.max(1, Math.trunc(toNumber(s.priority ?? s.surplus_priority ?? 999))),
+            unit,
         })) as RuntimeStoreRow[];
 
         let runtimeStores = storesData.filter((s) => s.spot_id > 0);
+        let usedFallback = false;
 
         if (runtimeStores.length === 0) {
             runtimeStores = await buildFallbackStoresForNewProduct(productId);
+            runtimeStores = runtimeStores.map((row) => ({ ...row, unit }));
+            usedFallback = true;
         }
 
-        const result: Record<number, number> = {};
-        let remaining = productionQuantity;
+        const allocationRows: NormalizedDistributionRow[] = runtimeStores.map((store) => ({
+            productId,
+            productName: String((stores as Array<Record<string, unknown>>)[0]?.product_name || `Product ${productId}`),
+            storeId: store.spot_id,
+            storeName: store.spot_name,
+            unit,
+            stockNow: store.stock_now,
+            minStock: store.norm_3_days,
+            avgSalesDay: 0,
+            needNet: store.need_net,
+            bakedAtFactory: productionQuantity,
+        }));
 
-        runtimeStores.forEach((s) => {
-            if (s.spot_id > 0) result[s.spot_id] = 0;
-        });
-
-        const zeroStockStores = runtimeStores.filter((s) => s.stock_now === 0);
-        for (const store of zeroStockStores) {
-            if (remaining <= 0) break;
-            result[store.spot_id] += 1;
-            remaining -= 1;
-        }
-
-        if (remaining > 0) {
-            let totalNetNeed = 0;
-            const storeNeeds: { storeId: number; need: number }[] = [];
-
-            runtimeStores.forEach((s) => {
-                const distributedSoFar = result[s.spot_id] || 0;
-                const effectiveStock = s.stock_now + distributedSoFar;
-                const need = Math.max(0, s.norm_3_days - effectiveStock);
-
-                if (need > 0) {
-                    storeNeeds.push({ storeId: s.spot_id, need });
-                    totalNetNeed += need;
-                }
-            });
-
-            if (totalNetNeed > 0) {
-                if (remaining < totalNetNeed) {
-                    const K = remaining / totalNetNeed;
-                    for (const item of storeNeeds) {
-                        const qty = Math.floor(item.need * K);
-                        if (qty > 0 && remaining >= qty) {
-                            result[item.storeId] += qty;
-                            remaining -= qty;
-                        }
-                    }
-                } else {
-                    for (const item of storeNeeds) {
-                        if (remaining >= item.need) {
-                            result[item.storeId] += item.need;
-                            remaining -= item.need;
-                        } else {
-                            result[item.storeId] += remaining;
-                            remaining = 0;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-
-        if (remaining > 0) {
-            const sortedByPriority = [...runtimeStores].sort((a, b) => {
-                if (a.priority !== b.priority) return a.priority - b.priority;
-                return a.spot_name.localeCompare(b.spot_name);
-            });
-
-            while (remaining > 0) {
-                let distributedInLoop = false;
-                for (const store of sortedByPriority) {
-                    if (remaining <= 0) break;
-                    result[store.spot_id] += 1;
-                    remaining -= 1;
-                    distributedInLoop = true;
-                }
-                if (!distributedInLoop) break;
-            }
-        }
+        const calc = calculateBranchDistribution(allocationRows, productId, productionQuantity, { unit });
 
         return NextResponse.json({
             productId,
-            originalQuantity: productionQuantity,
-            distributed: result,
-            remaining,
-            usedFallback: storesData.length === 0,
+            originalQuantity: calc.originalQuantity,
+            distributed: calc.distributed,
+            remaining: calc.remaining,
+            usedFallback,
         });
     } catch (error) {
         console.error('[Calculate Distribution] Error:', error);
