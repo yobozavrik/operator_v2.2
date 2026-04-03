@@ -20,14 +20,10 @@ export async function GET(request: Request) {
 
     try {
         const { searchParams } = new URL(request.url);
-        const dateParam = searchParams.get('date');
         const startDateParam = searchParams.get('start_date');
         const endDateParam = searchParams.get('end_date');
         const days = coercePositiveInt(searchParams.get('days'), 14, 1, 365);
 
-        if (dateParam && !DATE_RE.test(dateParam)) {
-            return NextResponse.json({ error: 'Invalid date format, expected YYYY-MM-DD' }, { status: 400 });
-        }
         if (startDateParam && !DATE_RE.test(startDateParam)) {
             return NextResponse.json({ error: 'Invalid start_date format, expected YYYY-MM-DD' }, { status: 400 });
         }
@@ -38,10 +34,7 @@ export async function GET(request: Request) {
         let startDate: string;
         let endDate: string;
 
-        if (dateParam) {
-            startDate = dateParam;
-            endDate = dateParam;
-        } else if (startDateParam && endDateParam) {
+        if (startDateParam && endDateParam) {
             startDate = startDateParam;
             endDate = endDateParam;
         } else {
