@@ -20,6 +20,10 @@ export interface BranchProductionSyncResult {
     warning?: string;
 }
 
+interface BranchProductionSyncOptions {
+    categoryKeywords?: string[] | null;
+}
+
 function toPositiveNumber(value: unknown): number {
     const parsed = Number(value);
     if (!Number.isFinite(parsed) || parsed <= 0) return 0;
@@ -184,11 +188,12 @@ async function upsertBranchCatalogFromLiveProduction(
 export async function syncBranchProductionFromPoster(
     supabase: SupabaseClient,
     schema: BranchSchema,
-    storageId: number
+    storageId: number,
+    options: BranchProductionSyncOptions = {}
 ): Promise<BranchProductionSyncResult> {
     const businessDate = getKyivBusinessDate();
     const rawRows = (await getTodayManufactures({
-        categoryKeywords: null,
+        categoryKeywords: options.categoryKeywords ?? null,
         storageId,
     })) as Array<Record<string, unknown>>;
     const items = aggregatePosterProductionRows(rawRows);

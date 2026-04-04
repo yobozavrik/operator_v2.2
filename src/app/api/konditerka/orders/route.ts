@@ -4,7 +4,10 @@ import { requireAuth } from '@/lib/auth-guard';
 import { Logger } from '@/lib/logger';
 import { syncBranchProductionFromPoster } from '@/lib/branch-production-sync';
 import { normalizeKonditerkaUnit } from '@/lib/konditerka-dictionary';
-import { syncKonditerkaCatalogFromPoster } from '@/lib/konditerka-catalog';
+import {
+    KONDITERKA_CATEGORY_KEYWORDS,
+    syncKonditerkaCatalogFromPoster,
+} from '@/lib/konditerka-catalog';
 import {
     applyKonditerkaPackagingConfigToRows,
     fetchKonditerkaPackagingConfig,
@@ -47,7 +50,9 @@ export async function GET() {
             return [];
         });
 
-        await syncBranchProductionFromPoster(supabase, 'konditerka1', 48).catch((error) => {
+        await syncBranchProductionFromPoster(supabase, 'konditerka1', 48, {
+            categoryKeywords: [...KONDITERKA_CATEGORY_KEYWORDS],
+        }).catch((error) => {
             Logger.error('[konditerka Orders API] live production sync failed', { error: String(error) });
             return null;
         });

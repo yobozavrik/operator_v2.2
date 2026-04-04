@@ -3,7 +3,7 @@ import { parseISO, format } from 'date-fns';
 import { uk } from 'date-fns/locale';
 import { requireAuth } from '@/lib/auth-guard';
 import { getAllLeftovers } from '@/lib/poster-api';
-import { getBulvarUnit } from '@/lib/bulvar-dictionary';
+import { syncBulvarCatalogFromPoster } from '@/lib/bulvar-catalog';
 import { createClient } from '@/utils/supabase/server';
 import {
     BRANCH_CONFIGS,
@@ -20,7 +20,7 @@ export const dynamic = 'force-dynamic';
 
 const config = BRANCH_CONFIGS.bulvar;
 const BULVAR_DISTRIBUTION_SELECT =
-    'product_id, product_name, spot_name, spot_id, stock_now, min_stock, avg_sales_day, need_net';
+    'product_id, product_name, spot_name, spot_id, stock_now, min_stock, avg_sales_day, need_net, unit';
 
 function getRoutePath(request: Request): string {
     const pathname = new URL(request.url).pathname;
@@ -85,12 +85,7 @@ async function handleOrderPlan(request: Request) {
         config,
         BULVAR_DISTRIBUTION_SELECT
     );
-    const plan = buildBranchOrderPlan(rawRows as any[], days).map((item) => ({
-        ...item,
-        unit: getBulvarUnit(item.p_name),
-    }));
-
-    return NextResponse.json(plan);
+    return NextResponse.json(buildBranchOrderPlan(rawRows as any[], days));
 }
 
 async function handleCalculateDistribution(request: Request) {
@@ -149,6 +144,7 @@ async function handleCreateOrder(request: Request) {
 
 async function handleUpdateStock() {
     const supabase = createServiceRoleClient();
+    await syncBulvarCatalogFromPoster(supabase);
     const [allLeftovers, productionSync] = await Promise.all([
         getAllLeftovers({ categoryKeywords: null }),
         syncBranchProductionFromPoster(supabase, 'bulvar1', 22),

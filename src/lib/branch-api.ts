@@ -70,6 +70,14 @@ function isKgUnit(unit?: string): boolean {
     return normalized === 'kg' || normalized === 'кг';
 }
 
+function normalizeDisplayUnit(unit?: unknown): 'шт' | 'кг' | undefined {
+    const normalized = String(unit || '').trim().toLowerCase();
+    if (!normalized) return undefined;
+    if (normalized === 'kg' || normalized === 'кг') return 'кг';
+    if (normalized === 'шт' || normalized === 'pcs' || normalized === 'piece') return 'шт';
+    return undefined;
+}
+
 function getQuantityScale(unit?: string, overrideScale?: number): number {
     if (Number.isFinite(overrideScale) && Number(overrideScale) > 0) {
         return Math.max(1, Math.trunc(Number(overrideScale)));
@@ -220,7 +228,7 @@ function normalizeDistributionRows(rows: RawRow[]): NormalizedDistributionRow[] 
                 productName,
                 storeId,
                 storeName,
-                unit: typeof row.unit === 'string' && row.unit.trim() ? row.unit.trim() : undefined,
+                unit: normalizeDisplayUnit(row.unit),
                 stockNow: Math.max(0, safeNumber(row.stock_now ?? row.current_stock)),
                 minStock: Math.max(0, safeNumber(row.min_stock ?? row.norm_3_days)),
                 avgSalesDay: Math.max(0, safeNumber(row.avg_sales_day ?? row.avg_sales)),
@@ -270,15 +278,16 @@ export function coercePositiveInt(raw: string | null, fallback: number, min = 1,
 }
 
 export function buildBranchOrderPlan(rows: NormalizedDistributionRow[], days: number) {
-    const grouped = new Map<string, { stock: number; min: number; avg: number; need: number }>();
+    const grouped = new Map<string, { stock: number; min: number; avg: number; need: number; unit?: 'шт' | 'кг' }>();
 
     for (const row of rows) {
         const key = row.productName;
-        const current = grouped.get(key) ?? { stock: 0, min: 0, avg: 0, need: 0 };
+        const current = grouped.get(key) ?? { stock: 0, min: 0, avg: 0, need: 0, unit: normalizeDisplayUnit(row.unit) };
         current.stock += row.stockNow;
         current.min += row.minStock;
         current.avg += row.avgSalesDay;
         current.need += row.needNet;
+        current.unit = current.unit || normalizeDisplayUnit(row.unit);
         grouped.set(key, current);
     }
 
@@ -289,6 +298,7 @@ export function buildBranchOrderPlan(rows: NormalizedDistributionRow[], days: nu
         p_order: number;
         p_min: number;
         p_avg: number;
+        unit: 'шт' | 'кг';
     }> = [];
 
     const products = Array.from(grouped.entries()).sort((a, b) => a[0].localeCompare(b[0]));
@@ -302,6 +312,7 @@ export function buildBranchOrderPlan(rows: NormalizedDistributionRow[], days: nu
                 p_order: plannedOrder,
                 p_min: Math.round(metrics.min),
                 p_avg: Number(metrics.avg.toFixed(2)),
+                unit: metrics.unit || 'шт',
             });
         }
     }

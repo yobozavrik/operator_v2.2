@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { syncBranchProductionFromPoster } from '@/lib/branch-production-sync';
+import { KONDITERKA_CATEGORY_KEYWORDS } from '@/lib/konditerka-catalog';
 
 export interface KonditerkaProductionRow {
     product_id: number;
@@ -31,7 +32,8 @@ export async function fetchKonditerkaTodayProduction(
     const sync = await syncBranchProductionFromPoster(
         supabase,
         'konditerka1',
-        KONDITERKA_WORKSHOP_STORAGE_ID
+        KONDITERKA_WORKSHOP_STORAGE_ID,
+        { categoryKeywords: [...KONDITERKA_CATEGORY_KEYWORDS] }
     );
 
     if (sync.businessDate !== businessDate) {

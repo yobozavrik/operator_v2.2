@@ -1,9 +1,14 @@
 import { createServiceRoleClient, fetchBranchRows, type NormalizedDistributionRow } from '@/lib/branch-api';
-import { getBulvarUnit } from '@/lib/bulvar-dictionary';
 
 export type BulvarDistributionRow = NormalizedDistributionRow & {
     unit?: string;
 };
+
+function normalizeBulvarUnit(unit?: unknown): 'шт' | 'кг' {
+    const normalized = String(unit || '').trim().toLowerCase();
+    if (normalized === 'kg' || normalized === 'кг') return 'кг';
+    return 'шт';
+}
 
 export async function readBulvarDistributionRows(): Promise<BulvarDistributionRow[]> {
     const supabase = createServiceRoleClient();
@@ -32,6 +37,6 @@ export function toBulvarOrderRows(rows: BulvarDistributionRow[]) {
         avg_sales_day: row.avgSalesDay,
         need_net: row.needNet,
         baked_at_factory: row.bakedAtFactory,
-        unit: getBulvarUnit(row.productName),
+        unit: normalizeBulvarUnit(row.unit),
     }));
 }

@@ -412,15 +412,15 @@ export const BulvarPowerMatrix = ({ data, onRefresh, initialViewMode = 'products
         <div className="flex flex-col h-full w-full font-sans text-text-primary bg-bg-primary min-h-screen">
 
             {/* HEADER TOGGLE */}
-            <div className="px-6 py-4 flex items-center justify-start border-b border-white/5 z-10 sticky top-0 bg-[#0A1931]/80 backdrop-blur-md transition-colors duration-300 mt-2">
-                <div className="flex items-center gap-2 p-1 bg-[#112240]/60 rounded-xl border border-[#1A3D63]">
+            <div className="px-6 py-4 flex items-center justify-start border-b border-slate-200 z-10 sticky top-0 bg-white/80 backdrop-blur-md transition-colors duration-300 mt-2">
+                <div className="flex items-center gap-2 p-1 bg-slate-100 rounded-xl border border-slate-200">
                     <button
                         onClick={() => setViewMode('products')}
                         className={cn(
                             "px-4 py-2 rounded-lg text-sm font-medium transition-all focus:outline-none uppercase font-[family-name:var(--font-chakra)]",
                             viewMode === 'products'
-                                ? "bg-[#00E0FF]/20 text-[#00E0FF] shadow-[0_0_15px_rgba(0,224,255,0.15)] border border-[#00E0FF]/30"
-                                : "text-slate-400 hover:text-white hover:bg-white/5 border border-transparent"
+                                ? "bg-white text-blue-600 shadow-sm border border-blue-100"
+                                : "text-slate-500 hover:text-slate-900 hover:bg-white/50 border border-transparent"
                         )}
                     >
                         Products
@@ -430,8 +430,8 @@ export const BulvarPowerMatrix = ({ data, onRefresh, initialViewMode = 'products
                         className={cn(
                             "px-4 py-2 rounded-lg text-sm font-medium transition-all focus:outline-none uppercase font-[family-name:var(--font-chakra)]",
                             viewMode === 'stores'
-                                ? "bg-[#00E0FF]/20 text-[#00E0FF] shadow-[0_0_15px_rgba(0,224,255,0.15)] border border-[#00E0FF]/30"
-                                : "text-slate-400 hover:text-white hover:bg-white/5 border border-transparent"
+                                ? "bg-white text-blue-600 shadow-sm border border-blue-100"
+                                : "text-slate-500 hover:text-slate-900 hover:bg-white/50 border border-transparent"
                         )}
                     >
                         Locations
@@ -440,7 +440,7 @@ export const BulvarPowerMatrix = ({ data, onRefresh, initialViewMode = 'products
             </div>
 
             {/* 🔥 CARD GRID LAYOUT */}
-            <main className="flex-1 overflow-y-auto custom-scrollbar p-6">
+            <main className="flex-1 overflow-y-auto custom-scrollbar p-6 bg-slate-50/30">
                 {viewMode === 'products' ? (
                     /* PRODUCTS VIEW */
                     <div className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-4 pb-20 mt-4">
@@ -454,43 +454,43 @@ export const BulvarPowerMatrix = ({ data, onRefresh, initialViewMode = 'products
                                     key={product.id}
                                     id={`product-${product.productCode}`}
                                     onClick={() => handleCardClick(product.productCode)}
-                                    className="x-panel !p-4 transition-all flex flex-col gap-2 group hover:border-[#1ABB9C] cursor-pointer min-h-[120px] relative overflow-hidden"
+                                    className="bg-white p-4 rounded-xl transition-all flex flex-col gap-2 group hover:shadow-md border border-slate-200 hover:border-blue-200 cursor-pointer min-h-[120px] relative overflow-hidden"
                                 >
                                     <div className="flex justify-between items-start relative z-10">
-                                        <h3 className="text-xs font-bold text-[#2A3F54] tracking-tight group-hover:text-[#1ABB9C] transition-colors leading-tight line-clamp-2 uppercase">
+                                        <h3 className="text-xs font-semibold text-slate-900 tracking-tight group-hover:text-blue-600 transition-colors leading-tight line-clamp-2 uppercase">
                                             {product.name}
                                         </h3>
-                                        <div className={`w-2 h-2 rounded-full ${hasIssues ? "bg-[#E74856]" : "bg-[#1ABB9C]"} flex-shrink-0 mt-1`}></div>
+                                        <div className={`w-2 h-2 rounded-full ${hasIssues ? "bg-red-500" : "bg-emerald-500"} flex-shrink-0 mt-1`}></div>
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-2 my-1 relative z-10">
                                         <div className="flex flex-col">
-                                            <span className="text-[9px] uppercase font-black text-gray-400 mb-0 tracking-widest">Act</span>
-                                            <span className={cn("text-2xl font-bold leading-none", hasIssues ? "text-[#E74856]" : "text-[#2A3F54]")}>
+                                            <span className="text-[9px] uppercase font-bold text-slate-400 mb-0 tracking-widest">Act</span>
+                                            <span className={cn("text-2xl font-bold leading-none", hasIssues ? "text-red-600" : "text-slate-900")}>
                                                 {product.computed.totalStock.toFixed(0)}
-                                                <span className="text-[12px] opacity-70 ml-1 font-medium">{product.unit || 'шт'}</span>
+                                                <span className="text-[12px] opacity-70 ml-1 font-normal text-slate-400">{product.unit || 'шт'}</span>
                                             </span>
                                         </div>
                                         <div className="flex flex-col items-end">
-                                            <span className="text-[9px] uppercase font-black text-gray-400 mb-0 tracking-widest">Tgt</span>
-                                            <span className="text-2xl font-bold text-[#73879C] leading-none">
+                                            <span className="text-[9px] uppercase font-bold text-slate-400 mb-0 tracking-widest">Tgt</span>
+                                            <span className="text-2xl font-bold text-blue-600 leading-none">
                                                 {product.computed.totalRecommended.toFixed(0)}
-                                                <span className="text-[12px] opacity-70 ml-1 font-medium">{product.unit || 'шт'}</span>
+                                                <span className="text-[12px] opacity-70 ml-1 font-normal text-slate-400">{product.unit || 'шт'}</span>
                                             </span>
                                         </div>
                                     </div>
 
-                                    <div className="space-y-2 pt-2 border-t border-gray-100 mt-auto relative z-10">
+                                    <div className="space-y-2 pt-2 border-t border-slate-100 mt-auto relative z-10">
                                         <div className="flex justify-between items-center text-xs">
-                                            <span className="text-gray-400 font-bold uppercase text-[9px] tracking-widest">Min. Stock</span>
-                                            <span className="font-bold text-[#73879C] bg-gray-50 px-1.5 py-0.5 rounded text-[10px]">
+                                            <span className="text-slate-400 font-bold uppercase text-[9px] tracking-widest">Min. Stock</span>
+                                            <span className="font-medium text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded text-[10px]">
                                                 {product.computed.totalMinStock.toFixed(0)} {product.unit || 'шт'}
                                             </span>
                                         </div>
                                         <div className="relative pt-0.5">
-                                            <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                                            <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden border border-slate-200">
                                                 <div
-                                                    className={cn("h-full rounded-full transition-all duration-500", hasIssues ? "bg-[#E74856]" : "bg-[#1ABB9C]")}
+                                                    className={cn("h-full rounded-full transition-all duration-500", hasIssues ? "bg-red-500" : "bg-emerald-500")}
                                                     style={{ width: `${Math.min(100, (product.computed.totalStock / (Math.max(1, product.computed.totalMinStock) * 1.5)) * 100)}%` }}
                                                 />
                                             </div>
@@ -500,11 +500,11 @@ export const BulvarPowerMatrix = ({ data, onRefresh, initialViewMode = 'products
                             );
                         })}
 
-                        <div className="x-panel bg-white/40 p-4 border-dashed border-2 border-gray-200 hover:border-[#1ABB9C] transition-all cursor-pointer group min-h-[120px] flex flex-col justify-center items-center gap-2">
-                            <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center group-hover:bg-[#1ABB9C]/20 transition-colors">
-                                <span className="text-gray-400 group-hover:text-[#1ABB9C] text-xl font-light">+</span>
+                        <div className="bg-slate-50 p-4 rounded-xl border-dashed border-2 border-slate-200 hover:border-blue-300 hover:bg-white transition-all cursor-pointer group min-h-[120px] flex flex-col justify-center items-center gap-2">
+                            <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center border border-slate-100 group-hover:border-blue-200 transition-colors">
+                                <span className="text-slate-400 group-hover:text-blue-500 text-xl font-light">+</span>
                             </div>
-                            <span className="text-[10px] font-black text-gray-400 group-hover:text-[#1ABB9C] uppercase tracking-[0.2em] text-center">Додати Товар</span>
+                            <span className="text-[10px] font-bold text-slate-400 group-hover:text-slate-600 uppercase tracking-[0.2em] text-center">Додати Товар</span>
                         </div>
                     </div>
                 ) : (
@@ -521,44 +521,44 @@ export const BulvarPowerMatrix = ({ data, onRefresh, initialViewMode = 'products
                                     key={store.storeName}
                                     id={`store-${store.storeId}`}
                                     onClick={() => setSelectedDrawerStoreId(store.storeId)}
-                                    className="x-panel !p-4 transition-all flex flex-col gap-2 group hover:border-[#1ABB9C] cursor-pointer min-h-[120px] relative overflow-hidden"
+                                    className="bg-white p-4 rounded-2xl transition-all overflow-hidden group hover:shadow-md border border-slate-200 hover:border-blue-200 cursor-pointer min-h-[120px] relative"
                                 >
                                     {/* STORE CARD HEADER */}
                                     <div className="flex items-center justify-between mb-3 relative z-10">
-                                        <h3 className="text-sm font-bold text-[#2A3F54] tracking-tight group-hover:text-[#1ABB9C] transition-colors leading-tight truncate uppercase">
+                                        <h3 className="text-sm font-semibold text-slate-900 tracking-tight group-hover:text-blue-600 transition-colors leading-tight truncate uppercase">
                                             {store.storeName.replace('Магазин ', '').replace(/"/g, '')}
                                         </h3>
-                                        <div className={`w-2 h-2 rounded-full ${hasIssues ? "bg-[#E74856]" : "bg-[#1ABB9C]"} flex-shrink-0 mt-1`}></div>
+                                        <div className={`w-2 h-2 rounded-full ${hasIssues ? "bg-red-500" : "bg-emerald-500"} flex-shrink-0 mt-1`}></div>
                                     </div>
 
                                     <div className="grid grid-cols-3 gap-3 relative z-10 mb-2">
-                                        <div className="bg-gray-50 rounded-lg p-2 text-center border border-gray-100">
-                                            <div className="text-[8px] text-gray-400 uppercase font-black tracking-widest mb-0.5">Stock</div>
-                                            <div className={cn("text-lg font-bold", hasIssues ? "text-[#E74856]" : "text-[#2A3F54]")}>
+                                        <div className="bg-slate-50 rounded-lg p-2 text-center border border-slate-100">
+                                            <div className="text-[8px] text-slate-400 uppercase font-bold tracking-widest mb-0.5">Stock</div>
+                                            <div className={cn("text-lg font-bold", hasIssues ? "text-red-600" : "text-slate-900")}>
                                                 {store.totalStock.toFixed(0)}
                                             </div>
                                         </div>
                                         <div className={cn("rounded-lg p-2 text-center border", hasIssues ? "bg-red-50 border-red-200" : "bg-emerald-50 border-emerald-200")}>
-                                            <div className="text-[8px] text-gray-400 uppercase font-black tracking-widest mb-0.5">Critical</div>
-                                            <div className={cn("text-lg font-bold", hasIssues ? "text-[#E74856]" : "text-[#1ABB9C]")}>
+                                            <div className="text-[8px] text-slate-400 uppercase font-bold tracking-widest mb-0.5">Critical</div>
+                                            <div className={cn("text-lg font-bold", hasIssues ? "text-red-600" : "text-emerald-600")}>
                                                 {store.criticalProducts}
                                             </div>
                                         </div>
-                                        <div className="bg-gray-50 rounded-lg p-2 text-center border border-gray-100">
-                                            <div className="text-[8px] text-gray-400 uppercase font-black tracking-widest mb-0.5">Sales/Day</div>
-                                            <div className="text-lg font-bold text-[#1ABB9C]">
+                                        <div className="bg-blue-50/50 rounded-lg p-2 text-center border border-blue-100">
+                                            <div className="text-[8px] text-blue-500 uppercase font-bold tracking-widest mb-0.5">Sales/Day</div>
+                                            <div className="text-lg font-bold text-blue-600">
                                                 {store.totalAvgSales.toFixed(0)}
                                             </div>
                                         </div>
                                     </div>
 
                                     <div className="mt-auto pt-2 relative z-10">
-                                        <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                        <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
                                             <div
                                                 className={cn(
                                                     "h-full rounded-full transition-all",
-                                                    fillPercent >= 100 ? "bg-[#1ABB9C]" :
-                                                        fillPercent < 50 ? "bg-[#E74856]" : "bg-amber-400"
+                                                    fillPercent >= 100 ? "bg-emerald-500" :
+                                                        fillPercent < 50 ? "bg-red-500" : "bg-amber-400"
                                                 )}
                                                 style={{ width: `${Math.min(100, fillPercent)}%` }}
                                             />

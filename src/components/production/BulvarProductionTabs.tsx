@@ -13,15 +13,28 @@ import { BulvarDistributionControlPanel } from './BulvarDistributionControlPanel
 import BulvarProductionSimulator from './BulvarProductionSimulator';
 import { BulvarHistoricalProduction } from './BulvarHistoricalProduction';
 import { ThemeToggle } from '../theme-toggle';
-import { getBulvarUnit } from '@/lib/bulvar-dictionary';
 
 // --- SUPPORTING COMPONENTS ---
 interface ProductionItem {
     product_name: string;
     baked_at_factory: number;
+    unit?: 'шт' | 'кг' | string;
 }
 
-const ProductionDetailView = () => {
+interface ProductionDetailViewProps {
+    products: ProductionTask[];
+}
+
+const ProductionDetailView = ({ products }: ProductionDetailViewProps) => {
+    const unitByProductName = React.useMemo(() => {
+        const map = new Map<string, string>();
+        for (const product of products) {
+            if (!product.name) continue;
+            map.set(product.name.trim().toLowerCase(), product.unit || 'шт');
+        }
+        return map;
+    }, [products]);
+
     const { data, error, isLoading } = useSWR<ProductionItem[]>(
         '/api/bulvar/production-detail',
         (url) => fetch(url, { credentials: 'include' }).then(r => r.json()),
@@ -29,21 +42,21 @@ const ProductionDetailView = () => {
     );
 
     return (
-        <div className="h-full overflow-y-auto custom-scrollbar p-6 bg-[#F7F7F7]">
-            <div className="x-panel overflow-hidden">
-                <div className="x-title">
+        <div className="h-full overflow-y-auto custom-scrollbar p-6 bg-bg-primary">
+            <div className="bg-panel-bg rounded-xl border border-panel-border shadow-[var(--panel-shadow)] overflow-hidden">
+                <div className="p-4 border-b border-panel-border bg-panel-bg flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-[#1ABB9C]/10 flex items-center justify-center">
-                            <ChefHat size={16} className="text-[#1ABB9C]" />
+                        <div className="w-8 h-8 rounded-lg bg-accent-primary/10 flex items-center justify-center">
+                            <ChefHat size={16} className="text-accent-primary" />
                         </div>
-                        <h2 className="uppercase">Статистика Виробництва</h2>
+                        <h2 className="text-sm font-bold text-text-primary uppercase tracking-wider">Статистика Виробництва</h2>
                     </div>
-                    <div className="text-[10px] text-gray-400 uppercase font-black tracking-widest">Останні 24 год</div>
+                    <div className="text-[10px] text-text-secondary uppercase font-black tracking-widest">Останні 24 год</div>
                 </div>
 
                 {isLoading ? (
-                    <div className="flex flex-col items-center justify-center py-20 text-gray-400 gap-3">
-                        <Loader2 size={32} className="animate-spin text-[#1ABB9C]" />
+                    <div className="flex flex-col items-center justify-center py-20 text-text-secondary gap-3">
+                        <Loader2 size={32} className="animate-spin text-accent-primary" />
                         <span className="text-xs font-mono uppercase tracking-widest">Завантаження...</span>
                     </div>
                 ) : error ? (
@@ -53,21 +66,21 @@ const ProductionDetailView = () => {
                     </div>
                 ) : data && data.length > 0 ? (
                     <table className="w-full text-left border-collapse">
-                        <thead className="bg-[#F9FAFB] text-[10px] uppercase font-bold tracking-widest text-[#73879C] border-b border-[#D9DEE4]">
+                        <thead className="bg-bg-primary text-[10px] uppercase font-bold tracking-widest text-text-secondary border-b border-panel-border">
                             <tr>
                                 <th className="p-4">Бульвар-Автовокзал</th>
                                 <th className="p-4 text-center">Сьогодні (од.)</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-[#D9DEE4]">
+                        <tbody className="divide-y divide-panel-border">
                             {data.map((item, i) => (
-                                <tr key={i} className="group hover:bg-[#F7F7F7] transition-colors">
-                                    <td className="p-4 text-sm font-medium text-[#2A3F54] group-hover:text-[#1ABB9C]">
+                                <tr key={i} className="group hover:bg-bg-primary transition-colors">
+                                    <td className="p-4 text-sm font-medium text-text-primary group-hover:text-accent-primary">
                                         {item.product_name}
                                     </td>
                                     <td className="p-4 text-center">
-                                        <span className="inline-flex items-center justify-center px-4 py-1.5 rounded-lg bg-[#1ABB9C]/10 text-[#1ABB9C] font-mono text-sm font-black min-w-[4rem] border border-[#1ABB9C]/20">
-                                            {item.baked_at_factory} <span className="text-[10px] ml-1 opacity-70 lowercase">{getBulvarUnit(item.product_name)}</span>
+                                        <span className="inline-flex items-center justify-center px-4 py-1.5 rounded-lg bg-accent-primary/10 text-accent-primary font-mono text-sm font-black min-w-[4rem] border border-accent-primary/20">
+                                            {item.baked_at_factory} <span className="text-[10px] ml-1 opacity-70 lowercase">{unitByProductName.get(item.product_name.trim().toLowerCase()) || item.unit || 'шт'}</span>
                                         </span>
                                     </td>
                                 </tr>
@@ -75,7 +88,7 @@ const ProductionDetailView = () => {
                         </tbody>
                     </table>
                 ) : (
-                    <div className="flex flex-col items-center justify-center py-20 text-gray-300">
+                    <div className="flex flex-col items-center justify-center py-20 text-text-muted">
                         <ChefHat size={32} className="mb-3 opacity-20" />
                         <span className="text-sm font-medium">Дані відсутні</span>
                     </div>
@@ -206,30 +219,30 @@ export const BulvarProductionTabs = ({ data, onRefresh, showTabs = true }: Props
         };
     }, [displayData, manufacturedData]);
 
-    // --- SUB-COMPONENTS FOR ADMIN UI (Gentelella Style) ---
+    // --- SUB-COMPONENTS FOR STANDARD DASHBOARD UI ---
     const MetricCard = ({ title, value, unit, icon: Icon, color }: any) => (
-        <div className="x-panel !mb-0 flex items-center justify-between group hover:border-[#1ABB9C] transition-all cursor-pointer">
-            <div>
-                <div className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">{title}</div>
+        <div className="bg-panel-bg border border-panel-border rounded-xl px-4 py-4 shadow-[var(--panel-shadow)] flex items-center justify-between gap-4 transition-all cursor-pointer hover:border-accent-primary/30 hover:shadow-[var(--panel-shadow-strong)]">
+            <div className="min-w-0">
+                <div className="text-[10px] text-text-secondary font-bold uppercase tracking-widest mb-1">{title}</div>
                 <div className="flex items-baseline gap-1">
-                    <span className="text-2xl font-bold text-[#2A3F54]" style={{ color: value === 0 ? '#BDC3C7' : undefined }}>{value}</span>
-                    <span className="text-[10px] text-gray-400 font-medium">{unit}</span>
+                    <span className="text-2xl font-bold text-text-primary">{value}</span>
+                    <span className="text-[10px] text-text-secondary font-medium">{unit}</span>
                 </div>
             </div>
-            <div className="p-3 rounded-lg bg-gray-50 group-hover:bg-[#1ABB9C]/10 transition-colors">
+            <div className="p-3 rounded-lg bg-accent-primary/10 border border-accent-primary/20 transition-colors">
                 <Icon size={20} style={{ color }} />
             </div>
         </div>
     );
 
     const getIndexColor = (val: number) => {
-        if (val >= 96) return "#1ABB9C";
-        if (val >= 80) return "#FFB800";
-        return "#E74856";
+        if (val >= 96) return "var(--accent-primary)";
+        if (val >= 80) return "#EAB308";
+        return "#EF4444";
     };
 
     return (
-        <div className="flex flex-col h-full w-full bg-[#F7F7F7] font-sans">
+        <div className="flex flex-col h-full w-full bg-bg-primary font-sans text-text-primary">
             {/* 1. HEADER & MONITORING BLOCK */}
             <header className="flex-shrink-0 p-3 lg:p-4 pb-1 lg:pb-2 z-20">
                 <div className="flex flex-col gap-4">
@@ -238,12 +251,12 @@ export const BulvarProductionTabs = ({ data, onRefresh, showTabs = true }: Props
                         <div className="flex items-center gap-3">
                             <BackToHome />
                             <div className="flex items-center gap-2">
-                                <div className="w-10 h-10 rounded-lg bg-white border border-gray-200 flex items-center justify-center shadow-sm">
-                                    <ChefHat size={22} className="text-[#1ABB9C]" />
+                                <div className="w-10 h-10 rounded-lg bg-panel-bg border border-panel-border flex items-center justify-center shadow-[var(--panel-shadow)]">
+                                    <ChefHat size={22} className="text-accent-primary" />
                                 </div>
                                 <div className="flex flex-col justify-center">
-                                    <h1 className="text-xl font-bold text-[#2A3F54] uppercase tracking-wide leading-none">ЦЕХ БУЛЬВАР-АВТОВОКЗАЛ</h1>
-                                    <div className="text-[9px] text-gray-400 uppercase tracking-widest mt-1 font-bold">
+                                    <h1 className="text-xl font-bold text-text-primary uppercase tracking-wide leading-none">ЦЕХ БУЛЬВАР-АВТОВОКЗАЛ</h1>
+                                    <div className="text-[9px] text-text-secondary uppercase tracking-widest mt-1 font-bold">
                                         МЕНЕДЖЕР РОЗПОДІЛУ
                                     </div>
                                 </div>
@@ -257,10 +270,10 @@ export const BulvarProductionTabs = ({ data, onRefresh, showTabs = true }: Props
                                 className={cn(
                                     "h-9 px-4 flex items-center gap-2 border rounded transition-all text-[11px] font-bold uppercase",
                                     isUpdatingStock
-                                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                                        ? "bg-bg-primary text-text-muted cursor-not-allowed border-panel-border"
                                         : isStale
                                             ? "bg-red-50 border-red-200 text-red-600 hover:bg-red-100"
-                                            : "bg-[#1ABB9C] border-[#1ABB9C] text-white hover:opacity-90 shadow-sm"
+                                            : "bg-accent-primary border-accent-primary text-white hover:opacity-90 shadow-sm"
                                 )}
                             >
                                 <RefreshCw size={14} className={cn(isUpdatingStock && "animate-spin")} />
@@ -273,28 +286,28 @@ export const BulvarProductionTabs = ({ data, onRefresh, showTabs = true }: Props
                     {/* Second Row: Monitoring Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 my-1">
                         <div onClick={() => setActiveTab('production')}>
-                            <MetricCard
-                                title="Сьогодні Вироблено"
-                                value={globalMetrics.total.produced.toLocaleString()}
-                                unit="од."
-                                icon={ChefHat}
-                                color="#1ABB9C"
-                            />
-                        </div>
                         <MetricCard
-                            title="Факт залишок"
-                            value={globalMetrics.total.stock.toLocaleString()}
+                            title="Сьогодні Вироблено"
+                            value={globalMetrics.total.produced.toLocaleString()}
                             unit="од."
-                            icon={Activity}
-                            color="#34495E"
+                            icon={ChefHat}
+                            color="var(--accent-primary)"
                         />
-                        <MetricCard
-                            title="Норма"
-                            value={globalMetrics.total.min.toLocaleString()}
-                            unit="од."
-                            icon={CheckCircle}
-                            color="#34495E"
-                        />
+                    </div>
+                    <MetricCard
+                        title="Факт залишок"
+                        value={globalMetrics.total.stock.toLocaleString()}
+                        unit="од."
+                        icon={Activity}
+                        color="var(--text-secondary)"
+                    />
+                    <MetricCard
+                        title="Норма"
+                        value={globalMetrics.total.min.toLocaleString()}
+                        unit="од."
+                        icon={CheckCircle}
+                        color="var(--text-secondary)"
+                    />
                         <MetricCard
                             title="Індекс заповненості"
                             value={`${globalMetrics.total.index.toFixed(0)}%`}
@@ -306,14 +319,14 @@ export const BulvarProductionTabs = ({ data, onRefresh, showTabs = true }: Props
 
                     {/* Third Row: Tabs Container (CONDITIONAL) */}
                     {showTabs && (
-                        <div className="flex items-center gap-1 p-1 bg-white rounded border border-gray-200 shadow-sm">
+                        <div className="flex items-center gap-1 p-1 bg-panel-bg rounded border border-panel-border shadow-[var(--panel-shadow)]">
                             <button
                                 onClick={() => setActiveTab('matrix')}
                                 className={cn(
                                     "px-4 h-[38px] text-[11px] font-bold uppercase tracking-wider rounded transition-all flex items-center gap-2 shadow-sm",
                                     activeTab === 'matrix'
-                                        ? "bg-[#2A3F54] text-white border border-[#2A3F54]"
-                                        : "text-[#73879C] hover:bg-gray-50 hover:text-[#2A3F54] border border-transparent"
+                                        ? "bg-accent-primary text-white border border-accent-primary"
+                                        : "text-text-secondary hover:bg-bg-primary hover:text-text-primary border border-transparent"
                                 )}
                             >
                                 <Activity size={14} />
@@ -326,8 +339,8 @@ export const BulvarProductionTabs = ({ data, onRefresh, showTabs = true }: Props
                                 className={cn(
                                     "px-4 h-[38px] text-[11px] font-bold uppercase tracking-wider rounded transition-all flex items-center gap-2 shadow-sm",
                                     activeTab === 'production'
-                                        ? "bg-[#2A3F54] text-white border border-[#2A3F54]"
-                                        : "text-[#73879C] hover:bg-gray-50 hover:text-[#2A3F54] border border-transparent"
+                                        ? "bg-accent-primary text-white border border-accent-primary"
+                                        : "text-text-secondary hover:bg-bg-primary hover:text-text-primary border border-transparent"
                                 )}
                             >
                                 <ChefHat size={14} />
@@ -340,8 +353,8 @@ export const BulvarProductionTabs = ({ data, onRefresh, showTabs = true }: Props
                                 className={cn(
                                     "px-4 h-[38px] text-[11px] font-bold uppercase tracking-wider rounded transition-all flex items-center gap-2 shadow-sm",
                                     activeTab === 'logistics'
-                                        ? "bg-[#2A3F54] text-white border border-[#2A3F54]"
-                                        : "text-[#73879C] hover:bg-gray-50 hover:text-[#2A3F54] border border-transparent"
+                                        ? "bg-accent-primary text-white border border-accent-primary"
+                                        : "text-text-secondary hover:bg-bg-primary hover:text-text-primary border border-transparent"
                                 )}
                             >
                                 <Truck size={14} />
@@ -354,8 +367,8 @@ export const BulvarProductionTabs = ({ data, onRefresh, showTabs = true }: Props
                                 className={cn(
                                     "px-4 h-[38px] text-[11px] font-bold uppercase tracking-wider rounded transition-all flex items-center gap-2 shadow-sm",
                                     activeTab === 'history'
-                                        ? "bg-[#2A3F54] text-white border border-[#2A3F54]"
-                                        : "text-[#73879C] hover:bg-gray-50 hover:text-[#2A3F54] border border-transparent"
+                                        ? "bg-accent-primary text-white border border-accent-primary"
+                                        : "text-text-secondary hover:bg-bg-primary hover:text-text-primary border border-transparent"
                                 )}
                             >
                                 <TrendingUp size={14} />
@@ -368,8 +381,8 @@ export const BulvarProductionTabs = ({ data, onRefresh, showTabs = true }: Props
                                 className={cn(
                                     "px-4 h-[38px] text-[11px] font-bold uppercase tracking-wider rounded transition-all flex items-center gap-2 shadow-sm",
                                     activeTab === 'simulator'
-                                        ? "bg-[#2A3F54] text-white border border-[#2A3F54]"
-                                        : "text-[#73879C] hover:bg-gray-50 hover:text-[#2A3F54] border border-transparent"
+                                        ? "bg-accent-primary text-white border border-accent-primary"
+                                        : "text-text-secondary hover:bg-bg-primary hover:text-text-primary border border-transparent"
                                 )}
                             >
                                 <Settings2 size={14} />
@@ -390,7 +403,7 @@ export const BulvarProductionTabs = ({ data, onRefresh, showTabs = true }: Props
                     <BulvarPowerMatrix data={displayData} onRefresh={onRefresh} />
                 )}
                 {(showTabs && activeTab === 'production') && (
-                    <ProductionDetailView />
+                    <ProductionDetailView products={data} />
                 )}
                 {(showTabs && activeTab === 'logistics') && (
                     <BulvarDistributionControlPanel />
