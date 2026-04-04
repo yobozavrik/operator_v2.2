@@ -135,7 +135,7 @@ export const BulvarDistributionControlPanel = () => {
                             Панель логиста
                         </h2>
                         <div className="text-[10px] text-text-secondary uppercase font-black tracking-widest mt-1 font-[family-name:var(--font-jetbrains)]">
-                            Управление распределением продукции
+                            Керування розподілом продукції
                         </div>
                     </div>
                 </div>
@@ -146,12 +146,12 @@ export const BulvarDistributionControlPanel = () => {
                             onClick={handleExport}
                             disabled={isExporting || resultsLoading || !resultsData || resultsData.length === 0}
                             className={cn(
-                                'h-12 px-6 rounded-xl font-bold uppercase tracking-wider transition-all flex items-center gap-2 border shadow-[0_0_15px_rgba(0,0,0,0.2)] shrink-0',
+                                'h-12 px-6 rounded-xl font-bold uppercase tracking-wider transition-all flex items-center gap-2 border shadow-[var(--panel-shadow)] shrink-0',
                                 !resultsData || resultsData.length === 0
                                     ? 'bg-bg-primary border-panel-border text-text-muted cursor-not-allowed'
-                                    : 'bg-panel-bg text-[#00E0FF] border-[#00E0FF]/30 hover:bg-[#00E0FF]/10 hover:border-[#00E0FF]/60 hover:shadow-[0_0_15px_rgba(0,224,255,0.2)] active:scale-[0.98]'
+                                    : 'bg-panel-bg text-accent-primary border-accent-primary/30 hover:bg-accent-primary/10 hover:border-accent-primary/60 hover:shadow-[var(--panel-shadow)] active:scale-[0.98]'
                             )}
-                            title="Скачать Excel"
+                            title="Завантажити Excel"
                         >
                             {isExporting ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
                             <span className="hidden sm:inline text-xs font-[family-name:var(--font-chakra)] tracking-widest">
@@ -163,7 +163,7 @@ export const BulvarDistributionControlPanel = () => {
                             onClick={handleRunDistribution}
                             disabled={isRunning}
                             className={cn(
-                                'relative overflow-hidden h-12 px-8 rounded-xl font-black uppercase tracking-wider transition-all flex items-center gap-3 shadow-[0_0_15px_rgba(255,138,0,0.2)] w-full md:w-auto justify-center text-white',
+                                'relative overflow-hidden h-12 px-8 rounded-xl font-black uppercase tracking-wider transition-all flex items-center gap-3 shadow-[var(--panel-shadow)] w-full md:w-auto justify-center text-white',
                                 isRunning
                                     ? 'bg-bg-primary text-text-muted cursor-not-allowed border border-panel-border'
                                     : 'bg-orange-500 hover:bg-orange-400 hover:shadow-[0_0_20px_rgba(255,138,0,0.4)] hover:scale-[1.02] active:scale-[0.98] border border-orange-400/50'
@@ -172,12 +172,12 @@ export const BulvarDistributionControlPanel = () => {
                             {isRunning ? (
                                 <>
                                     <Loader2 size={20} className="animate-spin text-text-muted" />
-                                    <span className="text-text-muted">Расчет...</span>
+                                    <span className="text-text-muted">Розрахунок...</span>
                                 </>
                             ) : (
                                 <>
                                     <Play size={20} fill="currentColor" />
-                                    <span>Сформировать распределение</span>
+                                    <span>Сформувати розподіл</span>
                                 </>
                             )}
                         </button>
@@ -189,7 +189,7 @@ export const BulvarDistributionControlPanel = () => {
                                 initial={{ opacity: 0, y: -10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0 }}
-                                className="text-xs font-[family-name:var(--font-jetbrains)] text-emerald-400 flex items-center gap-1.5 font-medium"
+                                className="text-xs font-[family-name:var(--font-jetbrains)] text-emerald-500 flex items-center gap-1.5 font-medium"
                             >
                                 <CheckCircle2 size={14} />
                                 {lastRunResult}
@@ -201,22 +201,22 @@ export const BulvarDistributionControlPanel = () => {
 
             <div className="flex-1 overflow-hidden p-3 lg:p-4 pt-0">
                 <div className="bg-panel-bg h-full flex flex-col overflow-hidden rounded-2xl border border-panel-border shadow-[var(--panel-shadow)]">
-                    <div className="grid grid-cols-12 gap-4 p-4 border-b border-panel-border bg-slate-50/80 text-[11px] uppercase font-bold tracking-widest text-slate-500 font-[family-name:var(--font-jetbrains)] items-center">
+                    <div className="grid grid-cols-12 gap-4 p-4 border-b border-panel-border bg-bg-primary text-[11px] uppercase font-bold tracking-widest text-text-secondary font-[family-name:var(--font-jetbrains)] items-center">
                         <div className="col-span-1 text-center">#</div>
-                        <div className="col-span-3 text-slate-600">Товар</div>
-                        <div className="col-span-2 text-slate-600">Магазин</div>
-                        <div className="col-span-1 text-center text-slate-600">Факт</div>
-                        <div className="col-span-1 text-center text-slate-600">Мин</div>
-                        <div className="col-span-2 text-center text-slate-600">Ср. прод</div>
-                        <div className="col-span-2 text-right text-slate-600">Кол-во</div>
+                        <div className="col-span-3 text-text-secondary">Товар</div>
+                        <div className="col-span-2 text-text-secondary">Магазин</div>
+                        <div className="col-span-1 text-center text-text-secondary">Факт</div>
+                        <div className="col-span-1 text-center text-text-secondary">Мін</div>
+                        <div className="col-span-2 text-center text-text-secondary">Сер. прод</div>
+                        <div className="col-span-2 text-right text-text-secondary">К-ть</div>
                     </div>
 
                     <div className="flex-1 overflow-y-auto custom-scrollbar p-2">
                         {resultsLoading ? (
                             <div className="flex flex-col items-center justify-center h-full text-text-secondary gap-3">
-                                <Loader2 size={32} className="animate-spin text-orange-500" />
+                                <Loader2 size={32} className="animate-spin text-accent-primary" />
                                 <span className="text-xs tracking-widest font-[family-name:var(--font-jetbrains)]">
-                                    Загрузка данных...
+                                    Завантаження даних...
                                 </span>
                             </div>
                         ) : !Array.isArray(resultsData) || resultsData.length === 0 ? (
@@ -225,7 +225,7 @@ export const BulvarDistributionControlPanel = () => {
                                     <ShoppingBag size={32} className="text-text-secondary opacity-50" />
                                 </div>
                                 <span className="text-xs uppercase tracking-widest font-bold text-text-secondary">
-                                    Распределение еще не сформировано
+                                    Розподіл ще не сформовано
                                 </span>
                             </div>
                         ) : (
@@ -238,11 +238,11 @@ export const BulvarDistributionControlPanel = () => {
                                         transition={{ delay: idx * 0.05 }}
                                         className="grid grid-cols-12 gap-4 p-3 rounded-lg hover:bg-bg-primary transition-colors border border-transparent hover:border-panel-border items-center group"
                                     >
-                                        <div className="col-span-1 text-center text-slate-400 font-[family-name:var(--font-jetbrains)] text-[11px]">
+                                        <div className="col-span-1 text-center text-text-secondary font-[family-name:var(--font-jetbrains)] text-[11px]">
                                             {idx + 1}
                                         </div>
                                         <div
-                                            className="col-span-3 font-bold text-text-primary text-sm group-hover:text-orange-400 transition-colors line-clamp-2"
+                                            className="col-span-3 font-bold text-text-primary text-sm group-hover:text-accent-primary transition-colors line-clamp-2"
                                             title={row.product_name}
                                         >
                                             {row.product_name}
@@ -256,19 +256,19 @@ export const BulvarDistributionControlPanel = () => {
                                         <div className="col-span-1 text-center font-mono text-[11px] text-emerald-500/80">
                                             {formatQty(row.current_stock || 0, row.unit)}
                                         </div>
-                                        <div className="col-span-1 text-center font-mono text-[11px] text-orange-400/80">
+                                        <div className="col-span-1 text-center font-mono text-[11px] text-orange-500/80">
                                             {formatQty(row.min_stock || 0, row.unit)}
                                         </div>
-                                        <div className="col-span-2 text-center font-mono text-[11px] text-blue-400/80">
+                                        <div className="col-span-2 text-center font-mono text-[11px] text-accent-primary/80">
                                             {Number(row.avg_sales || 0).toFixed(1)}
                                         </div>
 
                                         <div className="col-span-2 text-right flex flex-col items-end">
-                                            <span className="inline-flex items-center justify-center px-4 py-1.5 rounded-lg bg-orange-500/10 text-orange-400 text-sm font-black font-[family-name:var(--font-jetbrains)] border border-orange-500/20 min-w-[3.5rem] shadow-[0_0_10px_rgba(255,138,0,0.1)]">
+                                            <span className="inline-flex items-center justify-center px-4 py-1.5 rounded-lg bg-orange-500/10 text-orange-500 text-sm font-black font-[family-name:var(--font-jetbrains)] border border-orange-500/20 min-w-[3.5rem] shadow-[var(--panel-shadow)]">
                                                 {formatQty(row.quantity_to_ship, row.unit)}
                                             </span>
                                             {Boolean(row.packaging_enabled) && isKgUnit(row.unit) ? (
-                                                <span className="mt-1 text-[10px] font-bold text-slate-500 font-[family-name:var(--font-jetbrains)]">
+                                                <span className="mt-1 text-[10px] font-bold text-text-secondary font-[family-name:var(--font-jetbrains)]">
                                                     {packLabel(row.quantity_to_ship_packs_est)}
                                                 </span>
                                             ) : null}
@@ -279,18 +279,18 @@ export const BulvarDistributionControlPanel = () => {
                         )}
                     </div>
 
-                    <div className="p-3 border-t border-panel-border bg-slate-50/80 flex justify-between items-center text-[11px] text-slate-500 uppercase tracking-widest font-[family-name:var(--font-jetbrains)] font-medium">
+                    <div className="p-3 border-t border-panel-border bg-bg-primary flex justify-between items-center text-[11px] text-text-secondary uppercase tracking-widest font-[family-name:var(--font-jetbrains)] font-medium">
                         <div>
-                            Всего позиций: <span className="text-slate-900 font-bold">{resultsData?.length || 0}</span>
+                            Всього позицій: <span className="text-text-primary font-bold">{resultsData?.length || 0}</span>
                         </div>
                         <div className="flex items-center gap-2">
                             <span>
-                                Последнее обновление:{' '}
-                                <span className="text-slate-900 font-bold">{new Date().toLocaleTimeString()}</span>
+                                Останнє оновлення:{' '}
+                                <span className="text-text-primary font-bold">{new Date().toLocaleTimeString()}</span>
                             </span>
                             <button
                                 onClick={() => refreshResults()}
-                                className="p-1.5 hover:text-blue-500 hover:bg-blue-50 rounded-md transition-colors shadow-sm border border-transparent hover:border-blue-200"
+                                className="p-1.5 hover:text-accent-primary hover:bg-accent-primary/10 rounded-md transition-colors shadow-sm border border-transparent hover:border-accent-primary/20"
                             >
                                 <RefreshCw size={14} />
                             </button>

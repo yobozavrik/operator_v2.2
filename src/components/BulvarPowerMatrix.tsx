@@ -115,7 +115,7 @@ const ProductAccordionItem = ({
     const criticalStoresCount = product.stores.filter((s: any) => s.computed.isUrgent).length;
 
     return (
-        <div className="border-t border-slate-100 p-2">
+        <div className="border-t border-panel-border p-2">
             {/* STORES GRID */}
             <div className="grid grid-cols-3 md:grid-cols-4 xl:grid-cols-6 gap-2 mb-3">
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -126,8 +126,8 @@ const ProductAccordionItem = ({
 
                     // SOFT COLORS
                     const cardBg = isLowStock
-                        ? "bg-red-50/50 border-red-100"
-                        : "bg-emerald-50/50 border-emerald-100";
+                        ? "bg-red-50 border-red-200"
+                        : "bg-emerald-50 border-emerald-200";
 
                     return (
                         <div
@@ -138,31 +138,31 @@ const ProductAccordionItem = ({
                             )}
                         >
                             {/* Store Name - Compact */}
-                            <div className="text-xs font-bold uppercase tracking-wide truncate saas-text-primary text-center" title={store.storeName}>
+                            <div className="text-xs font-bold uppercase tracking-wide truncate text-text-primary text-center" title={store.storeName}>
                                 {store.storeName.replace('Магазин ', '').replace('"', '').replace('"', '')}
                             </div>
 
                             {/* Metrics Row - Compact */}
                             <div className="grid grid-cols-3 gap-1 text-[10px] font-mono leading-none mt-0.5">
                                 <div className="flex flex-col gap-0.5">
-                                    <span className="text-[9px] saas-text-secondary uppercase font-bold">Факт</span>
+                                    <span className="text-[9px] text-text-secondary uppercase font-bold">Факт</span>
                                     <span className={cn("font-bold text-lg", isLowStock ? "text-[#E74856]" : "text-emerald-500")}>
                                         {store.computed.stock.toFixed(0)}
                                     </span>
                                 </div>
                                 <div className="flex flex-col gap-0.5 text-center">
-                                    <span className="text-[9px] saas-text-secondary uppercase font-bold">Мін</span>
-                                    <span className="font-bold text-lg text-[#2b80ff]">{store.computed.minStock.toFixed(0)}</span>
+                                    <span className="text-[9px] text-text-secondary uppercase font-bold">Мін</span>
+                                    <span className="font-bold text-lg text-accent-primary">{store.computed.minStock.toFixed(0)}</span>
                                 </div>
                                 <div className="flex flex-col gap-0.5 text-right">
-                                    <span className="text-[9px] saas-text-secondary uppercase font-bold">Сер</span>
+                                    <span className="text-[9px] text-text-secondary uppercase font-bold">Сер</span>
                                     <span className="font-bold text-lg text-amber-500">{store.computed.avg.toFixed(1)}</span>
                                 </div>
                             </div>
 
                             {/* Input Field - Reduced */}
-                            <div className="pt-1.5 border-t border-slate-100 mt-0.5 flex items-center justify-between">
-                                <span className="text-[9px] text-amber-500 font-bold uppercase">План</span>
+                            <div className="pt-1.5 border-t border-panel-border mt-0.5 flex items-center justify-between">
+                                <span className="text-[9px] text-accent-primary font-bold uppercase">План</span>
                                 <input
                                     type="number"
                                     value={planVal || ''}
@@ -172,8 +172,8 @@ const ProductAccordionItem = ({
                                     }}
                                     onClick={(e) => e.stopPropagation()}
                                     className={cn(
-                                        "w-14 bg-white border border-slate-200 rounded h-6 text-center font-mono font-bold text-base focus:outline-none focus:border-amber-400",
-                                        planVal > 0 ? "text-amber-500 shadow-sm" : "saas-text-secondary"
+                                        "w-14 bg-bg-primary border border-panel-border rounded h-6 text-center font-mono font-bold text-base focus:outline-none focus:border-accent-primary/40",
+                                        planVal > 0 ? "text-accent-primary shadow-sm" : "text-text-secondary"
                                     )}
                                     placeholder="-"
                                 />
@@ -184,9 +184,9 @@ const ProductAccordionItem = ({
             </div>
 
             {/* CONTROLS */}
-            <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 flex items-center gap-4">
+            <div className="p-3 bg-panel-bg rounded-lg border border-panel-border flex items-center gap-4">
                 <div className="flex-1 max-w-xs">
-                    <label className="text-[10px] saas-text-secondary uppercase font-bold tracking-widest block mb-1">
+                                <label className="text-[10px] text-text-secondary uppercase font-bold tracking-widest block mb-1">
                         Скільки випечено (од.)
                     </label>
                     <input
@@ -194,7 +194,7 @@ const ProductAccordionItem = ({
                         value={totalBaked || ''}
                         onChange={(e) => setTotalBaked(Number(e.target.value))}
                         onClick={(e) => e.stopPropagation()}
-                        className="w-full bg-white border border-slate-200 rounded-lg h-10 px-3 font-mono saas-text-primary text-xl font-bold focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 shadow-sm"
+                        className="w-full bg-bg-primary border border-panel-border rounded-lg h-10 px-3 font-mono text-text-primary text-xl font-bold focus:outline-none focus:border-accent-primary/40 focus:ring-1 focus:ring-accent-primary/40 shadow-sm"
                         placeholder="0"
                     />
                 </div>
@@ -202,15 +202,15 @@ const ProductAccordionItem = ({
                 <button
                     onClick={handleDistribute}
                     disabled={!totalBaked || isDistributing}
-                    className="h-10 px-6 bg-amber-400 hover:bg-amber-500 text-white shadow font-bold uppercase text-xs tracking-wider rounded-lg transition-all disabled:opacity-50 mt-4 flex items-center gap-2"
+                    className="h-10 px-6 bg-accent-primary hover:opacity-90 text-white shadow font-bold uppercase text-xs tracking-wider rounded-lg transition-all disabled:opacity-50 mt-4 flex items-center gap-2"
                 >
                     <RotateCcw size={16} className={isDistributing ? "animate-spin" : ""} />
                     Розподілити
                 </button>
 
                 <div className="ml-auto mt-4 text-right">
-                    <div className="text-[10px] saas-text-secondary uppercase tracking-widest font-bold">Нерозподілено</div>
-                    <div className={cn("font-mono font-bold text-xl", (totalBaked - totalDistributed) < 0 ? "text-red-500" : "saas-text-primary")}>
+                    <div className="text-[10px] text-text-secondary uppercase tracking-widest font-bold">Нерозподілено</div>
+                    <div className={cn("font-mono font-bold text-xl", (totalBaked - totalDistributed) < 0 ? "text-red-500" : "text-text-primary")}>
                         {(totalBaked - totalDistributed).toFixed(0)}
                     </div>
                 </div>
@@ -412,35 +412,35 @@ export const BulvarPowerMatrix = ({ data, onRefresh, initialViewMode = 'products
         <div className="flex flex-col h-full w-full font-sans text-text-primary bg-bg-primary min-h-screen">
 
             {/* HEADER TOGGLE */}
-            <div className="px-6 py-4 flex items-center justify-start border-b border-slate-200 z-10 sticky top-0 bg-white/80 backdrop-blur-md transition-colors duration-300 mt-2">
-                <div className="flex items-center gap-2 p-1 bg-slate-100 rounded-xl border border-slate-200">
+            <div className="px-3 lg:px-4 py-3 flex items-center justify-start border-b border-panel-border z-10 sticky top-0 bg-panel-bg shadow-[var(--panel-shadow)] transition-colors duration-300">
+                <div className="flex items-center gap-2 p-1 bg-bg-primary rounded-xl border border-panel-border">
                     <button
                         onClick={() => setViewMode('products')}
                         className={cn(
-                            "px-4 py-2 rounded-lg text-sm font-medium transition-all focus:outline-none uppercase font-[family-name:var(--font-chakra)]",
+                            "px-4 h-10 rounded-lg text-xs font-bold transition-all focus:outline-none uppercase tracking-wider flex items-center justify-center",
                             viewMode === 'products'
-                                ? "bg-white text-blue-600 shadow-sm border border-blue-100"
-                                : "text-slate-500 hover:text-slate-900 hover:bg-white/50 border border-transparent"
+                                ? "bg-panel-bg text-accent-primary shadow-sm border border-panel-border"
+                                : "text-text-secondary hover:text-text-primary hover:bg-panel-bg/50 border border-transparent"
                         )}
                     >
-                        Products
+                        Товари
                     </button>
                     <button
                         onClick={() => setViewMode('stores')}
                         className={cn(
-                            "px-4 py-2 rounded-lg text-sm font-medium transition-all focus:outline-none uppercase font-[family-name:var(--font-chakra)]",
+                            "px-4 h-10 rounded-lg text-xs font-bold transition-all focus:outline-none uppercase tracking-wider flex items-center justify-center",
                             viewMode === 'stores'
-                                ? "bg-white text-blue-600 shadow-sm border border-blue-100"
-                                : "text-slate-500 hover:text-slate-900 hover:bg-white/50 border border-transparent"
+                                ? "bg-panel-bg text-accent-primary shadow-sm border border-panel-border"
+                                : "text-text-secondary hover:text-text-primary hover:bg-panel-bg/50 border border-transparent"
                         )}
                     >
-                        Locations
+                        Локації
                     </button>
                 </div>
             </div>
 
             {/* 🔥 CARD GRID LAYOUT */}
-            <main className="flex-1 overflow-y-auto custom-scrollbar p-6 bg-slate-50/30">
+            <main className="flex-1 overflow-y-auto custom-scrollbar p-4 lg:p-6 bg-bg-primary">
                 {viewMode === 'products' ? (
                     /* PRODUCTS VIEW */
                     <div className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-4 pb-20 mt-4">
@@ -454,10 +454,11 @@ export const BulvarPowerMatrix = ({ data, onRefresh, initialViewMode = 'products
                                     key={product.id}
                                     id={`product-${product.productCode}`}
                                     onClick={() => handleCardClick(product.productCode)}
-                                    className="bg-white p-4 rounded-xl transition-all flex flex-col gap-2 group hover:shadow-md border border-slate-200 hover:border-blue-200 cursor-pointer min-h-[120px] relative overflow-hidden"
+                                    className="bg-panel-bg p-4 rounded-2xl transition-all flex flex-col gap-2 group hover:shadow-[var(--panel-shadow-strong)] border border-panel-border hover:border-accent-primary/30 cursor-pointer min-h-[120px] relative overflow-hidden"
                                 >
+                                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-accent-primary/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                                     <div className="flex justify-between items-start relative z-10">
-                                        <h3 className="text-xs font-semibold text-slate-900 tracking-tight group-hover:text-blue-600 transition-colors leading-tight line-clamp-2 uppercase">
+                                        <h3 className="text-xs font-semibold text-text-primary tracking-tight group-hover:text-accent-primary transition-colors leading-tight line-clamp-2 uppercase">
                                             {product.name}
                                         </h3>
                                         <div className={`w-2 h-2 rounded-full ${hasIssues ? "bg-red-500" : "bg-emerald-500"} flex-shrink-0 mt-1`}></div>
@@ -465,30 +466,30 @@ export const BulvarPowerMatrix = ({ data, onRefresh, initialViewMode = 'products
 
                                     <div className="grid grid-cols-2 gap-2 my-1 relative z-10">
                                         <div className="flex flex-col">
-                                            <span className="text-[9px] uppercase font-bold text-slate-400 mb-0 tracking-widest">Act</span>
-                                            <span className={cn("text-2xl font-bold leading-none", hasIssues ? "text-red-600" : "text-slate-900")}>
+                                            <span className="text-[9px] uppercase font-bold text-text-secondary mb-0 tracking-widest">Факт</span>
+                                            <span className={cn("text-2xl font-bold leading-none", hasIssues ? "text-red-600" : "text-text-primary")}>
                                                 {product.computed.totalStock.toFixed(0)}
-                                                <span className="text-[12px] opacity-70 ml-1 font-normal text-slate-400">{product.unit || 'шт'}</span>
+                                                <span className="text-[12px] opacity-70 ml-1 font-normal text-text-secondary">{product.unit || 'шт'}</span>
                                             </span>
                                         </div>
                                         <div className="flex flex-col items-end">
-                                            <span className="text-[9px] uppercase font-bold text-slate-400 mb-0 tracking-widest">Tgt</span>
-                                            <span className="text-2xl font-bold text-blue-600 leading-none">
+                                            <span className="text-[9px] uppercase font-bold text-text-secondary mb-0 tracking-widest">Треба</span>
+                                            <span className="text-2xl font-bold text-accent-primary leading-none">
                                                 {product.computed.totalRecommended.toFixed(0)}
-                                                <span className="text-[12px] opacity-70 ml-1 font-normal text-slate-400">{product.unit || 'шт'}</span>
+                                                <span className="text-[12px] opacity-70 ml-1 font-normal text-text-secondary">{product.unit || 'шт'}</span>
                                             </span>
                                         </div>
                                     </div>
 
-                                    <div className="space-y-2 pt-2 border-t border-slate-100 mt-auto relative z-10">
+                                    <div className="space-y-2 pt-2 border-t border-panel-border mt-auto relative z-10">
                                         <div className="flex justify-between items-center text-xs">
-                                            <span className="text-slate-400 font-bold uppercase text-[9px] tracking-widest">Min. Stock</span>
-                                            <span className="font-medium text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded text-[10px]">
+                                            <span className="text-text-secondary font-bold uppercase text-[9px] tracking-widest">Мін. запас</span>
+                                            <span className="font-medium text-text-primary bg-bg-primary px-1.5 py-0.5 rounded text-[10px] border border-panel-border">
                                                 {product.computed.totalMinStock.toFixed(0)} {product.unit || 'шт'}
                                             </span>
                                         </div>
                                         <div className="relative pt-0.5">
-                                            <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden border border-slate-200">
+                                            <div className="h-1.5 w-full bg-bg-primary rounded-full overflow-hidden border border-panel-border">
                                                 <div
                                                     className={cn("h-full rounded-full transition-all duration-500", hasIssues ? "bg-red-500" : "bg-emerald-500")}
                                                     style={{ width: `${Math.min(100, (product.computed.totalStock / (Math.max(1, product.computed.totalMinStock) * 1.5)) * 100)}%` }}
@@ -500,11 +501,11 @@ export const BulvarPowerMatrix = ({ data, onRefresh, initialViewMode = 'products
                             );
                         })}
 
-                        <div className="bg-slate-50 p-4 rounded-xl border-dashed border-2 border-slate-200 hover:border-blue-300 hover:bg-white transition-all cursor-pointer group min-h-[120px] flex flex-col justify-center items-center gap-2">
-                            <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center border border-slate-100 group-hover:border-blue-200 transition-colors">
-                                <span className="text-slate-400 group-hover:text-blue-500 text-xl font-light">+</span>
+                        <div className="bg-panel-bg p-4 rounded-2xl border-dashed border-2 border-panel-border hover:border-accent-primary/30 hover:bg-panel-bg transition-all cursor-pointer group min-h-[120px] flex flex-col justify-center items-center gap-2">
+                            <div className="w-10 h-10 rounded-full bg-bg-primary flex items-center justify-center border border-panel-border group-hover:border-accent-primary/30 transition-colors">
+                                <span className="text-text-secondary group-hover:text-accent-primary text-xl font-light">+</span>
                             </div>
-                            <span className="text-[10px] font-bold text-slate-400 group-hover:text-slate-600 uppercase tracking-[0.2em] text-center">Додати Товар</span>
+                            <span className="text-[10px] font-bold text-text-secondary group-hover:text-text-primary uppercase tracking-[0.2em] text-center">Додати товар</span>
                         </div>
                     </div>
                 ) : (
@@ -521,39 +522,39 @@ export const BulvarPowerMatrix = ({ data, onRefresh, initialViewMode = 'products
                                     key={store.storeName}
                                     id={`store-${store.storeId}`}
                                     onClick={() => setSelectedDrawerStoreId(store.storeId)}
-                                    className="bg-white p-4 rounded-2xl transition-all overflow-hidden group hover:shadow-md border border-slate-200 hover:border-blue-200 cursor-pointer min-h-[120px] relative"
+                                    className="bg-panel-bg p-4 rounded-2xl transition-all overflow-hidden group hover:shadow-[var(--panel-shadow-strong)] border border-panel-border hover:border-accent-primary/30 cursor-pointer min-h-[120px] relative"
                                 >
                                     {/* STORE CARD HEADER */}
                                     <div className="flex items-center justify-between mb-3 relative z-10">
-                                        <h3 className="text-sm font-semibold text-slate-900 tracking-tight group-hover:text-blue-600 transition-colors leading-tight truncate uppercase">
+                                        <h3 className="text-sm font-semibold text-text-primary tracking-tight group-hover:text-accent-primary transition-colors leading-tight truncate uppercase">
                                             {store.storeName.replace('Магазин ', '').replace(/"/g, '')}
                                         </h3>
                                         <div className={`w-2 h-2 rounded-full ${hasIssues ? "bg-red-500" : "bg-emerald-500"} flex-shrink-0 mt-1`}></div>
                                     </div>
 
                                     <div className="grid grid-cols-3 gap-3 relative z-10 mb-2">
-                                        <div className="bg-slate-50 rounded-lg p-2 text-center border border-slate-100">
-                                            <div className="text-[8px] text-slate-400 uppercase font-bold tracking-widest mb-0.5">Stock</div>
-                                            <div className={cn("text-lg font-bold", hasIssues ? "text-red-600" : "text-slate-900")}>
+                                        <div className="bg-bg-primary rounded-lg p-2 text-center border border-panel-border">
+                                            <div className="text-[8px] text-text-secondary uppercase font-bold tracking-widest mb-0.5">Залишок</div>
+                                            <div className={cn("text-lg font-bold", hasIssues ? "text-red-600" : "text-text-primary")}>
                                                 {store.totalStock.toFixed(0)}
                                             </div>
                                         </div>
                                         <div className={cn("rounded-lg p-2 text-center border", hasIssues ? "bg-red-50 border-red-200" : "bg-emerald-50 border-emerald-200")}>
-                                            <div className="text-[8px] text-slate-400 uppercase font-bold tracking-widest mb-0.5">Critical</div>
+                                            <div className="text-[8px] text-text-secondary uppercase font-bold tracking-widest mb-0.5">Критично</div>
                                             <div className={cn("text-lg font-bold", hasIssues ? "text-red-600" : "text-emerald-600")}>
                                                 {store.criticalProducts}
                                             </div>
                                         </div>
                                         <div className="bg-blue-50/50 rounded-lg p-2 text-center border border-blue-100">
-                                            <div className="text-[8px] text-blue-500 uppercase font-bold tracking-widest mb-0.5">Sales/Day</div>
-                                            <div className="text-lg font-bold text-blue-600">
+                                            <div className="text-[8px] text-blue-500 uppercase font-bold tracking-widest mb-0.5">Сер/день</div>
+                                            <div className="text-lg font-bold text-accent-primary">
                                                 {store.totalAvgSales.toFixed(0)}
                                             </div>
                                         </div>
                                     </div>
 
                                     <div className="mt-auto pt-2 relative z-10">
-                                        <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
+                                        <div className="h-1.5 bg-bg-primary rounded-full overflow-hidden border border-panel-border">
                                             <div
                                                 className={cn(
                                                     "h-full rounded-full transition-all",

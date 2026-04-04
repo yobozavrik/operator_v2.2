@@ -21,6 +21,33 @@ interface ProductionItem {
     unit?: 'шт' | 'кг' | string;
 }
 
+interface BulvarStockLeftover {
+    ingredient_id?: number | string | null;
+    ingredient_name?: string;
+    storage_ingredient_left?: string;
+    ingredient_unit?: string;
+}
+
+interface BulvarStockStorage {
+    storage_id: string | number;
+    storage_name: string;
+    leftovers: BulvarStockLeftover[];
+}
+
+interface BulvarManufactureItem {
+    product_id?: number | string;
+    product_name?: string;
+    product_num?: number | string;
+}
+
+interface MetricCardProps {
+    title: string;
+    value: string;
+    unit: string;
+    icon: React.ComponentType<{ size?: number; className?: string; style?: React.CSSProperties }>;
+    color: string;
+}
+
 interface ProductionDetailViewProps {
     products: ProductionTask[];
 }
@@ -111,8 +138,8 @@ export const BulvarProductionTabs = ({ data, onRefresh, showTabs = true }: Props
     const [showProductionModal, setShowProductionModal] = useState(false);
     const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
     const [isStale, setIsStale] = useState(false);
-    const [stockData, setStockData] = useState<any>(null);
-    const [manufacturedData, setManufacturedData] = useState<any[]>([]);
+    const [stockData, setStockData] = useState<BulvarStockStorage[] | null>(null);
+    const [manufacturedData, setManufacturedData] = useState<BulvarManufactureItem[]>([]);
     const hasAutoSyncedRef = React.useRef(false);
 
     React.useEffect(() => {
@@ -163,10 +190,11 @@ export const BulvarProductionTabs = ({ data, onRefresh, showTabs = true }: Props
         return data.map(product => {
             let totalNetworkStock = 0;
             const targetNameMap = cleanStr(product.name);
+            const targetIngredientId = Number(product.productCode);
 
             const enrichedStores = (product.stores || []).map(store => {
                 const cleanStoreName = cleanStr(store.storeName);
-                const matchingStorage = stockData.find((s: any) => {
+                const matchingStorage = stockData.find((s) => {
                     const sName = cleanStr(s.storage_name);
                     const coreName = sName.replace('магазин', '');
                     return (coreName.length > 2 && cleanStoreName.includes(coreName)) || sName.includes(cleanStoreName);
@@ -176,7 +204,8 @@ export const BulvarProductionTabs = ({ data, onRefresh, showTabs = true }: Props
                 if (cleanStoreName.includes('кондитерка') || cleanStoreName.includes('цех')) {
                     newStock = 0;
                 } else if (matchingStorage && matchingStorage.leftovers) {
-                    const leftover = matchingStorage.leftovers.find((l: any) => cleanStr(l.ingredient_name || '') === targetNameMap);
+                    const leftover = matchingStorage.leftovers.find((l) => Number(l.ingredient_id) === targetIngredientId)
+                        || matchingStorage.leftovers.find((l) => cleanStr(l.ingredient_name || '') === targetNameMap);
                     if (leftover) {
                         newStock = Math.max(0, parseFloat(leftover.storage_ingredient_left || '0'));
                     }
@@ -205,8 +234,8 @@ export const BulvarProductionTabs = ({ data, onRefresh, showTabs = true }: Props
             totalMin += (Number(p.minStockThresholdKg) || 0);
         });
         if (manufacturedData && manufacturedData.length > 0) {
-            manufacturedData.forEach((mItem: any) => {
-                totalProduced += parseFloat(mItem.product_num || '0');
+            manufacturedData.forEach((mItem) => {
+                totalProduced += Number(mItem.product_num || 0);
             });
         }
         return {
@@ -220,7 +249,7 @@ export const BulvarProductionTabs = ({ data, onRefresh, showTabs = true }: Props
     }, [displayData, manufacturedData]);
 
     // --- SUB-COMPONENTS FOR STANDARD DASHBOARD UI ---
-    const MetricCard = ({ title, value, unit, icon: Icon, color }: any) => (
+    const MetricCard = ({ title, value, unit, icon: Icon, color }: MetricCardProps) => (
         <div className="bg-panel-bg border border-panel-border rounded-xl px-4 py-4 shadow-[var(--panel-shadow)] flex items-center justify-between gap-4 transition-all cursor-pointer hover:border-accent-primary/30 hover:shadow-[var(--panel-shadow-strong)]">
             <div className="min-w-0">
                 <div className="text-[10px] text-text-secondary font-bold uppercase tracking-widest mb-1">{title}</div>

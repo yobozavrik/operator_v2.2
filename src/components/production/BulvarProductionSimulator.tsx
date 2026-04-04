@@ -92,7 +92,7 @@ export default function BulvarProductionSimulator() {
                     {/* Horizon Selector */}
                     <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                         <span className="text-sm font-bold text-text-primary uppercase tracking-wider flex items-center gap-2 font-[family-name:var(--font-jetbrains)]">
-                            <TrendingUp size={16} className="text-[#00E0FF]" />
+                            <TrendingUp size={16} className="text-accent-primary" />
                             Горизонт планування:
                         </span>
                         <div className="flex gap-2">
@@ -101,7 +101,7 @@ export default function BulvarProductionSimulator() {
                                     key={d}
                                     onClick={() => setDays(d)}
                                     className={`px-4 py-1.5 text-xs font-black rounded-lg transition-all border tracking-widest font-[family-name:var(--font-jetbrains)] ${days === d
-                                        ? 'bg-[#00E0FF]/10 border-[#00E0FF]/50 text-[#00E0FF] shadow-[0_0_10px_rgba(0,224,255,0.2)]'
+                                        ? 'bg-accent-primary/10 border-accent-primary/40 text-accent-primary shadow-[var(--panel-shadow)]'
                                         : 'bg-bg-primary border-panel-border text-text-secondary hover:text-text-primary hover:border-text-muted hover:bg-panel-border/30'
                                         }`}
                                 >
@@ -125,7 +125,7 @@ export default function BulvarProductionSimulator() {
                     {/* Індикатор завантаження */}
                     {isLoading && (
                         <div className="absolute inset-0 z-10 bg-bg-primary/60 backdrop-blur-[2px] rounded-2xl flex items-center justify-center transition-all duration-300">
-                            <div className="flex flex-col items-center gap-3 text-orange-500 bg-panel-bg px-8 py-6 rounded-2xl shadow-[var(--panel-shadow)] border border-panel-border">
+                            <div className="flex flex-col items-center gap-3 text-accent-primary bg-panel-bg px-8 py-6 rounded-2xl shadow-[var(--panel-shadow)] border border-panel-border">
                                 <Loader2 className="w-8 h-8 animate-spin" />
                                 <span className="text-xs font-bold tracking-widest uppercase font-[family-name:var(--font-jetbrains)] text-text-primary">Перерахунок плану...</span>
                             </div>
@@ -134,7 +134,7 @@ export default function BulvarProductionSimulator() {
 
                     {/* ВСЬОГО */}
                     <div className="mt-4 mb-4">
-                        <h2 className="text-xl font-bold text-orange-500 mb-4 font-[family-name:var(--font-chakra)] uppercase flex items-center gap-2">
+                        <h2 className="text-xl font-bold text-text-primary mb-4 font-[family-name:var(--font-chakra)] uppercase flex items-center gap-2">
                             <span className="text-2xl">🏭</span> СИМУЛЯТОР БУЛЬВАР-АВТОВОКЗАЛ
                         </h2>
                         <div className="grid gap-6 lg:grid-cols-3">
@@ -144,14 +144,14 @@ export default function BulvarProductionSimulator() {
 
                                 return (
                                     <div key={`bulvar-${day}`} className="bg-panel-bg border border-panel-border rounded-2xl shadow-[var(--panel-shadow)] overflow-hidden flex flex-col">
-                                        <div className="p-4 border-b border-panel-border bg-[#131B2C]/50 flex items-center justify-between">
+                                        <div className="p-4 border-b border-panel-border bg-bg-primary flex items-center justify-between">
                                             <h3 className="font-bold text-text-primary flex items-center gap-2 font-[family-name:var(--font-chakra)] text-lg uppercase tracking-wide">
-                                                <div className="w-7 h-7 rounded-lg bg-orange-500/10 text-orange-500 border border-orange-500/30 flex items-center justify-center font-bold text-sm shadow-[0_0_8px_rgba(255,138,0,0.15)]">
+                                                <div className="w-7 h-7 rounded-lg bg-accent-primary/10 text-accent-primary border border-accent-primary/30 flex items-center justify-center font-bold text-sm shadow-[var(--panel-shadow)]">
                                                     Д{day}
                                                 </div>
                                                 Зміна {day}
                                             </h3>
-                                            <div className="text-sm font-black text-orange-400 bg-orange-500/10 px-3 py-1 rounded-full border border-orange-500/20 shadow-[0_0_10px_rgba(255,138,0,0.1)] font-[family-name:var(--font-jetbrains)]">
+                                            <div className="text-sm font-black text-accent-primary bg-accent-primary/10 px-3 py-1 rounded-full border border-accent-primary/20 shadow-[var(--panel-shadow)] font-[family-name:var(--font-jetbrains)]">
                                                 {totalForDay > 0 ? `${totalForDay} од.` : '—'}
                                             </div>
                                         </div>
@@ -163,13 +163,13 @@ export default function BulvarProductionSimulator() {
                                                     {dayPlan.map((row, idx) => (
                                                         <li key={idx} className="flex items-center justify-between p-3 rounded-xl hover:bg-bg-primary transition-colors border border-transparent hover:border-panel-border group">
                                                             <div className="flex flex-col">
-                                                                <span className="font-bold text-text-primary text-sm group-hover:text-orange-400 transition-colors leading-tight">{row.product_name}</span>
+                                                                <span className="font-bold text-text-primary text-sm group-hover:text-accent-primary transition-colors leading-tight">{row.product_name}</span>
                                                                 <div className="flex items-center gap-2 mt-2 leading-none">
                                                                     <span className="text-[10px] text-text-secondary font-mono tracking-wide px-1.5 py-0.5 rounded bg-panel-border/30 border border-panel-border">R: {row.risk_index}</span>
                                                                 </div>
                                                             </div>
                                                             <div className="text-right pl-3 flex-shrink-0">
-                                                                <span className="text-lg font-black text-orange-400 tabular-nums font-[family-name:var(--font-chakra)] p-2">{row.quantity}</span>
+                                                                <span className="text-lg font-black text-accent-primary tabular-nums font-[family-name:var(--font-chakra)] p-2">{row.quantity}</span>
                                                             </div>
                                                         </li>
                                                     ))}

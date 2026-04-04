@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server';
 import { parseISO, format } from 'date-fns';
 import { uk } from 'date-fns/locale';
 import { requireAuth } from '@/lib/auth-guard';
-import { getAllLeftovers } from '@/lib/poster-api';
 import { syncBulvarCatalogFromPoster } from '@/lib/bulvar-catalog';
+import { fetchBulvarEdgeStocks, syncBulvarStocksFromEdge, type BulvarEdgeStockRow } from '@/lib/bulvar-stock-sync';
 import { createClient } from '@/utils/supabase/server';
 import {
     BRANCH_CONFIGS,
@@ -21,6 +21,31 @@ export const dynamic = 'force-dynamic';
 const config = BRANCH_CONFIGS.bulvar;
 const BULVAR_DISTRIBUTION_SELECT =
     'product_id, product_name, spot_name, spot_id, stock_now, min_stock, avg_sales_day, need_net, unit';
+
+interface BulvarConfirmDistributionItem {
+    storeId: number | string;
+    productId: number | string;
+    quantity: number | string;
+}
+
+interface BulvarProductionFallbackRow {
+    product_id: number | string;
+    product_name: string;
+    baked_at_factory: number | string;
+}
+
+interface BulvarStorageRow {
+    storage_id: number | string;
+    storage_name: string;
+}
+
+interface StockSnapshotRow {
+    storage_id: number;
+    ingredient_id: number | null;
+    ingredient_name: string;
+    stock_left: number;
+    unit: string;
+}
 
 function getRoutePath(request: Request): string {
     const pathname = new URL(request.url).pathname;
@@ -44,7 +69,7 @@ async function handleAnalytics() {
         config,
         BULVAR_DISTRIBUTION_SELECT
     );
-    return NextResponse.json(buildBranchAnalytics(rawRows as any[], 'bulvar_name'));
+    return NextResponse.json(buildBranchAnalytics(rawRows, 'bulvar_name'));
 }
 
 async function handleShopStats(request: Request) {
@@ -85,7 +110,7 @@ async function handleOrderPlan(request: Request) {
         config,
         BULVAR_DISTRIBUTION_SELECT
     );
-    return NextResponse.json(buildBranchOrderPlan(rawRows as any[], days));
+    return NextResponse.json(buildBranchOrderPlan(rawRows, days));
 }
 
 async function handleCalculateDistribution(request: Request) {
@@ -106,7 +131,7 @@ async function handleCalculateDistribution(request: Request) {
         config,
         BULVAR_DISTRIBUTION_SELECT
     );
-    const result = calculateBranchDistribution(rawRows as any[], Math.trunc(productId), productionQuantity);
+    const result = calculateBranchDistribution(rawRows, Math.trunc(productId), productionQuantity);
     return NextResponse.json(result);
 }
 
@@ -114,14 +139,14 @@ async function handleConfirmDistribution(request: Request) {
     const body = await request.json().catch(() => null);
     const distributions = Array.isArray(body?.distributions)
         ? body.distributions.filter(
-            (item: any) =>
+            (item: BulvarConfirmDistributionItem) =>
                 Number.isFinite(Number(item?.storeId)) &&
                 Number.isFinite(Number(item?.productId)) &&
                 Number(item?.quantity) > 0
         )
         : [];
 
-    const totalQty = distributions.reduce((sum: number, item: any) => sum + Number(item.quantity), 0);
+    const totalQty = distributions.reduce((sum: number, item: BulvarConfirmDistributionItem) => sum + Number(item.quantity), 0);
 
     return NextResponse.json({
         success: true,
@@ -145,19 +170,142 @@ async function handleCreateOrder(request: Request) {
 async function handleUpdateStock() {
     const supabase = createServiceRoleClient();
     await syncBulvarCatalogFromPoster(supabase);
-    const [allLeftovers, productionSync] = await Promise.all([
-        getAllLeftovers({ categoryKeywords: null }),
-        syncBranchProductionFromPoster(supabase, 'bulvar1', 22),
-    ]);
+
+    const warnings: string[] = [];
+    let edgeRowsFallback: BulvarEdgeStockRow[] | null = null;
+    let sync: {
+        synced_rows: number;
+        synced_storages: number;
+        skipped_storages: number[];
+    } = {
+        synced_rows: 0,
+        synced_storages: 0,
+        skipped_storages: [],
+    };
+
+    try {
+        const syncResult = await syncBulvarStocksFromEdge(supabase);
+        warnings.push(...syncResult.warnings);
+        sync = {
+            synced_rows: syncResult.syncedRows,
+            synced_storages: syncResult.syncedStorages,
+            skipped_storages: syncResult.skippedStorages,
+        };
+    } catch (err: unknown) {
+        warnings.push(`DB stock sync failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
+        try {
+            const edgeResult = await fetchBulvarEdgeStocks(supabase);
+            warnings.push(...edgeResult.warnings);
+            warnings.push('Edge read-only mode: stocks returned from edge function without DB persist.');
+            edgeRowsFallback = edgeResult.rows;
+            sync = {
+                synced_rows: 0,
+                synced_storages: edgeResult.successfulStorageIds.length,
+                skipped_storages: edgeResult.skippedStorages,
+            };
+        } catch (edgeErr: unknown) {
+            return NextResponse.json(
+                { error: edgeErr instanceof Error ? edgeErr.message : 'Edge stock sync failed' },
+                { status: 500 }
+            );
+        }
+    }
+
+    const productionSync = await syncBranchProductionFromPoster(supabase, 'bulvar1', 22);
+
+    if (productionSync.warning) warnings.push(`Production snapshot warning: ${productionSync.warning}`);
+
+    let todayManufactures: Array<{
+        product_id: number;
+        product_name: string;
+        product_num: number;
+    }> = productionSync.items.map((item) => ({
+        product_id: Number(item.product_id),
+        product_name: String(item.product_name),
+        product_num: Number(item.quantity),
+    }));
+
+    if (!Array.isArray(todayManufactures) || todayManufactures.length === 0) {
+        try {
+            const { data: prodRows, error: prodError } = await supabase
+                .schema('bulvar1')
+                .from('v_bulvar_production_only')
+                .select('product_id, product_name, baked_at_factory');
+
+            if (prodError) {
+                warnings.push(`Production fallback query failed: ${prodError.message}`);
+            } else {
+                todayManufactures = (prodRows || []).map((row: BulvarProductionFallbackRow) => ({
+                    product_id: Number(row.product_id),
+                    product_name: String(row.product_name),
+                    product_num: Number(row.baked_at_factory),
+                }));
+            }
+        } catch (err: unknown) {
+            warnings.push(`Production fallback failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
+        }
+    }
+
+    const { data: storagesData, error: storagesError } = await supabase
+        .schema('categories')
+        .from('storages')
+        .select('storage_id, storage_name');
+
+    if (storagesError) {
+        return NextResponse.json({ error: storagesError.message }, { status: 500 });
+    }
+
+    let stockRows: StockSnapshotRow[] = edgeRowsFallback || [];
+    if (!edgeRowsFallback) {
+        const { data: stocksData, error: stocksError } = await supabase
+            .schema('bulvar1')
+            .from('effective_stocks')
+            .select('storage_id, ingredient_id, ingredient_name, stock_left, unit')
+            .eq('source', 'poster_edge');
+
+        if (stocksError) {
+            return NextResponse.json({ error: stocksError.message }, { status: 500 });
+        }
+        stockRows = (stocksData || []) as StockSnapshotRow[];
+    }
+
+    const storageNameById = new Map<number, string>();
+    (storagesData || []).forEach((storage: BulvarStorageRow) => {
+        const storageId = Number(storage.storage_id);
+        if (!Number.isFinite(storageId) || storageId <= 0) return;
+        storageNameById.set(storageId, String(storage.storage_name || `Storage ${storageId}`));
+    });
+
+    const byStorage = new Map<number, Array<{
+        ingredient_id: number | null;
+        ingredient_name: string;
+        storage_ingredient_left: string;
+        ingredient_unit: string;
+    }>>();
+    stockRows.forEach((row: StockSnapshotRow) => {
+        const storageId = Number(row.storage_id);
+        if (!Number.isFinite(storageId) || storageId <= 0) return;
+        if (!byStorage.has(storageId)) byStorage.set(storageId, []);
+        byStorage.get(storageId)!.push({
+            ingredient_id: row.ingredient_id ?? null,
+            ingredient_name: String(row.ingredient_name || ''),
+            storage_ingredient_left: String(Math.max(0, Number(row.stock_left) || 0)),
+            ingredient_unit: String(row.unit || ''),
+        });
+    });
+
+    const allLeftovers = Array.from(byStorage.entries()).map(([storageId, leftovers]) => ({
+        storage_id: String(storageId),
+        storage_name: storageNameById.get(storageId) || `Storage ${storageId}`,
+        leftovers,
+    }));
 
     return NextResponse.json({
         success: true,
         data: allLeftovers,
-        manufactures: productionSync.items.map((item) => ({
-            product_id: item.product_id,
-            product_name: item.product_name,
-            product_num: item.quantity,
-        })),
+        manufactures: todayManufactures,
+        sync,
+        warnings,
         production_sync: {
             business_date: productionSync.businessDate,
             items_count: productionSync.itemsCount,
@@ -331,9 +479,9 @@ export async function GET(request: Request) {
             default:
                 return routeNotFound('GET', routePath);
         }
-    } catch (error: any) {
+    } catch (error: unknown) {
         return NextResponse.json(
-            { error: error?.message || 'Internal Server Error' },
+            { error: error instanceof Error ? error.message : 'Internal Server Error' },
             { status: 500 }
         );
     }
@@ -358,9 +506,9 @@ export async function POST(request: Request) {
             default:
                 return routeNotFound('POST', routePath);
         }
-    } catch (error: any) {
+    } catch (error: unknown) {
         return NextResponse.json(
-            { error: error?.message || 'Internal Server Error' },
+            { error: error instanceof Error ? error.message : 'Internal Server Error' },
             { status: 500 }
         );
     }

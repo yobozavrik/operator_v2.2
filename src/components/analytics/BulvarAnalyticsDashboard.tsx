@@ -162,87 +162,87 @@ export const BulvarAnalyticsDashboard: React.FC<BulvarAnalyticsDashboardProps> =
     const formatNumber = (val: number) => new Intl.NumberFormat('uk-UA', { maximumFractionDigits: 1 }).format(val);
 
     return (
-        <div className="space-y-6 animate-fade-in pb-20">
+        <div className="space-y-6 animate-fade-in pb-20 text-text-primary">
             {/* KPI ROW */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {/* Global Index */}
-                <div className="bg-[#141B2D]/80 border border-[#00D4FF]/20 rounded-2xl p-6 relative overflow-hidden group hover:border-[#00D4FF]/50 transition-colors">
+                <div className="bg-panel-bg border border-panel-border rounded-2xl p-6 relative overflow-hidden group hover:border-accent-primary/30 hover:shadow-[var(--panel-shadow-strong)] transition-all">
                     <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                        <Target size={64} className="text-[#00D4FF]" />
+                        <Target size={64} className="text-accent-primary" />
                     </div>
-                    <p className="text-[#00D4FF] text-xs font-bold uppercase tracking-widest mb-2 flex items-center gap-2">
+                    <p className="text-text-secondary text-xs font-bold uppercase tracking-widest mb-2 flex items-center gap-2">
                         Індекс Заповненості
                     </p>
                     <div className="flex items-baseline gap-2">
-                        <h3 className="text-4xl font-black text-white">{kpis.fillIndex.toFixed(0)}</h3>
-                        <span className="text-xl text-white/50">%</span>
+                        <h3 className="text-4xl font-black text-text-primary">{kpis.fillIndex.toFixed(0)}</h3>
+                        <span className="text-xl text-text-secondary">%</span>
                     </div>
-                    <div className="mt-4 text-xs font-semibold text-white/40 uppercase tracking-widest flex items-center justify-between">
+                    <div className="mt-4 text-xs font-semibold text-text-secondary uppercase tracking-widest flex items-center justify-between">
                         <span>Факт: {formatNumber(kpis.totalStockKg)}</span>
                         <span>Норма: {formatNumber(kpis.totalNormKg)}</span>
                     </div>
                     {/* Progress Bar inside KPI */}
-                    <div className="w-full bg-white/5 rounded-full h-1.5 mt-3 overflow-hidden">
+                    <div className="w-full bg-bg-primary rounded-full h-1.5 mt-3 overflow-hidden border border-panel-border">
                         <div
-                            className="h-full bg-[#00D4FF] shadow-[0_0_10px_#00D4FF]"
+                            className="h-full bg-accent-primary shadow-[0_0_10px_var(--accent-primary)]"
                             style={{ width: `${Math.min(100, kpis.fillIndex)}%` }}
                         />
                     </div>
                 </div>
 
                 {/* Total Demand */}
-                <div className="bg-[#141B2D]/80 border border-[#10B981]/20 rounded-2xl p-6 relative overflow-hidden group hover:border-[#10B981]/50 transition-colors">
+                <div className="bg-panel-bg border border-panel-border rounded-2xl p-6 relative overflow-hidden group hover:border-emerald-500/30 hover:shadow-[var(--panel-shadow-strong)] transition-all">
                     <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                        <TrendingUp size={64} className="text-[#10B981]" />
+                        <TrendingUp size={64} className="text-emerald-500" />
                     </div>
-                    <p className="text-[#10B981] text-xs font-bold uppercase tracking-widest mb-2 flex items-center gap-2">
+                    <p className="text-text-secondary text-xs font-bold uppercase tracking-widest mb-2 flex items-center gap-2">
                         Прогноз попиту (день)
                     </p>
                     <div className="flex items-baseline gap-2">
-                        <h3 className="text-4xl font-black text-white">{formatNumber(kpis.totalDailyDemandKg)}</h3>
-                        <span className="text-sm text-white/50">од/кг</span>
+                        <h3 className="text-4xl font-black text-text-primary">{formatNumber(kpis.totalDailyDemandKg)}</h3>
+                        <span className="text-sm text-text-secondary">од/кг</span>
                     </div>
-                    <div className="mt-4 text-[10px] font-semibold text-emerald-400/70 uppercase tracking-widest flex items-center gap-1">
+                    <div className="mt-4 text-[10px] font-semibold text-emerald-500/70 uppercase tracking-widest flex items-center gap-1">
                         <CheckCircle2 size={12} /> Середньоденний темп
                     </div>
                 </div>
 
                 {/* Total Deficit */}
-                <div className="bg-[#141B2D]/80 border border-[#EF4444]/20 rounded-2xl p-6 relative overflow-hidden group hover:border-[#EF4444]/50 transition-colors">
+                <div className="bg-panel-bg border border-panel-border rounded-2xl p-6 relative overflow-hidden group hover:border-status-critical/30 hover:shadow-[var(--panel-shadow-strong)] transition-all">
                     <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                        <AlertTriangle size={64} className="text-[#EF4444]" />
+                        <AlertTriangle size={64} className="text-status-critical" />
                     </div>
-                    <p className="text-[#EF4444] text-xs font-bold uppercase tracking-widest mb-2 flex items-center gap-2">
+                    <p className="text-text-secondary text-xs font-bold uppercase tracking-widest mb-2 flex items-center gap-2">
                         Загальний Дефіцит
                     </p>
                     <div className="flex items-baseline gap-2">
-                        <h3 className="text-4xl font-black text-white">{formatNumber(kpis.totalDeficitKg)}</h3>
-                        <span className="text-sm text-white/50">од/кг</span>
+                        <h3 className="text-4xl font-black text-text-primary">{formatNumber(kpis.totalDeficitKg)}</h3>
+                        <span className="text-sm text-text-secondary">од/кг</span>
                     </div>
-                    <div className="mt-4 text-[10px] font-semibold text-red-400/70 uppercase tracking-widest flex items-center gap-1">
+                    <div className="mt-4 text-[10px] font-semibold text-status-critical/70 uppercase tracking-widest flex items-center gap-1">
                         <TrendingDown size={12} /> Потребує виробництва
                     </div>
-                    <div className="w-full bg-white/5 rounded-full h-1.5 mt-3 overflow-hidden">
+                    <div className="w-full bg-bg-primary rounded-full h-1.5 mt-3 overflow-hidden border border-panel-border">
                         <div
-                            className="h-full bg-[#EF4444] shadow-[0_0_10px_#EF4444]"
+                            className="h-full bg-status-critical shadow-[0_0_10px_var(--status-critical)]"
                             style={{ width: `${Math.min(100, (kpis.totalDeficitKg / (kpis.totalNormKg || 1)) * 100)}%` }}
                         />
                     </div>
                 </div>
 
                 {/* Unique SKUs */}
-                <div className="bg-[#141B2D]/80 border border-[#F59E0B]/20 rounded-2xl p-6 relative overflow-hidden group hover:border-[#F59E0B]/50 transition-colors">
+                <div className="bg-panel-bg border border-panel-border rounded-2xl p-6 relative overflow-hidden group hover:border-amber-500/30 hover:shadow-[var(--panel-shadow-strong)] transition-all">
                     <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                        <Package size={64} className="text-[#F59E0B]" />
+                        <Package size={64} className="text-amber-500" />
                     </div>
-                    <p className="text-[#F59E0B] text-xs font-bold uppercase tracking-widest mb-2 flex items-center gap-2">
+                    <p className="text-text-secondary text-xs font-bold uppercase tracking-widest mb-2 flex items-center gap-2">
                         Активні Позиції
                     </p>
                     <div className="flex items-baseline gap-2">
-                        <h3 className="text-4xl font-black text-white">{data.length}</h3>
-                        <span className="text-sm text-white/50">SKU</span>
+                        <h3 className="text-4xl font-black text-text-primary">{data.length}</h3>
+                        <span className="text-sm text-text-secondary">SKU</span>
                     </div>
-                    <div className="mt-4 text-[10px] font-semibold text-amber-400/70 uppercase tracking-widest flex items-center gap-1">
+                    <div className="mt-4 text-[10px] font-semibold text-amber-500/70 uppercase tracking-widest flex items-center gap-1">
                         <Layers size={12} /> В асортименті
                     </div>
                 </div>
@@ -252,11 +252,11 @@ export const BulvarAnalyticsDashboard: React.FC<BulvarAnalyticsDashboardProps> =
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
                 {/* TOP PRODUCTS CHART */}
-                <div className="lg:col-span-2 bg-[#141B2D]/60 border border-white/5 rounded-2xl p-6">
+                <div className="lg:col-span-2 bg-panel-bg border border-panel-border rounded-2xl p-6 shadow-[var(--panel-shadow)]">
                     <div className="mb-6 flex items-center justify-between">
                         <div>
-                            <h3 className="text-white font-bold tracking-wide">ТОП Продуктів за Попитом</h3>
-                            <p className="text-xs text-white/40 uppercase tracking-widest">Найбільш популярні товарні позиції</p>
+                            <h3 className="text-text-primary font-bold tracking-wide uppercase">ТОП Продуктів за Попитом</h3>
+                            <p className="text-xs text-text-secondary uppercase tracking-widest">Найбільш популярні товарні позиції</p>
                         </div>
                     </div>
                     <div className="h-[350px] w-full">
@@ -281,17 +281,17 @@ export const BulvarAnalyticsDashboard: React.FC<BulvarAnalyticsDashboardProps> =
                                 <RechartsTooltip
                                     cursor={{ fill: 'rgba(255,255,255,0.02)' }}
                                     content={({ active, payload }) => {
-                                        if (active && payload && payload.length) {
-                                            const data = payload[0].payload;
-                                            return (
-                                                <div className="bg-[#0a0e27] border border-[#00D4FF]/30 p-3 rounded-lg shadow-xl">
-                                                    <p className="text-white font-bold mb-2">{data.fullName}</p>
-                                                    <div className="space-y-1 text-sm">
-                                                        <p className="text-[#10B981]">Попит: {data.demand} {data.unit}</p>
-                                                        <p className="text-[#00D4FF]">Наявність: {data.stock} {data.unit}</p>
-                                                    </div>
+                                if (active && payload && payload.length) {
+                                    const data = payload[0].payload;
+                                    return (
+                                            <div className="bg-bg-primary border border-panel-border p-3 rounded-lg shadow-[var(--panel-shadow)]">
+                                                <p className="text-text-primary font-bold mb-2">{data.fullName}</p>
+                                                <div className="space-y-1 text-sm">
+                                                    <p className="text-emerald-500">Попит: {data.demand} {data.unit}</p>
+                                                    <p className="text-accent-primary">Наявність: {data.stock} {data.unit}</p>
                                                 </div>
-                                            );
+                                            </div>
+                                    );
                                         }
                                         return null;
                                     }}
@@ -304,10 +304,10 @@ export const BulvarAnalyticsDashboard: React.FC<BulvarAnalyticsDashboardProps> =
                 </div>
 
                 {/* CATEGORY DONUT */}
-                <div className="bg-[#141B2D]/60 border border-white/5 rounded-2xl p-6 flex flex-col items-center">
+                <div className="bg-panel-bg border border-panel-border rounded-2xl p-6 flex flex-col items-center shadow-[var(--panel-shadow)]">
                     <div className="w-full text-left mb-2">
-                        <h3 className="text-white font-bold tracking-wide">Структура попиту</h3>
-                        <p className="text-xs text-white/40 uppercase tracking-widest">Розподіл за категоріями</p>
+                        <h3 className="text-text-primary font-bold tracking-wide uppercase">Структура попиту</h3>
+                        <p className="text-xs text-text-secondary uppercase tracking-widest">Розподіл за категоріями</p>
                     </div>
                     <div className="h-[300px] w-full mt-4">
                         <ResponsiveContainer width="100%" height="100%">
@@ -328,7 +328,7 @@ export const BulvarAnalyticsDashboard: React.FC<BulvarAnalyticsDashboardProps> =
                                     content={({ active, payload }) => {
                                         if (active && payload && payload.length) {
                                             return (
-                                                <div className="bg-[#0a0e27] border border-white/10 p-2 rounded shadow-xl text-sm font-semibold text-white">
+                                                <div className="bg-bg-primary border border-panel-border p-2 rounded shadow-[var(--panel-shadow)] text-sm font-semibold text-text-primary">
                                                     {payload[0].name}: {payload[0].value}
                                                 </div>
                                             );
@@ -340,7 +340,7 @@ export const BulvarAnalyticsDashboard: React.FC<BulvarAnalyticsDashboardProps> =
                                     verticalAlign="bottom"
                                     height={36}
                                     iconType="circle"
-                                    formatter={(value) => <span className="text-white/70 text-xs">{value}</span>}
+                                    formatter={(value) => <span className="text-text-secondary text-xs">{value}</span>}
                                 />
                             </PieChart>
                         </ResponsiveContainer>
@@ -353,51 +353,51 @@ export const BulvarAnalyticsDashboard: React.FC<BulvarAnalyticsDashboardProps> =
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
 
                 {/* STORE HEATMAP / LIST */}
-                <div className="bg-[#141B2D]/60 border border-white/5 rounded-2xl p-6">
+                <div className="bg-panel-bg border border-panel-border rounded-2xl p-6 shadow-[var(--panel-shadow)]">
                     <div className="mb-6">
-                        <h3 className="text-white font-bold tracking-wide">Дефіцит по магазинах</h3>
-                        <p className="text-xs text-white/40 uppercase tracking-widest">Топ точок за нестачею продукції</p>
+                        <h3 className="text-text-primary font-bold tracking-wide uppercase">Дефіцит по магазинах</h3>
+                        <p className="text-xs text-text-secondary uppercase tracking-widest">Топ точок за нестачею продукції</p>
                     </div>
 
                     <div className="space-y-4">
                         {storeHealthData.map((store, i) => (
                             <div key={i} className="flex items-center gap-4">
-                                <span className="text-white/30 text-xs w-4">{i + 1}</span>
+                                <span className="text-text-secondary text-xs w-4">{i + 1}</span>
                                 <div className="flex-1">
                                     <div className="flex justify-between items-end mb-1">
-                                        <span className="text-sm font-medium text-white">{store.storeName}</span>
-                                        <span className="text-xs font-bold text-[#EF4444]">{store.deficit} деф.</span>
+                                        <span className="text-sm font-medium text-text-primary">{store.storeName}</span>
+                                        <span className="text-xs font-bold text-status-critical">{store.deficit} деф.</span>
                                     </div>
-                                    <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden flex">
+                                    <div className="w-full bg-bg-primary rounded-full h-1.5 overflow-hidden flex border border-panel-border">
                                         <div
-                                            className="h-full bg-[#10B981]"
+                                            className="h-full bg-emerald-500"
                                             style={{ width: `${store.fillRate}%` }}
                                         />
                                         <div
-                                            className="h-full bg-[#EF4444] opacity-50"
+                                            className="h-full bg-status-critical opacity-50"
                                             style={{ width: `${100 - store.fillRate}%` }}
                                         />
                                     </div>
-                                    <div className="text-[9px] text-white/40 mt-1 uppercase tracking-widest">
+                                    <div className="text-[9px] text-text-secondary mt-1 uppercase tracking-widest">
                                         Заповненість {store.fillRate}%
                                     </div>
                                 </div>
                             </div>
                         ))}
                         {storeHealthData.length === 0 && (
-                            <div className="text-center py-8 text-white/40 text-sm">Дані про магазини відсутні</div>
+                            <div className="text-center py-8 text-text-secondary text-sm">Дані про магазини відсутні</div>
                         )}
                     </div>
                 </div>
 
                 {/* OVERALL FILL RATE GAUGE */}
-                <div className="bg-[#141B2D]/60 border border-white/5 rounded-2xl p-6 flex flex-col items-center justify-center relative overflow-hidden">
+                <div className="bg-panel-bg border border-panel-border rounded-2xl p-6 flex flex-col items-center justify-center relative overflow-hidden shadow-[var(--panel-shadow)]">
                     {/* Background Glow */}
-                    <div className="absolute inset-0 bg-radial-gradient from-[#00D4FF]/5 to-transparent pointer-events-none" />
+                    <div className="absolute inset-0 bg-radial-gradient from-accent-primary/5 to-transparent pointer-events-none" />
 
                     <div className="text-center mb-8 z-10 w-full">
-                        <h3 className="text-white font-bold tracking-wide">Рівень Забезпечення Мережі</h3>
-                        <p className="text-xs text-white/40 uppercase tracking-widest">Загальне здоров'я вітрин</p>
+                        <h3 className="text-text-primary font-bold tracking-wide uppercase">Рівень Забезпечення Мережі</h3>
+                        <p className="text-xs text-text-secondary uppercase tracking-widest">Загальне здоров&apos;я вітрин</p>
                     </div>
 
                     <div className="h-[250px] w-full z-10 relative flex justify-center items-center">
@@ -409,8 +409,8 @@ export const BulvarAnalyticsDashboard: React.FC<BulvarAnalyticsDashboardProps> =
                                 outerRadius="100%"
                                 barSize={20}
                                 data={[
-                                    { name: 'Norm', value: 100, fill: 'rgba(255,255,255,0.05)' },
-                                    { name: 'Fill', value: Math.min(100, kpis.fillIndex), fill: '#00D4FF' }
+                                    { name: 'Norm', value: 100, fill: 'rgba(148,163,184,0.10)' },
+                                    { name: 'Fill', value: Math.min(100, kpis.fillIndex), fill: 'var(--accent-primary)' }
                                 ]}
                                 startAngle={180}
                                 endAngle={0}
@@ -423,8 +423,8 @@ export const BulvarAnalyticsDashboard: React.FC<BulvarAnalyticsDashboardProps> =
                             </RadialBarChart>
                         </ResponsiveContainer>
                         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 translate-y-[-10px] text-center">
-                            <h2 className="text-5xl font-black text-white">{kpis.fillIndex.toFixed(0)}<span className="text-2xl text-[#00D4FF]">%</span></h2>
-                            <p className="text-xs text-[#00D4FF] uppercase tracking-widest mt-1">Виконання норми</p>
+                            <h2 className="text-5xl font-black text-text-primary">{kpis.fillIndex.toFixed(0)}<span className="text-2xl text-accent-primary">%</span></h2>
+                            <p className="text-xs text-accent-primary uppercase tracking-widest mt-1">Виконання норми</p>
                         </div>
                     </div>
 
@@ -432,17 +432,17 @@ export const BulvarAnalyticsDashboard: React.FC<BulvarAnalyticsDashboardProps> =
 
             </div>
 
-            {/* CHARTS ROW 3 (TRENDS) */}
-            {trendsChartData.length > 0 && (
+                {/* CHARTS ROW 3 (TRENDS) */}
+                {trendsChartData.length > 0 && (
                 <div className="grid grid-cols-1 gap-6 mt-6">
-                    <div className="bg-[#141B2D]/60 border border-white/5 rounded-2xl p-6">
+                    <div className="bg-panel-bg border border-panel-border rounded-2xl p-6 shadow-[var(--panel-shadow)]">
                         <div className="mb-6 flex items-center justify-between">
                             <div>
-                                <h3 className="text-white font-bold tracking-wide flex items-center gap-2">
-                                    <TrendingUp size={18} className="text-[#F59E0B]" />
+                                <h3 className="text-text-primary font-bold tracking-wide flex items-center gap-2 uppercase">
+                                    <TrendingUp size={18} className="text-amber-500" />
                                     Динаміка продажу
                                 </h3>
-                                <p className="text-xs text-white/40 uppercase tracking-widest">Останні 7 днів порівняно з попередніми 7 днями</p>
+                                <p className="text-xs text-text-secondary uppercase tracking-widest">Останні 7 днів порівняно з попередніми 7 днями</p>
                             </div>
                         </div>
                         <div className="h-[350px] w-full">
@@ -471,14 +471,14 @@ export const BulvarAnalyticsDashboard: React.FC<BulvarAnalyticsDashboardProps> =
                                                 const data = payload[0].payload;
                                                 const diff = data.current - data.previous;
                                                 const diffFormatted = diff > 0 ? `+${diff.toFixed(1)}` : diff.toFixed(1);
-                                                const diffColor = diff > 0 ? 'text-[#10B981]' : (diff < 0 ? 'text-[#EF4444]' : 'text-white/50');
+                                                const diffColor = diff > 0 ? 'text-emerald-500' : (diff < 0 ? 'text-status-critical' : 'text-text-secondary');
 
                                                 return (
-                                                    <div className="bg-[#0a0e27] border border-[#00D4FF]/30 p-3 rounded-lg shadow-xl">
-                                                        <p className="text-white font-bold mb-2">{data.fullName}</p>
+                                                    <div className="bg-bg-primary border border-panel-border p-3 rounded-lg shadow-[var(--panel-shadow)]">
+                                                        <p className="text-text-primary font-bold mb-2">{data.fullName}</p>
                                                         <div className="space-y-1 text-sm">
-                                                            <p className="text-[#F59E0B]">Поточні 7 дн: {data.current} {data.unit}</p>
-                                                            <p className="text-white/50">Попередні 7 дн: {data.previous} {data.unit}</p>
+                                                            <p className="text-amber-500">Поточні 7 дн: {data.current} {data.unit}</p>
+                                                            <p className="text-text-secondary">Попередні 7 дн: {data.previous} {data.unit}</p>
                                                             <p className={`font-bold mt-2 ${diffColor}`}>Різниця: {diffFormatted} {data.unit}</p>
                                                         </div>
                                                     </div>
@@ -488,7 +488,7 @@ export const BulvarAnalyticsDashboard: React.FC<BulvarAnalyticsDashboardProps> =
                                         }}
                                     />
                                     <Bar dataKey="current" name="Останні 7 днів" fill="#F59E0B" radius={[4, 4, 0, 0]} barSize={20} />
-                                    <Line type="monotone" dataKey="previous" name="Попередні 7 днів" stroke="rgba(255,255,255,0.4)" strokeWidth={3} dot={{ r: 4, fill: '#141B2D', stroke: 'rgba(255,255,255,0.4)', strokeWidth: 2 }} activeDot={{ r: 6, fill: '#00D4FF' }} />
+                                    <Line type="monotone" dataKey="previous" name="Попередні 7 днів" stroke="rgba(148,163,184,0.5)" strokeWidth={3} dot={{ r: 4, fill: 'var(--panel-bg)', stroke: 'rgba(148,163,184,0.5)', strokeWidth: 2 }} activeDot={{ r: 6, fill: 'var(--accent-primary)' }} />
                                 </ComposedChart>
                             </ResponsiveContainer>
                         </div>
