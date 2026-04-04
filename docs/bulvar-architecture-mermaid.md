@@ -4,6 +4,11 @@
 
 This document covers the current Bulvar owner flow:
 
+- the `/bulvar` page renders inside the shared `DashboardLayout`
+- `BulvarProductionTabs` owns the top shell, metrics cards, and tab state
+- `BulvarPowerMatrix` owns the main matrix/cards view
+- `BulvarProductionOpsTable` owns the planning and export control panel
+- `BulvarDistributionControlPanel` owns the distribution run actions
 - product visibility comes from `bulvar1.production_180d_products`
 - the operational read model comes from `bulvar1.v_bulvar_distribution_stats_x3`
 - production facts come from `bulvar1.v_bulvar_production_only`
@@ -14,6 +19,28 @@ This document covers the current Bulvar owner flow:
 - `GET/POST /api/bulvar/distribution/scheduled-run` orchestrates the email flow
 - the distribution runner only orchestrates sync + RPC and persists rows into `bulvar1.distribution_results`
 - UI routes must not merge Poster leftovers or recompute `min_stock` in the child layer
+
+```mermaid
+flowchart TB
+    page["/bulvar/page.tsx"]
+    layout["DashboardLayout"]
+    tabs["BulvarProductionTabs"]
+    matrix["BulvarPowerMatrix"]
+    table["BulvarProductionOpsTable"]
+    control["BulvarDistributionControlPanel"]
+    history["BulvarHistoricalProduction"]
+    simulator["BulvarProductionSimulator"]
+    detail["ProductionDetailView"]
+
+    page --> layout
+    layout --> tabs
+    tabs --> matrix
+    tabs --> table
+    tabs --> control
+    tabs --> history
+    tabs --> simulator
+    tabs --> detail
+```
 
 ```mermaid
 flowchart LR
@@ -102,6 +129,7 @@ sequenceDiagram
 - The distribution runner must not emit a custom fallback distribution path.
 - `POST /api/bulvar/update-stock` is the only place that refreshes the operational snapshot from Poster.
 - `POST /api/bulvar/distribution/run` only orchestrates input sync and owner-layer recalculation.
+- the light-card presentation shell is shared with Florida/Konditerka to keep the operator UX consistent across workshops
 
 ## Operational Owner Chain
 

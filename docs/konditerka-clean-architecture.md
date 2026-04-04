@@ -8,7 +8,7 @@ the UI.
 
 The current source-of-truth chain is:
 
-`Poster API -> edge sync -> Supabase raw tables -> mapping -> views -> API routes -> ERP UI`
+`Poster API -> category scope guard -> edge sync -> Supabase raw tables -> catalog whitelist -> mapping -> views -> API routes -> ERP UI`
 
 ## Layer model
 
@@ -76,7 +76,12 @@ Core domain objects:
 Core domain rules:
 
 - the catalog is the whitelist for visible cards
+- the Konditerka catalog whitelist is category-scoped; products outside the
+  Konditerka or Morozivo owner scope must not enter
+  `konditerka1.production_180d_products`
 - leftovers are a raw fact layer, not the visible catalog
+- raw leftovers may contain foreign workshop products, but those rows are not
+  allowed to promote themselves into the visible Konditerka catalog
 - mapping connects catalog product IDs to Poster leftover ingredient IDs
 - `avg_sales_day` is derived from the last 14 days of `categories.transactions`
   and `categories.transaction_items` as `SUM(num) / 14.0`, using the
@@ -95,6 +100,8 @@ Core domain rules:
   stock and packaging config so the drawer does not show stale pack counts
 - product card ordering is alphabetic in the matrix and is a presentation-only
   concern
+- live production fallback must use the same category scope as the catalog
+  refresh path; it must not import all products from workshop storage `48`
 - kg items are calculated and rendered to two decimal places
 - piece items are calculated and rendered as integers
 - a card is visible only when its total stock is greater than zero
@@ -110,6 +117,11 @@ Infrastructure responsibilities:
 - persist raw leftovers into `konditerka1.leftovers`
 - refresh `konditerka1.product_leftovers_map`
 - refresh `konditerka1.production_180d_products`
+- enforce the same category boundary in
+  `syncKonditerkaCatalogFromPoster`, `syncBranchProductionFromPoster` for
+  Konditerka callers, and `konditerka1.refresh_production_180d_products()`
+- delete foreign rows that were previously inserted into
+  `konditerka1.production_180d_products` without category ownership
 - maintain `v_konditerka_distribution_stats`
 - maintain `v_konditerka_production_only`
 
@@ -120,7 +132,7 @@ Infrastructure does not decide visibility rules or quantity formatting.
 | Surface | Owner source | Notes |
 |---|---|---|
 | `/api/konditerka/orders` | `v_konditerka_distribution_stats` + `production_180d_products` + packaging config | Main operational read for the matrix |
-| `/api/konditerka/update-stock` | `poster-live-stocks`, `leftovers`, `product_leftovers_map`, `v_konditerka_production_only` | Refreshes raw snapshots and recalculates views |
+| `/api/konditerka/update-stock` | `poster-live-stocks`, category-scoped production sync, `leftovers`, `product_leftovers_map`, `v_konditerka_production_only` | Refreshes raw snapshots and recalculates views |
 | `/api/konditerka/calculate-distribution` | `v_konditerka_distribution_stats` + `production_180d_products` | Unit-aware branch distribution |
 | `/api/konditerka/production-detail` | `v_konditerka_production_only` | Production fact view |
 | `/api/konditerka/distribution/run` | `v_konditerka_distribution_stats` + `v_konditerka_production_only` + Poster 14-day store ranking + `distribution_results` | Rebuilds the daily distribution result set and allocates the full pool to stores only |
@@ -132,8 +144,32 @@ Infrastructure does not decide visibility rules or quantity formatting.
 - Zero-stock product cards are hidden from the product grid.
 - The same product reappears automatically when its mapped stock becomes positive.
 - Operational reads come from Supabase views, not from ad hoc client-side stock invention.
+- A foreign product such as `Хачапурі` may exist in raw leftovers, but it must
+  not appear in the Konditerka catalog, production fallback, or distribution
+  result set.
 - Unit conversion is explicit and deterministic.
 - Presentation may format numbers, but it must not change business totals.
 - Presentation may recompute pack estimates from the current visible stock when
   it overlays a fresh leftovers snapshot, but it must keep the same config and
   unit rules as the owner layer.
+
+## 2026-04-05 Scope Fix
+
+Root cause:
+
+- `konditerka1.refresh_production_180d_products()` previously imported every
+  leftover and every workshop production row from storage `48`, even when the
+  product did not belong to the Konditerka owner category.
+- Konditerka live production fallback previously called
+  `syncBranchProductionFromPoster(..., 48)` without a category filter, so the
+  fallback path could reintroduce foreign products into distribution.
+
+Implemented fix:
+
+- TypeScript owner-layer callers now pass
+  `['кондитерка', 'морозиво']` into Konditerka production sync.
+- SQL owner refresh now joins `categories.products` and
+  `categories.categories` before inserting into
+  `konditerka1.production_180d_products`.
+- Migration `20260405_konditerka_catalog_scope_fix.sql` also deletes already
+  imported foreign rows with no valid Konditerka category ownership.

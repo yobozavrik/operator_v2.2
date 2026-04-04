@@ -2,6 +2,8 @@
 
 Bulvar is an operational domain. The goal is to keep distribution math, stock rules, and business-date alignment in the owner layer and avoid compensating for broken data in the UI.
 
+The current presentation shell is intentionally aligned with Florida and Konditerka: light panels, shared dashboard layout, card-based metrics, and the same tab/state patterns. Bulvar UI may change styling, but it must not become a second source of truth for business calculations.
+
 ## Layers
 
 ```mermaid
@@ -24,16 +26,19 @@ Presentation includes:
 - `BulvarOrderFormTable.tsx`
 - `BulvarProductionDetailModal.tsx`
 - `BulvarDistributionModal.tsx`
+- shared `DashboardLayout` shell used by Florida/Konditerka as the visual baseline
 
 Presentation responsibilities:
 
 - render only owner-backed read models
+- follow the shared light-card UI system from Florida/Konditerka
 - show `кг` values with two decimals where the UI asks for weights
 - show `шт` values as integers
 - hide product cards when total stock is zero
 - keep alphabetical sorting as a presentation concern only
 - do not merge Poster leftovers into the matrix
 - do not recompute `min_stock` or `need_net` in the UI
+- keep the route shell, tab shell, and card shell purely presentational
 
 ## Application Layer
 
@@ -49,6 +54,14 @@ Application use cases:
 - `ReadBulvarDistributionResults`
 - `LoadBulvarAnalytics`
 - `LoadBulvarOrderPlan`
+- `LoadBulvarProduction180d`
+- `LoadBulvarShopStats`
+- `LoadBulvarFinance`
+- `CalculateBulvarDistribution`
+- `ConfirmBulvarDistribution`
+- `CreateBulvarOrder`
+- `LoadBulvarTrends`
+- `RunBulvarScheduledDistribution`
 
 Application responsibilities:
 
@@ -66,20 +79,24 @@ Owner sources:
 - `bulvar1.v_bulvar_production_only`
 - `bulvar1.v_bulvar_distribution_stats_x3`
 - `bulvar1.v_bulvar_summary_stats`
+- `bulvar1.v_bulvar_trends_14d`
 - `bulvar1.distribution_results`
 - `bulvar1.fn_full_recalculate_all()`
 - `bulvar1.fn_run_distribution_v3(...)`
+- `bulvar1.product_packaging_config`
 
 Core domain rules:
 
 - the product catalog is the whitelist for visible cards
 - `v_bulvar_distribution_stats_x3` is the canonical operational read model
 - `avg_sales_day`, `min_stock`, and `need_net` come from the owner view, not the UI
+- `unit` comes from the owner row and must not be hardcoded in presentation logic
 - `distribution_results` is the persisted output of the daily run
 - the runner may sync inputs before the RPC, but the allocation math must remain in Supabase
 - the manual distribution path must not emit a custom fallback algorithm
 - `production-detail` is a read-only view of the production and demand state
 - `summary` is a read-only KPI aggregation
+- the standardized UI shell is a view concern only and does not change the owner contract
 
 ## Infrastructure Layer
 

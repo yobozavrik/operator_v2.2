@@ -33,6 +33,7 @@ paths:
     get:
       tags: [Bulvar]
       summary: Read Bulvar KPI summary values
+      description: Returns the KPI header values sourced from the owner summary view and the x3 distribution read model.
       responses:
         '200':
           description: Summary values
@@ -48,6 +49,7 @@ paths:
     get:
       tags: [Bulvar]
       summary: Read Bulvar production detail
+      description: Returns the production fact snapshot from the owner production view.
       responses:
         '200':
           description: Production rows
@@ -66,7 +68,7 @@ paths:
       tags: [Bulvar]
       summary: Refresh the live Bulvar snapshot from Poster
       description: >
-        Refreshes upstream production and live stock inputs. This is the
+        Refreshes upstream catalog, production, and live stock inputs. This is the
         ingestion boundary only; it does not perform the distribution math.
       responses:
         '200':
@@ -246,6 +248,7 @@ paths:
     get:
       tags: [Bulvar]
       summary: Load the Bulvar analytics read model
+      description: Returns the operational KPI aggregate backed by the x3 owner view.
       responses:
         '200':
           description: Analytics payload
@@ -261,6 +264,7 @@ paths:
     get:
       tags: [Bulvar]
       summary: Generate a planning table for the next N days
+      description: Generates a planning table from the owner distribution rows only.
       parameters:
         - in: query
           name: days
@@ -287,6 +291,7 @@ paths:
     get:
       tags: [Bulvar]
       summary: Load per-store stats for one product
+      description: Returns per-store drilldown rows for a single Bulvar product.
       parameters:
         - in: query
           name: bulvar
@@ -313,6 +318,7 @@ paths:
     get:
       tags: [Bulvar]
       summary: Read the Bulvar finance dashboard payload
+      description: Reads the finance dashboard views for the Bulvar store.
       parameters:
         - in: query
           name: startDate
@@ -341,6 +347,7 @@ paths:
     post:
       tags: [Bulvar]
       summary: Confirm a manual distribution payload
+      description: Accepts a client-side confirmation payload without mutating the owner distribution tables.
       requestBody:
         required: false
         content:
@@ -362,6 +369,7 @@ paths:
     post:
       tags: [Bulvar]
       summary: Accept a manual order payload
+      description: Accepts a client-side order payload without recalculating the owner model.
       requestBody:
         required: false
         content:
@@ -383,6 +391,7 @@ paths:
     get:
       tags: [Bulvar]
       summary: Load Bulvar sales trend rows
+      description: Reads the 14-day trend view for the Bulvar domain.
       responses:
         '200':
           description: Trend rows
@@ -408,7 +417,7 @@ components:
     BulvarOrderRow:
       type: object
       additionalProperties: true
-      required: [product_id, product_name, spot_name, stock_now, min_stock, avg_sales_day, need_net]
+      required: [product_id, product_name, spot_name, stock_now, min_stock, avg_sales_day, need_net, unit]
       properties:
         product_id:
           type: integer

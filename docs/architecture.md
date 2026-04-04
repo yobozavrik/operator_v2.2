@@ -77,7 +77,25 @@ Current Konditerka owner rules:
 - a card reappears automatically when the mapped stock becomes positive
 - weight items are rendered to two decimal places, piece items as integers
 
-## 8. Bakery runtime docs
+## 8. Bulvar runtime docs
+
+Bulvar has a dedicated docs bundle for the current owner flow, the standardized UI shell, and the open API contract:
+
+- Mermaid runtime map: [Bulvar Runtime Architecture - Mermaid](./bulvar-architecture-mermaid.md)
+- Clean Architecture: [Bulvar Clean Architecture](./bulvar-clean-architecture.md)
+- OpenAPI / Swagger contract: [Bulvar Operational API](./bulvar-openapi.yaml)
+- Change Log: [Bulvar Change Log](./bulvar-change-log.md)
+
+Current Bulvar owner rules:
+
+- `bulvar1.v_bulvar_distribution_stats_x3` is the canonical operational read model
+- `bulvar1.production_180d_products` is the catalog whitelist for visible products
+- `BulvarProductionTabs`, `BulvarPowerMatrix`, and the Bulvar order table now follow the same light card layout used by Florida and Konditerka
+- `POST /api/bulvar/update-stock` refreshes the upstream poster snapshot and production sync
+- the API must not recompute `min_stock` or `need_net` in the UI layer
+- `кг` values remain decimal-friendly while `шт` values stay integer-formatted
+
+## 9. Bakery runtime docs
 
 The bakery surface now has a dedicated documentation set for craft bread
 sales, closing OOS, and XLSX export:

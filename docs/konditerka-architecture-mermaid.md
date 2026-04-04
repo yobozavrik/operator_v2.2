@@ -2,9 +2,9 @@
 
 > Source of truth for the Konditerka operational flow after leftovers mapping,
 > Kyiv-date sales windows, unit-aware quantities, pack recalculation from
-> current stock, weighted zero-demand allocation from Poster revenue rank, and
-> zero-stock card suppression.
-> Date: 2026-04-02.
+> current stock, weighted zero-demand allocation from Poster revenue rank,
+> zero-stock card suppression, and category-scoped catalog ownership.
+> Date: 2026-04-05.
 
 ## Scope
 
@@ -12,6 +12,7 @@ This document covers the current Konditerka owner flow:
 
 - live leftovers sync from Poster
 - raw production sync from Poster
+- category scope guard for Konditerka and Morozivo only
 - catalog refresh and leftovers mapping
 - operational read model in Supabase
 - ERP presentation rules for visible cards
@@ -31,6 +32,7 @@ flowchart LR
     prod_detail["GET /api/konditerka/production-detail"]
 
     poster["Poster API"]
+    scope["Category scope guard<br/>Konditerka + Morozivo only"]
     edge_stocks["Edge function poster-live-stocks"]
     edge_prod["Edge function poster-konditerka-sync"]
 
@@ -53,9 +55,10 @@ flowchart LR
     orders --> catalog
     orders --> map
 
+    poster --> scope
+    scope --> edge_prod
     stock_update --> edge_prod
     stock_update --> edge_stocks
-    edge_prod --> poster
     edge_stocks --> poster
     edge_stocks --> leftovers
     stock_update --> map
@@ -93,10 +96,12 @@ sequenceDiagram
 
     User->>UI: Click "Оновити залишки"
     UI->>API: POST /api/konditerka/update-stock
+    Note over API: Apply Konditerka category scope before accepting production
     API->>EdgeProd: Sync production snapshot
     API->>EdgeStocks: Sync leftovers snapshot
     EdgeStocks->>DB: Upsert konditerka1.leftovers
-    API->>DB: Refresh product catalog
+    API->>DB: Refresh product catalog with category join
+    API->>DB: Delete foreign catalog rows without Konditerka ownership
     API->>DB: Refresh leftovers mapping
     API->>DB: Recalculate distribution views
     Note over API,DB: Konditerka distribution always allocates the full pool to stores; no warehouse residual row is emitted
@@ -120,7 +125,18 @@ flowchart LR
     remainder --> result["Final store quantities"]
 ```
 
-## 4. Unit and visibility rules
+## 4. Foreign product guardrail
+
+```mermaid
+flowchart LR
+    raw["Raw Poster leftover or production row"] --> category{"Belongs to Konditerka or Morozivo owner category?"}
+    category -->|Yes| catalog["Allow into production_180d_products"]
+    category -->|No| raw_only["Keep only as raw fact if needed"]
+    raw_only --> blocked["Blocked from catalog, distribution stats, and daily distribution"]
+    catalog --> mapped["May participate in mapping, views, and distribution"]
+```
+
+## 5. Unit and visibility rules
 
 - Weight items use two decimal places in UI and calculations.
 - Piece items remain whole numbers.
@@ -137,12 +153,14 @@ flowchart LR
 - Pack labels in the Konditerka drawer are recomputed from the current in-memory
   stock after the live leftovers overlay, so they stay aligned with the visible
   card totals.
+- Foreign products from other workshops are rejected at the category-scope
+  boundary and must not become visible cards even if they exist in raw leftovers.
 - Konditerka distribution does not emit a warehouse residual row; the full
   produced pool is allocated to stores and any remaining quantity is a bug.
 
-## 5. Operational owner chain
+## 6. Operational owner chain
 
-`Poster API -> edge sync -> Supabase raw tables -> mapping -> views -> ERP UI`
+`Poster API -> category scope guard -> edge sync -> Supabase raw tables -> catalog whitelist -> mapping -> views -> ERP UI`
 
 The ERP UI must not invent stock values. It may only render or suppress cards
 based on the owner data already loaded from the view.

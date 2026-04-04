@@ -4,7 +4,10 @@ info:
   version: 1.0.0
   description: >
     OpenAPI contract for the Konditerka operational surface. The owner chain is
-    Poster API -> edge sync -> Supabase raw tables -> mapping -> views -> ERP UI.
+    Poster API -> category scope guard -> edge sync -> Supabase raw tables ->
+    catalog whitelist -> mapping -> views -> ERP UI.
+    Foreign products from other workshops may exist in raw leftovers, but they
+    are not allowed to enter the Konditerka catalog or distribution surface.
     When a product has zero sales and zero stock across stores, distribution
     uses a Poster 14-day store revenue rank with descending linear weights and
     largest remainder allocation.
@@ -22,6 +25,8 @@ paths:
       description: >
         Returns the current operational read model for the Konditerka matrix.
         The response is enriched with product unit and packaging settings.
+        Only products owned by the Konditerka or Morozivo category scope may
+        appear in this response.
         The owner view is keyed to the Europe/Kyiv business date, so 14-day
         averages match the ERP report calendar.
         When the UI overlays a fresh leftovers snapshot, it recomputes pack
@@ -48,6 +53,8 @@ paths:
         leftovers mapping, refreshes the catalog, and triggers a full
         recalculation of Konditerka views. The response also includes the raw
         leftovers snapshot that the client overlays on top of the owner view.
+        Catalog refresh is category-scoped and removes foreign products that do
+        not belong to the Konditerka owner boundary.
         The visible product order in the matrix is alphabetical and is handled
         at the presentation layer only.
       responses:
@@ -68,7 +75,8 @@ paths:
       description: >
         Calculates the owner-layer distribution for a single product. In the
         zero-sales / zero-stock case it applies the Poster 14-day weighted
-        fallback rank instead of alphabetical ordering.
+        fallback rank instead of alphabetical ordering. The route expects a
+        product already accepted by the Konditerka catalog boundary.
       requestBody:
         required: true
         content:
@@ -92,6 +100,9 @@ paths:
     get:
       tags: [Konditerka]
       summary: Read today's Konditerka production fact
+      description: >
+        Reads today's production fact for the Konditerka owner category scope.
+        Foreign workshop products must not appear in this response.
       responses:
         '200':
           description: Production rows
@@ -114,7 +125,8 @@ paths:
         production pool to stores only. Konditerka does not emit a warehouse
         residual row in this path. If all stores have zero sales and zero stock
         for a product, the allocator uses Poster revenue weights for the store
-        order and proportional split.
+        order and proportional split. Only products inside the Konditerka owner
+        catalog boundary may be processed.
       responses:
         '200':
           description: Distribution run result
@@ -139,6 +151,7 @@ paths:
       description: >
         Returns the per-store distribution rows for the current business date.
         The owner layer does not append a warehouse residual row for Konditerka.
+        Foreign workshop products are out of contract and must not appear.
       parameters:
         - in: query
           name: date
@@ -373,7 +386,6 @@ components:
         - distributed
         - remaining
         - usedFallback
-        - unit
       properties:
         productId:
           type: integer
@@ -390,9 +402,6 @@ components:
           minimum: 0
         usedFallback:
           type: boolean
-        unit:
-          type: string
-          enum: [шт, кг]
     ProductionDetailRow:
       type: object
       required: [product_name, baked_at_factory, unit]
