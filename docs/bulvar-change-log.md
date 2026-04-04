@@ -15,6 +15,55 @@
 
 ---
 
+## 2026-04-05 (Kyiv) | Current session
+
+### 16) Bulvar live analytics shell aligned to shared panel system
+- Контур: `ERP/API`
+- Тип: `fix`
+- Действие:
+  - `BulvarAnalyticsDashboard` переведён на тот же light-panel shell, что и Florida/Konditerka;
+  - live Bulvar presentation now uses shared card borders, metric tiles, and tab patterns.
+- Файлы/объекты:
+  - `src/components/analytics/BulvarAnalyticsDashboard.tsx`
+  - `src/components/production/BulvarProductionTabs.tsx`
+  - `src/components/BulvarPowerMatrix.tsx`
+  - `src/components/production/BulvarDistributionControlPanel.tsx`
+  - `src/components/production/BulvarHistoricalProduction.tsx`
+  - `src/components/production/BulvarProductionSimulator.tsx`
+- Проверка: `npm.cmd run build` и targeted ESLint pass on the touched Bulvar presentation files.
+- Риск/примечание: visual alignment only, owner contract unchanged.
+
+### 17) Bulvar update-stock normalized to edge snapshot contract
+- Контур: `ERP/API`
+- Тип: `logic`
+- Действие:
+  - `POST /api/bulvar/update-stock` now refreshes catalog + normalized live stock snapshot + production snapshot;
+  - stock sync persists `poster_edge` rows into `bulvar1.effective_stocks`;
+  - fallback read-only edge snapshot is used only if the synced snapshot is unavailable;
+  - live stock matching prefers `ingredient_id` first and falls back to normalized names only when needed.
+- Файлы/объекты:
+  - `src/app/api/bulvar/[...path]/route.ts`
+  - `src/lib/bulvar-stock-sync.ts`
+  - `src/lib/bulvar-catalog.ts`
+  - `src/lib/branch-production-sync.ts`
+- Проверка: `npm.cmd run build` and targeted ESLint pass.
+- Риск/примечание: `effective_stocks` remains the normalized snapshot owner table; UI must not recreate it.
+
+### 18) Bulvar docs synchronized with runtime behavior
+- Контур: `ERP/API` + `Supabase`
+- Тип: `audit`
+- Действие:
+  - updated Mermaid architecture to include shared light-panel shell and normalized stock snapshot;
+  - updated Clean Architecture to reference `effective_stocks` and the `ingredient_id`-first matching rule;
+  - updated Swagger response shape for `POST /api/bulvar/update-stock`.
+- Файлы/объекты:
+  - `docs/bulvar-clean-architecture.md`
+  - `docs/bulvar-architecture-mermaid.md`
+  - `docs/bulvar-openapi.yaml`
+  - `docs/architecture.md`
+- Проверка: doc contract matches current live route shape.
+- Риск/примечание: keep docs aligned if `update-stock` response shape changes again.
+
 ## 2026-03-19 00:00-23:59 (Kyiv) | Исторические записи (зафиксировано постфактум)
 
 ### 1) Аудит единиц товара (Bulvar)

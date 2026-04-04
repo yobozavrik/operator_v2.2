@@ -68,8 +68,10 @@ paths:
       tags: [Bulvar]
       summary: Refresh the live Bulvar snapshot from Poster
       description: >
-        Refreshes upstream catalog, production, and live stock inputs. This is the
-        ingestion boundary only; it does not perform the distribution math.
+        Refreshes upstream catalog, normalized live stock snapshot, and production
+        inputs. The route persists the poster_edge stock snapshot into
+        bulvar1.effective_stocks, falls back to the read-only edge snapshot when
+        needed, and does not perform the distribution math.
       responses:
         '200':
           description: Sync result
@@ -439,6 +441,78 @@ components:
           type: number
         unit:
           type: string
+    BulvarStockLeftoverRow:
+      type: object
+      additionalProperties: true
+      required: [ingredient_name, storage_ingredient_left, ingredient_unit]
+      properties:
+        ingredient_id:
+          type: integer
+          nullable: true
+        ingredient_name:
+          type: string
+        storage_ingredient_left:
+          type: string
+        ingredient_unit:
+          type: string
+    BulvarStockStorageSnapshot:
+      type: object
+      additionalProperties: true
+      required: [storage_id, storage_name, leftovers]
+      properties:
+        storage_id:
+          type: string
+        storage_name:
+          type: string
+        leftovers:
+          type: array
+          items:
+            $ref: '#/components/schemas/BulvarStockLeftoverRow'
+    BulvarManufactureRow:
+      type: object
+      additionalProperties: true
+      required: [product_id, product_name, product_num]
+      properties:
+        product_id:
+          type: integer
+        product_name:
+          type: string
+        product_num:
+          type: number
+    BulvarStockSyncResult:
+      type: object
+      additionalProperties: true
+      required: [syncedRows, syncedStorages, skippedStorages, warnings]
+      properties:
+        syncedRows:
+          type: integer
+        syncedStorages:
+          type: integer
+        skippedStorages:
+          type: array
+          items:
+            type: integer
+        warnings:
+          type: array
+          items:
+            type: string
+    BulvarProductionSyncResponse:
+      type: object
+      additionalProperties: true
+      required: [business_date, items_count, total_qty, persisted]
+      properties:
+        business_date:
+          type: string
+          format: date
+        items_count:
+          type: integer
+        total_qty:
+          type: number
+        persisted:
+          type: boolean
+        warning:
+          type: string
+          nullable: true
     SummaryResponse:
       type: object
       additionalProperties: true
@@ -479,6 +553,29 @@ components:
     UpdateStockResponse:
       type: object
       additionalProperties: true
+      required: [success, data, manufactures, sync, warnings, production_sync, timestamp]
+      properties:
+        success:
+          type: boolean
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/BulvarStockStorageSnapshot'
+        manufactures:
+          type: array
+          items:
+            $ref: '#/components/schemas/BulvarManufactureRow'
+        sync:
+          $ref: '#/components/schemas/BulvarStockSyncResult'
+        warnings:
+          type: array
+          items:
+            type: string
+        production_sync:
+          $ref: '#/components/schemas/BulvarProductionSyncResponse'
+        timestamp:
+          type: string
+          format: date-time
     DistributionRunResponse:
       type: object
       additionalProperties: true

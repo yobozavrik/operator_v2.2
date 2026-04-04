@@ -90,9 +90,11 @@ Current Bulvar owner rules:
 
 - `bulvar1.v_bulvar_distribution_stats_x3` is the canonical operational read model
 - `bulvar1.production_180d_products` is the catalog whitelist for visible products
-- `BulvarProductionTabs`, `BulvarPowerMatrix`, and the Bulvar order table now follow the same light card layout used by Florida and Konditerka
-- `POST /api/bulvar/update-stock` refreshes the upstream poster snapshot and production sync
+- `bulvar1.effective_stocks` is the normalized live stock snapshot produced by the edge sync
+- `BulvarProductionTabs`, `BulvarAnalyticsDashboard`, `BulvarPowerMatrix`, and the Bulvar order table now follow the same light card layout used by Florida and Konditerka
+- `POST /api/bulvar/update-stock` refreshes the Bulvar catalog, normalized live stock snapshot, and production snapshot
 - the API must not recompute `min_stock` or `need_net` in the UI layer
+- live stock matching prefers `ingredient_id` and only falls back to normalized names when the identifier is missing or inconsistent
 - `кг` values remain decimal-friendly while `шт` values stay integer-formatted
 
 ## 9. Bakery runtime docs
