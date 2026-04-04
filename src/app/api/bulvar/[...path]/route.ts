@@ -19,6 +19,8 @@ import { syncBranchProductionFromPoster } from '@/lib/branch-production-sync';
 export const dynamic = 'force-dynamic';
 
 const config = BRANCH_CONFIGS.bulvar;
+const BULVAR_DISTRIBUTION_SELECT =
+    'product_id, product_name, spot_name, spot_id, stock_now, min_stock, avg_sales_day, need_net';
 
 function getRoutePath(request: Request): string {
     const pathname = new URL(request.url).pathname;
@@ -40,7 +42,7 @@ async function handleAnalytics() {
     const rawRows = await fetchBranchRows(
         supabase,
         config,
-        'product_id, product_name, spot_name, store_id, spot_id, stock_now, min_stock, avg_sales_day, need_net'
+        BULVAR_DISTRIBUTION_SELECT
     );
     return NextResponse.json(buildBranchAnalytics(rawRows as any[], 'bulvar_name'));
 }
@@ -81,7 +83,7 @@ async function handleOrderPlan(request: Request) {
     const rawRows = await fetchBranchRows(
         supabase,
         config,
-        'product_id, product_name, spot_name, store_id, spot_id, stock_now, min_stock, avg_sales_day, need_net'
+        BULVAR_DISTRIBUTION_SELECT
     );
     const plan = buildBranchOrderPlan(rawRows as any[], days).map((item) => ({
         ...item,
@@ -107,7 +109,7 @@ async function handleCalculateDistribution(request: Request) {
     const rawRows = await fetchBranchRows(
         supabase,
         config,
-        'product_id, product_name, spot_name, store_id, spot_id, stock_now, min_stock, avg_sales_day, need_net'
+        BULVAR_DISTRIBUTION_SELECT
     );
     const result = calculateBranchDistribution(rawRows as any[], Math.trunc(productId), productionQuantity);
     return NextResponse.json(result);

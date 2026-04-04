@@ -15,7 +15,7 @@ export async function readBulvarDistributionRows(): Promise<BulvarDistributionRo
             distributionView: 'v_bulvar_distribution_stats_x3',
             shopParam: 'bulvar',
         },
-        'product_id, product_name, spot_name, store_id, spot_id, stock_now, min_stock, avg_sales_day, need_net, baked_at_factory, unit'
+        'product_id, product_name, spot_name, spot_id, stock_now, min_stock, avg_sales_day, need_net, baked_at_factory, unit'
     );
 
     return rows as BulvarDistributionRow[];
