@@ -13,6 +13,8 @@ This document covers the current Konditerka owner flow:
 - live leftovers sync from Poster
 - raw production sync from Poster
 - category scope guard for Konditerka and Morozivo only
+- dual-source production owner view with `poster_live` priority for today's
+  business date
 - catalog refresh and leftovers mapping
 - operational read model in Supabase
 - ERP presentation rules for visible cards
@@ -37,6 +39,8 @@ flowchart LR
     edge_prod["Edge function poster-konditerka-sync"]
 
     leftovers["konditerka1.leftovers"]
+    live_headers["konditerka1.manufactures"]
+    live_items["konditerka1.manufacture_items"]
     map["konditerka1.product_leftovers_map"]
     catalog["konditerka1.production_180d_products"]
     dist_view["konditerka1.v_konditerka_distribution_stats"]
@@ -61,8 +65,12 @@ flowchart LR
     stock_update --> edge_stocks
     edge_stocks --> poster
     edge_stocks --> leftovers
+    edge_prod --> live_headers
+    edge_prod --> live_items
     stock_update --> map
     stock_update --> catalog
+    live_headers --> prod_view
+    live_items --> prod_view
     stock_update --> dist_view
 
     dist_calc --> dist_view
@@ -125,7 +133,18 @@ flowchart LR
     remainder --> result["Final store quantities"]
 ```
 
-## 4. Foreign product guardrail
+## 4. Production owner precedence
+
+```mermaid
+flowchart LR
+    live["konditerka1.manufacture_items<br/>source=poster_live<br/>today only"] --> choose["Owner production view"]
+    hist["categories.manufacture_items<br/>historical/fallback"] --> choose
+    choose -->|prefer live today| prod["v_konditerka_production_only"]
+    prod --> dist["v_konditerka_distribution_stats"]
+    prod --> detail["/api/konditerka/production-detail"]
+```
+
+## 5. Foreign product guardrail
 
 ```mermaid
 flowchart LR
@@ -136,7 +155,7 @@ flowchart LR
     catalog --> mapped["May participate in mapping, views, and distribution"]
 ```
 
-## 5. Unit and visibility rules
+## 6. Unit and visibility rules
 
 - Weight items use two decimal places in UI and calculations.
 - Piece items remain whole numbers.
@@ -153,14 +172,18 @@ flowchart LR
 - Pack labels in the Konditerka drawer are recomputed from the current in-memory
   stock after the live leftovers overlay, so they stay aligned with the visible
   card totals.
+- `v_konditerka_production_only` must prefer today's `poster_live` snapshot
+  over the historical categories source.
+- If today's `poster_live` snapshot is missing, yesterday's distribution rows do
+  not imply today's production; current-day owner reads may correctly show zero.
 - Foreign products from other workshops are rejected at the category-scope
   boundary and must not become visible cards even if they exist in raw leftovers.
 - Konditerka distribution does not emit a warehouse residual row; the full
   produced pool is allocated to stores and any remaining quantity is a bug.
 
-## 6. Operational owner chain
+## 7. Operational owner chain
 
-`Poster API -> category scope guard -> edge sync -> Supabase raw tables -> catalog whitelist -> mapping -> views -> ERP UI`
+`Poster API -> category scope guard -> edge sync -> live production snapshot/raw tables -> catalog whitelist -> mapping -> owner views -> ERP UI`
 
 The ERP UI must not invent stock values. It may only render or suppress cards
 based on the owner data already loaded from the view.

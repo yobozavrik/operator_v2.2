@@ -72,6 +72,8 @@ Core domain objects:
 - `v_konditerka_distribution_stats`
 - `v_konditerka_production_only`
 - `v_konditerka_today_distribution`
+- `konditerka1.manufactures`
+- `konditerka1.manufacture_items`
 
 Core domain rules:
 
@@ -92,6 +94,13 @@ Core domain rules:
 - the zero-sales / zero-stock fallback distribution rule uses a Poster-based
   14-day store revenue rank from `spots.getSpots` + `dash.getProductsSales`,
   then allocates quantity with descending linear weights and largest remainder
+- `v_konditerka_production_only` is the owner production read model and must
+  prefer `konditerka1.manufacture_items` + `konditerka1.manufactures` with
+  `source = 'poster_live'` for the current `Europe/Kyiv` business date, then
+  fall back to `categories.manufacture_items` only when no live snapshot exists
+- when a product was distributed yesterday but has no live production snapshot
+  for today, today's owner views must show `baked_at_factory = 0`; this is a
+  business-date fact, not a UI bug
 - packaging estimates are computed from kg-normalized values for weight items,
   not from the raw SQL display units
 - when live leftovers are overlaid into the presentation model, the UI
@@ -114,6 +123,8 @@ Infrastructure responsibilities:
 
 - pull stock snapshots from Poster via `poster-live-stocks`
 - pull production snapshots from Poster via `poster-konditerka-sync`
+- persist live production into `konditerka1.manufactures` and
+  `konditerka1.manufacture_items`
 - persist raw leftovers into `konditerka1.leftovers`
 - refresh `konditerka1.product_leftovers_map`
 - refresh `konditerka1.production_180d_products`
@@ -134,7 +145,7 @@ Infrastructure does not decide visibility rules or quantity formatting.
 | `/api/konditerka/orders` | `v_konditerka_distribution_stats` + `production_180d_products` + packaging config | Main operational read for the matrix |
 | `/api/konditerka/update-stock` | `poster-live-stocks`, category-scoped production sync, `leftovers`, `product_leftovers_map`, `v_konditerka_production_only` | Refreshes raw snapshots and recalculates views |
 | `/api/konditerka/calculate-distribution` | `v_konditerka_distribution_stats` + `production_180d_products` | Unit-aware branch distribution |
-| `/api/konditerka/production-detail` | `v_konditerka_production_only` | Production fact view |
+| `/api/konditerka/production-detail` | `v_konditerka_production_only` | Production fact view with `poster_live` priority for today's business date |
 | `/api/konditerka/distribution/run` | `v_konditerka_distribution_stats` + `v_konditerka_production_only` + Poster 14-day store ranking + `distribution_results` | Rebuilds the daily distribution result set and allocates the full pool to stores only |
 | `/api/konditerka/distribution/results` | `distribution_results` + `v_konditerka_distribution_stats` | Delivery and Excel-facing read model |
 | `/api/konditerka/summary` | `v_konditerka_summary_stats` | KPI header read |
@@ -147,6 +158,9 @@ Infrastructure does not decide visibility rules or quantity formatting.
 - A foreign product such as `Хачапурі` may exist in raw leftovers, but it must
   not appear in the Konditerka catalog, production fallback, or distribution
   result set.
+- A product such as `Моті` may exist in yesterday's `distribution_results` and
+  still be absent from today's owner production view when there is no
+  `poster_live` snapshot for today's business date.
 - Unit conversion is explicit and deterministic.
 - Presentation may format numbers, but it must not change business totals.
 - Presentation may recompute pack estimates from the current visible stock when
@@ -173,3 +187,25 @@ Implemented fix:
   `konditerka1.production_180d_products`.
 - Migration `20260405_konditerka_catalog_scope_fix.sql` also deletes already
   imported foreign rows with no valid Konditerka category ownership.
+
+## 2026-04-06 Production Owner Fix
+
+Root cause:
+
+- `v_konditerka_production_only` previously read only
+  `categories.manufacture_items`.
+- live Konditerka production for current-day products such as
+  `Моті "Манго-маракуя"` and `Моті "Фісташка-малина"` was persisted into
+  `konditerka1.manufacture_items` with `source = 'poster_live'`.
+- because of that mismatch, the main owner SQL path showed
+  `baked_at_factory = 0` even when today's fallback distribution had already
+  allocated the live production pool.
+
+Implemented fix:
+
+- migration `20260405_konditerka_live_production_owner_fix.sql` rewires
+  `v_konditerka_production_only` to read both sources
+- today's `poster_live` snapshot has higher priority than the historical
+  `categories.manufacture_items` path
+- owner views now distinguish correctly between "yesterday had production" and
+  "today has no live snapshot yet"

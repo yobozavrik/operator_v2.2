@@ -8,6 +8,9 @@ info:
     catalog whitelist -> mapping -> views -> ERP UI.
     Foreign products from other workshops may exist in raw leftovers, but they
     are not allowed to enter the Konditerka catalog or distribution surface.
+    Today's production owner view prefers `poster_live` data from
+    `konditerka1.manufacture_items`; yesterday's distribution rows do not imply
+    current-day production when today's live snapshot is absent.
     When a product has zero sales and zero stock across stores, distribution
     uses a Poster 14-day store revenue rank with descending linear weights and
     largest remainder allocation.
@@ -102,7 +105,9 @@ paths:
       summary: Read today's Konditerka production fact
       description: >
         Reads today's production fact for the Konditerka owner category scope.
-        Foreign workshop products must not appear in this response.
+        Foreign workshop products must not appear in this response. The owner
+        source prefers today's `poster_live` snapshot and may return an empty
+        result even if the same product was distributed yesterday.
       responses:
         '200':
           description: Production rows
@@ -126,7 +131,8 @@ paths:
         residual row in this path. If all stores have zero sales and zero stock
         for a product, the allocator uses Poster revenue weights for the store
         order and proportional split. Only products inside the Konditerka owner
-        catalog boundary may be processed.
+        catalog boundary may be processed. The run should consume today's owner
+        production view, which prioritizes `poster_live` production facts.
       responses:
         '200':
           description: Distribution run result
